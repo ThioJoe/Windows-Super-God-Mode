@@ -115,7 +115,7 @@ function New-FolderWithIcon {
     param (
         [string]$FolderPath,
         [string]$IconFile,
-        [string]$IconIndex  # Changed to string to allow both positive and negative values
+        [string]$IconIndex
     )
     # Create the folder
     New-Item -Path $FolderPath -ItemType Directory -Force | Out-Null
@@ -136,13 +136,15 @@ Vid={137E7700-3573-11CF-AE69-08002B2E1262}
 
     # Create desktop.ini file
     $desktopIniPath = Join-Path $FolderPath "desktop.ini"
-    Set-Content -Path $desktopIniPath -Value $desktopIniContent -Encoding ASCII
+    Set-Content -Path $desktopIniPath -Value $desktopIniContent -Encoding ASCII -Force
 
     # Set desktop.ini attributes
-    (Get-Item $desktopIniPath).Attributes = 'Hidden,System'
+    $desktopIniItem = Get-Item $desktopIniPath -Force
+    $desktopIniItem.Attributes = 'Hidden,System'
 
     # Set folder attributes
-    (Get-Item $FolderPath).Attributes = 'ReadOnly,Directory'
+    $folderItem = Get-Item $FolderPath -Force
+    $folderItem.Attributes = 'ReadOnly,Directory'
 }
 
 # Create relevant subfolders for different types of shortcuts, and set custom icons for each folder
