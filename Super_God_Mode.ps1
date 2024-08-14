@@ -494,6 +494,7 @@ function Create-TaskLink-Shortcut {
     param (
         [string]$name,
         [string]$shortcutPath,
+        [string]$shortcutType,
         [string]$command,
         [string]$controlPanelName,
         [string]$applicationId,
@@ -504,47 +505,71 @@ function Create-TaskLink-Shortcut {
         Write-Verbose "Creating Task Link Shortcut For: $name"
 
         $shell = New-Object -ComObject WScript.Shell
-        $shortcut = $shell.CreateShortcut($shortcutPath)
 
-        # Parse the command
-        if ($command -match '^(\S+)\s*(.*)$') {
-            $targetPath = Fix-CommandPath $Matches[1]
-            $arguments = Fix-CommandPath $Matches[2]
-
-            # Expand variables in the arguments such as %windir%, because shortcuts don't seem to work with them in the arguments
-            $arguments = [Environment]::ExpandEnvironmentVariables($arguments)
-
-            $shortcut.TargetPath = $targetPath
-            $shortcut.Arguments = $arguments
+        if ($shortcutType -eq "url") {
+            # For URL shortcuts
+            $shortcut = $shell.CreateShortcut($shortcutPath)
+            $shortcut.TargetPath = $command
         } else {
-            $fixedCommand = Fix-CommandPath $command
-            $shortcut.TargetPath = $fixedCommand
+            # For regular shortcuts
+            $shortcut = $shell.CreateShortcut($shortcutPath)
+
+            # Parse the command
+            if ($command -match '^(\S+)\s*(.*)$') {
+                $targetPath = Fix-CommandPath $Matches[1]
+                $arguments = Fix-CommandPath $Matches[2]
+
+                # Expand variables in the arguments such as %windir%, because shortcuts don't seem to work with them in the arguments
+                $arguments = [Environment]::ExpandEnvironmentVariables($arguments)
+
+                $shortcut.TargetPath = $targetPath
+                $shortcut.Arguments = $arguments
+            } else {
+                $fixedCommand = Fix-CommandPath $command
+                $shortcut.TargetPath = $fixedCommand
+            }
+
+            # Add keywords only if it's a .lnk type shortcut
+            # Combine keywords into a single string and set as Description
+            if ($keywords -and $keywords.Count -gt 0) {
+                $descriptionLimit = 259 # Limit for Description field in shortcuts or else it causes some kind of buffer overflow
+                $keywordString = ""
+                $separator = " "
+
+                foreach ($keyword in $keywords) {
+                    $potentialNewString = if ($keywordString) { $keywordString + $separator + $keyword } else { $keyword }
+                    if ($potentialNewString.Length -le $descriptionLimit) {
+                        $keywordString = $potentialNewString
+                    } else {
+                        break
+                    }
+                }
+
+                $shortcut.Description = $keywordString
+            }
         }
 
         $iconPath = Get-TaskIcon -controlPanelName $controlPanelName -applicationId $applicationId
-        $shortcut.IconLocation = $iconPath
 
-        # Combine keywords into a single string and set as Description
-        if ($keywords -and $keywords.Count -gt 0) {
-            $descriptionLimit = 259 # Limit for Description field in shortcuts or else it causes some kind of buffer overflow
-            $keywordString = ""
-            $separator = " "
+        # Only add icon at this point if it's a .lnk type shortcut, not for .url which needs to be done after
+        if ($shortcutType -eq "lnk") {
+            $shortcut.IconLocation = $iconPath
+        }
+        $shortcut.Save()
+        [System.Runtime.InteropServices.Marshal]::ReleaseComObject($shell) | Out-Null
 
-            foreach ($keyword in $keywords) {
-                $potentialNewString = if ($keywordString) { $keywordString + $separator + $keyword } else { $keyword }
-                if ($potentialNewString.Length -le $descriptionLimit) {
-                    $keywordString = $potentialNewString
-                } else {
-                    break
+        # For .url type shortcuts, open the plaintext url file and add the IconIndex= and IconFile= lines to the end
+        if ($shortcutType -eq "url") {
+            if ($iconPath) {
+                $iconFile, $iconIndex = $iconPath -split ','
+                # Append the icon information to the file
+                Add-Content -Path $shortcutPath -Value "IconFile=$iconFile"
+                if ($iconIndex) {
+                    Add-Content -Path $shortcutPath -Value "IconIndex=$iconIndex"
                 }
             }
-
-            $shortcut.Description = $keywordString
         }
 
-        $shortcut.Save()
-
-        [System.Runtime.InteropServices.Marshal]::ReleaseComObject($shell) | Out-Null
         return $true
     } catch {
         Write-Host "Error creating shortcut for $name`: $($_.Exception.Message)"
@@ -1112,9 +1137,6 @@ if (-not $SkipTaskLinks) {
             $uniqueName = "${sanitizedName} ($nameCounter)"
         }
 
-        $shortcutPath = Join-Path $taskLinksOutputFolder "$uniqueName.lnk"
-        $createdShortcutNames[$uniqueName] = $true
-
         # Determine the command based on available information. Some task XML entries have the entire command already given, others are implied to be used with control.exe
         if ($task.Command) {
             $command = $task.Command
@@ -1125,7 +1147,24 @@ if (-not $SkipTaskLinks) {
             continue
         }
 
-        $success = Create-TaskLink-Shortcut -name $uniqueName -shortcutPath $shortcutPath -command $command -controlPanelName $task.ControlPanelName -applicationId $task.ApplicationId -keywords $task.Keywords
+
+        # Determine whether to create a URL or LNK shortcut based on the command
+        $shortcutType = ""
+        # If the command starts with a protocol (e.g., http://, https://, or even mshelp://), create a URL shortcut
+        if ($command -match '^[a-zA-Z0-9]+:\/\/') {
+            $shortcutType = "url"
+        # Match ms-protocol shortcuts such as ms-settings: or ms-availablenetworks:, and create a URL if so
+        #} elseif ($command -match '^ms-[a-zA-Z0-9]+:') {
+        #    $shortcutType = "url"
+        # Otherwise default to lnk
+        } else {
+            $shortcutType = "lnk"
+        }
+
+        $shortcutPath = Join-Path $taskLinksOutputFolder "$uniqueName.$shortcutType"
+        $createdShortcutNames[$uniqueName] = $true
+
+        $success = Create-TaskLink-Shortcut -name $uniqueName -shortcutPath $shortcutPath -shortcutType $shortcutType -command $command -controlPanelName $task.ControlPanelName -applicationId $task.ApplicationId -keywords $task.Keywords
 
         if ($success) {
             Write-Host "Created task link shortcut for $uniqueName"
