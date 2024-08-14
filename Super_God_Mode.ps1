@@ -110,14 +110,13 @@ if ($DeletePreviousOutputFolder -and (Test-Path $mainShortcutsFolder)) {
 New-Item -Path $mainShortcutsFolder -ItemType Directory -Force | Out-Null
 
 
-# Function to create a folder with a custom icon
+# Function to create a folder with a custom icon and set Details view
 function New-FolderWithIcon {
     param (
         [string]$FolderPath,
         [string]$IconFile,
         [string]$IconIndex  # Changed to string to allow both positive and negative values
     )
-
     # Create the folder
     New-Item -Path $FolderPath -ItemType Directory -Force | Out-Null
 
@@ -130,6 +129,9 @@ function New-FolderWithIcon {
     $desktopIniContent = @"
 [.ShellClassInfo]
 IconResource=$IconFile,$IconIndex
+[ViewState]
+Mode=4
+Vid={137E7700-3573-11CF-AE69-08002B2E1262}
 "@
 
     # Create desktop.ini file
