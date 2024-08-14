@@ -507,6 +507,9 @@ function Create-TaskLink-Shortcut {
             $targetPath = Fix-CommandPath $Matches[1]
             $arguments = Fix-CommandPath $Matches[2]
 
+            # Expand variables in the arguments such as %windir%, because shortcuts don't seem to work with them in the arguments
+            $arguments = [Environment]::ExpandEnvironmentVariables($arguments)
+
             $shortcut.TargetPath = $targetPath
             $shortcut.Arguments = $arguments
         } else {
