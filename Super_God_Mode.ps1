@@ -90,6 +90,18 @@ if ($Output) {
     $mainShortcutsFolder = Join-Path $PSScriptRoot "Shell Folder Shortcuts"
 }
 
+# Construct paths for subfolders
+$CLSIDshortcutsOutputFolder = Join-Path $mainShortcutsFolder "CLSID Shell Folder Shortcuts"
+$namedShortcutsOutputFolder = Join-Path $mainShortcutsFolder "Named Shell Folder Shortcuts"
+$taskLinksOutputFolder = Join-Path $mainShortcutsFolder "All Task Links"
+
+# Set filenames for various output files (CSV and optional XML)
+$clsidCsvPath = Join-Path $mainShortcutsFolder "CLSID_Shell_Folders.csv"
+$namedFoldersCsvPath = Join-Path $mainShortcutsFolder "Named_Shell_Folders.csv"
+$taskLinksCsvPath = Join-Path $mainShortcutsFolder "Task_Links.csv"
+$xmlContentFilePath = Join-Path $mainShortcutsFolder "Shell32_XML_Content.xml"
+$resolvedXmlContentFilePath = Join-Path $mainShortcutsFolder "Shell32_XML_Content_Resolved.xml"
+
 # Creates the main directory if it does not exist; `-Force` ensures it is created without errors if it already exists. It won't overwrite any files within even if the folder already exists
 try {
     New-Item -Path $mainShortcutsFolder -ItemType Directory -Force -ErrorAction Stop | Out-Null
@@ -109,18 +121,6 @@ try {
         return
     }
 }
-
-# Construct paths for subfolders
-$CLSIDshortcutsOutputFolder = Join-Path $mainShortcutsFolder "CLSID Shell Folder Shortcuts"
-$namedShortcutsOutputFolder = Join-Path $mainShortcutsFolder "Named Shell Folder Shortcuts"
-$taskLinksOutputFolder = Join-Path $mainShortcutsFolder "All Task Links"
-
-# Set filenames for various output files (CSV and optional XML)
-$clsidCsvPath = Join-Path $mainShortcutsFolder "CLSID_Shell_Folders.csv"
-$namedFoldersCsvPath = Join-Path $mainShortcutsFolder "Named_Shell_Folders.csv"
-$taskLinksCsvPath = Join-Path $mainShortcutsFolder "Task_Links.csv"
-$xmlContentFilePath = Join-Path $mainShortcutsFolder "Shell32_XML_Content.xml"
-$resolvedXmlContentFilePath = Join-Path $mainShortcutsFolder "Shell32_XML_Content_Resolved.xml"
 
 # If the -DeletePreviousOutputFolder switch is used, go into the set main folder and delete each set subfolder using above variable names
 # Doing this instead of just deleting the entire main folder in case the user wants to put the output into a directory in use for other things
