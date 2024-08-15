@@ -490,7 +490,8 @@ function Create-Shortcut {
 function Get-TaskIcon {
     param (
         [string]$controlPanelName,
-        [string]$applicationId
+        [string]$applicationId,
+        [string]$commandTarget
     )
 
     $iconPath = $null
@@ -512,12 +513,34 @@ function Get-TaskIcon {
             $iconPath = (Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue).'(default)'
         }
     }
+    # If icon path still not found but there is a command, see if the command calls an exe and use that exe's icon if so. Except if it's control.exe
+    if (-not $iconPath -and $commandTarget) {
+        # Extract the file name from the path if it's not just the filename
+        $commandFileName = Split-Path -Path $commandTarget -Leaf
+        # Check if it's an exe. Also don't use control.exe as the icon
+        if ($commandFileName -match '\.exe$' -and $commandFileName -ne "control.exe") {
+            try {
+                $embeddedIcon = $null
+                # This will return a bitmap if there's an icon, otherwise it will be null
+                $embeddedIcon = [System.Drawing.Icon]::ExtractIcon($filePath, 0, $false)
+                if ($embeddedIcon) {
+                    $iconPath = $commandTarget + ",0"
+                    Write-Verbose "Using embedded icon from $commandTarget"
+                } else {
+                    Write-Verbose "No embedded icon found in $commandTarget"
+                }
+            } catch {
+                Write-Verbose "Failed to extract icon from $commandTarget`: $_"
+            }
+        }
+    }
 
     if ($iconPath) {
         return Fix-CommandPath $iconPath
     }
 
     # Default icon if none found
+    Write-Verbose "No available icon found for $controlPanelName or $applicationId"
     return "%SystemRoot%\System32\shell32.dll,0"
 }
 
@@ -597,7 +620,7 @@ function Create-TaskLink-Shortcut {
             }
         }
 
-        $iconPath = Get-TaskIcon -controlPanelName $controlPanelName -applicationId $applicationId
+        $iconPath = Get-TaskIcon -controlPanelName $controlPanelName -applicationId $applicationId -commandTarget $shortcut.TargetPath
 
         # Only add icon at this point if it's a .lnk type shortcut, not for .url which needs to be done after
         if ($shortcutType -eq "lnk") {
