@@ -90,8 +90,30 @@ if ($Output) {
     $mainShortcutsFolder = Join-Path $PSScriptRoot "Shell Folder Shortcuts"
 }
 
-# `Join-Path` is used to construct the folder path by combining the script's root directory with the folder name.
-#$mainShortcutsFolder = Join-Path $PSScriptRoot "Shell Folder Shortcuts"
+# Creates the main directory if it does not exist; `-Force` ensures it is created without errors if it already exists. It won't overwrite any files within even if the folder already exists
+try {
+    New-Item -Path $mainShortcutsFolder -ItemType Directory -Force -ErrorAction Stop | Out-Null
+# If creating the folder failed and it doesn't already exist, throw an error and exit the script. Give suggestions for some specific cases
+} catch [System.UnauthorizedAccessException] {
+    Write-Error "Failed to create output folder: $_"
+    # If the default path is used
+    if (-not $Output) {
+        Write-Error "This may be due to a permissions issue. Ensure you have permissions to create a folder in the script's directory."
+    } else {
+        Write-Error "This may be due to a permissions issue. Ensure you have permissions to create a folder at the specified path."
+    }
+    return
+} catch {
+    if (-not (Test-Path $mainShortcutsFolder)) {
+        Write-Error "Failed to create output folder: $_"
+        return
+    }
+}
+
+# Construct paths for subfolders
+$CLSIDshortcutsOutputFolder = Join-Path $mainShortcutsFolder "CLSID Shell Folder Shortcuts"
+$namedShortcutsOutputFolder = Join-Path $mainShortcutsFolder "Named Shell Folder Shortcuts"
+$taskLinksOutputFolder = Join-Path $mainShortcutsFolder "All Task Links"
 
 # Set filenames for various output files (CSV and optional XML)
 $clsidCsvPath = Join-Path $mainShortcutsFolder "CLSID_Shell_Folders.csv"
@@ -100,15 +122,43 @@ $taskLinksCsvPath = Join-Path $mainShortcutsFolder "Task_Links.csv"
 $xmlContentFilePath = Join-Path $mainShortcutsFolder "Shell32_XML_Content.xml"
 $resolvedXmlContentFilePath = Join-Path $mainShortcutsFolder "Shell32_XML_Content_Resolved.xml"
 
-# Check if the output folder already exists and delete it if the -DeletePreviousOutputFolder switch is used
-if ($DeletePreviousOutputFolder -and (Test-Path $mainShortcutsFolder)) {
-    Write-Host "Deleting previous output folder: $mainShortcutsFolder"
-    Remove-Item -Path $mainShortcutsFolder -Recurse -Force
+# If the -DeletePreviousOutputFolder switch is used, go into the set main folder and delete each set subfolder using above variable names
+# Doing this instead of just deleting the entire main folder in case the user wants to put the output into a directory in use for other things
+if ($DeletePreviousOutputFolder) {
+    try {
+        if (Test-Path $mainShortcutsFolder) {
+            # Remove folders
+            if (Test-Path $CLSIDshortcutsOutputFolder){
+                Remove-Item -Path $mainShortcutsFolder -Recurse -Force
+            }
+            if (Test-Path $namedShortcutsOutputFolder){
+                Remove-Item -Path $namedShortcutsOutputFolder -Recurse -Force
+            }
+            if (Test-Path $taskLinksOutputFolder){
+                Remove-Item -Path $taskLinksOutputFolder -Recurse -Force
+            }
+            # Remove CSV files
+            if (Test-Path $clsidCsvPath){
+                Remove-Item -Path $clsidCsvPath -Force
+            }
+            if (Test-Path $namedFoldersCsvPath){
+                Remove-Item -Path $namedFoldersCsvPath -Force
+            }
+            if (Test-Path $taskLinksCsvPath){
+                Remove-Item -Path $taskLinksCsvPath -Force
+            }
+            # Remove XML files
+            if (Test-Path $xmlContentFilePath){
+                Remove-Item -Path $xmlContentFilePath -Force
+            }
+            if (Test-Path $resolvedXmlContentFilePath){
+                Remove-Item -Path $resolvedXmlContentFilePath -Force
+            }
+        }
+    } catch {
+        Write-Error "Failed to delete contents of previous output folder: $_"
+    }
 }
-
-# `New-Item` creates the directory if it does not exist; `-Force` ensures it is created without errors if it already exists.
-New-Item -Path $mainShortcutsFolder -ItemType Directory -Force | Out-Null
-
 
 # Function to create a folder with a custom icon and set Details view
 function New-FolderWithIcon {
@@ -147,23 +197,21 @@ Vid={137E7700-3573-11CF-AE69-08002B2E1262}
     $folderItem.Attributes = 'ReadOnly,Directory'
 }
 
+
 # Create relevant subfolders for different types of shortcuts, and set custom icons for each folder
 # Notes for choosing an icon:
 #    - You can use the tool 'IconsExtract' from NirSoft to see icons in a DLL file and their indexes: https://www.nirsoft.net/utils/iconsext.html
 #    - Another good dll to use for icons is "C:\Windows\System32\imageres.dll" which has a lot of icons
 
 if (-not $SkipCLSID) {
-    $CLSIDshortcutsOutputFolder = Join-Path $mainShortcutsFolder "CLSID Shell Folder Shortcuts"
     New-FolderWithIcon -FolderPath $CLSIDshortcutsOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "20"
 }
 
 if (-not $SkipNamedFolders) {
-    $namedShortcutsOutputFolder = Join-Path $mainShortcutsFolder "Named Shell Folder Shortcuts"
     New-FolderWithIcon -FolderPath $namedShortcutsOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "46"
 }
 
 if (-not $SkipTaskLinks) {
-    $taskLinksOutputFolder = Join-Path $mainShortcutsFolder "All Task Links"
     New-FolderWithIcon -FolderPath $taskLinksOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "137"
 }
 
