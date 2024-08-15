@@ -1025,6 +1025,11 @@ function Prettify-App-Name {
 # ----------------------------------------------    Main Script    ----------------------------------------------
 # ---------------------------------------------- ----------------------------------------------------------------
 
+# Create empty arrays for each type of data to be stored
+$clsidInfo = @()
+$namedFolders = @()
+$taskLinks = @()
+
 # If statement to check if CLSID is skipped by argument
 if (-not $SkipCLSID) {
     # Retrieve all CLSIDs with a "ShellFolder" subkey from the registry.
@@ -1034,9 +1039,6 @@ if (-not $SkipCLSID) {
     Select-Object PSChildName
 
     Write-Host "`n----- Processing $($shellFolders.Count) Shell Folders -----"
-
-    # Create an array to store information about each CLSID (name, icon, etc.).
-    $clsidInfo = @()
 
     # Loop through each relevant CLSID that was found and process it to create shortcuts.
     foreach ($folder in $shellFolders) {
@@ -1175,29 +1177,58 @@ if (-not $SkipTaskLinks) {
 }
 
 # Create the CSV files using the stored CLSID and 'task link' (aka menu sub-pages) data. Skip each depending on the corresponding switch.
+# Also construct strings containing display paths with nicer formatting to display at the end of the script.
 $CLSIDDisplayPath = ""
 $namedFolderDisplayPath = ""
 $taskLinksDisplayPath = ""
-if ($SaveCSV -and -not $SkipCLSID) {
-    Create-CLSIDCsvFile -outputPath $clsidCsvPath -clsidData $clsidInfo
-    $CLSIDDisplayPath = "`n" + $clsidCsvPath
+
+if ($SaveCSV) {
+    if (-not $SkipCLSID) {
+        Create-CLSIDCsvFile -outputPath $clsidCsvPath -clsidData $clsidInfo
+        $CLSIDDisplayPath = "`n  > " + $clsidCsvPath
+    }
+
+    if (-not $SkipNamedFolders) {
+        Create-NamedFoldersCsvFile -outputPath $namedFoldersCsvPath
+        $namedFolderDisplayPath = "`n  > " + $namedFoldersCsvPath
+    }
+
+    if (-not $SkipTaskLinks) {
+        Create-TaskLinksCsvFile -outputPath $taskLinksCsvPath -taskLinksData $taskLinks
+        $taskLinksDisplayPath = "`n  > " + $taskLinksCsvPath
+    }
 }
 
-if ($SaveCSV -and -not $SkipNamedFolders) {
-    Create-NamedFoldersCsvFile -outputPath $namedFoldersCsvPath
-    $namedFolderDisplayPath = "`n" + $namedFoldersCsvPath
-}
-
-if ($SaveCSV -and -not $SkipTaskLinks) {
-    Create-TaskLinksCsvFile -outputPath $taskLinksCsvPath -taskLinksData $taskLinks
-    $taskLinksDisplayPath = "`n" + $taskLinksCsvPath
-}
 
 # Output a message indicating that the script execution is complete and the CSV files have been created.
-Write-Host "`n*** Script execution complete ***`n"
+Write-Host "`n-----------------------------------------------"
+Write-Host "         Script execution complete" -ForeGroundColor Yellow
+Write-Host "-----------------------------------------------`n"
+
+# Display total counts
+$totalCount = $clsidInfo.Count + $namedFolders.Count + $taskLinks.Count
+
+# Output the total counts of each, and color the numbers to stand out. Done by writing the text and then the number separately with -NoNewLine. If it was skipped, also add that but not colored.
+Write-Host "Total Shortcuts Created: " -NoNewline
+Write-Host $totalCount -ForegroundColor Green
+
+Write-Host "  > CLSID Links:    " -NoNewline
+Write-Host $clsidInfo.Count -ForegroundColor Cyan -NoNewline
+Write-Host $(if ($SkipCLSID) { "   (Skipped)" }) # If skipped, add the skipped text, otherwise still write empty string because we used -NoNewline previously
+
+Write-Host "  > Named Folders:  " -NoNewline
+Write-Host $namedFolders.Count -ForegroundColor Cyan -NoNewline
+Write-Host $(if ($SkipNamedFolders) { "   (Skipped)" })
+
+Write-Host "  > Task Links:     " -NoNewline
+Write-Host $taskLinks.Count -ForegroundColor Cyan -NoNewline
+Write-Host $(if ($SkipTaskLinks) { "   (Skipped)" })
+
+Write-Host "`n-----------------------------------------------`n"
+
 # If SaveXML switch was used, also output the paths to the saved XML files
 if ($SaveXML -and (-not $SkipTaskLinks)) {
-    Write-Host "XML files have been saved at:`n$xmlContentFilePath`n$resolvedXmlContentFilePath`n"
+    Write-Host "XML files have been saved at:`n  > $xmlContentFilePath`n  > $resolvedXmlContentFilePath`n"
 }
 # As long as any of the CSV files were created, output the paths to them - check by seeing if strings are empty
 if ($CLSIDDisplayPath -or $namedFolderDisplayPath -or $taskLinksDisplayPath){
