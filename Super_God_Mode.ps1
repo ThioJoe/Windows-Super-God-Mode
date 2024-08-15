@@ -160,6 +160,14 @@ if ($DeletePreviousOutputFolder) {
     }
 }
 
+# Validate the custom dll path if provided
+if ($DLLPath) {
+    if (-not (Test-Path $DLLPath)) {
+        Write-Error "The specified DLL path does not exist: $DLLPath"
+        return
+    }
+}
+
 # Function to create a folder with a custom icon and set Details view
 function New-FolderWithIcon {
     param (
@@ -664,6 +672,8 @@ function Get-Shell32XMLContent {
     } else {
         Write-Verbose "Using default shell32.dll path"
         $dllPath = "shell32.dll"
+        # Join to system path
+        $dllPath = Join-Path $env:SystemRoot "System32\$dllPath"
     }
 
     # Constants used for loading the shell32.dll as a data file.
