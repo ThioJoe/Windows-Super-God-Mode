@@ -37,6 +37,9 @@
 #     Switch (Takes no values)
 #     Prevent grouping task shortcuts, meaning the application name won't be prepended to the task name in the shortcut file
 #
+# -UseAlternativeCategoryNames
+#     Switch (Takes no values)
+#
 # -SkipCLSID
 #     Switch (Takes no values)
 #     Skip creating shortcuts for shell folders based on CLSIDs
@@ -74,7 +77,8 @@ param(
     [string]$Output,
     [switch]$SkipCLSID,
     [switch]$SkipNamedFolders,
-    [switch]$SkipTaskLinks
+    [switch]$SkipTaskLinks,
+    [switch]$UseAlternativeCategoryNames
 )
 
 # Set the output folder path for the generated shortcuts based on the provided argument or default location. Convert to full path if necessary
@@ -1223,10 +1227,26 @@ if (-not $SkipTaskLinks) {
 
     foreach ($task in $taskLinks) {
         $originalName = $task.Name
+        $sanitizedName = ""
 
-        # Use Prettify-App-Name function by default, unless DontGroupTasks is specified
-        if (-not $DontGroupTasks -and $task.ApplicationName) {
-            $sanitizedName = Prettify-App-Name -AppName $task.ApplicationName -TaskName $originalName
+        # Prepend category names to tasks if DontGroupTasks is not specified
+        if (-not $DontGroupTasks) {
+            if ($UseAlternativeCategoryNames) {
+                # Try looking up the application ID default name by CLSID in the registry
+                $trueApplicationName = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel\NameSpace\$($task.ApplicationId)" -ErrorAction SilentlyContinue)."(Default)"
+                if ($trueApplicationName) {
+                    # If found then prepend it to the task name and use that
+                    $sanitizedName = "$trueApplicationName - $originalName"
+                }
+            }
+
+            # If not set to use alternative categories, or one was not found, then use the default Prettify-App-Name function
+            if ($task.ApplicationName -and -not $sanitizedName) {
+                # Use Prettify-App-Name function by default, unless DontGroupTasks is specified
+                $sanitizedName = Prettify-App-Name -AppName $task.ApplicationName -TaskName $originalName
+            } elseif (-not $task.ApplicationName -and -not $sanitizedName) {
+                $sanitizedName = $originalName -replace '[\\/:*?"<>|]', '_'
+            }
         } else {
             $sanitizedName = $originalName -replace '[\\/:*?"<>|]', '_'
         }
