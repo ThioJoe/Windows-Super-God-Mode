@@ -1,0 +1,2953 @@
+<categories xmlns="http://schemas.microsoft.com/windows/cpltasks/v1" xmlns:sh="http://schemas.microsoft.com/windows/tasks/v1" xmlns:sh2="http://schemas.microsoft.com/windows/tasks/v2">
+  <category id="1">
+    <sh:task idref="{B3206921-D53A-40D9-BA1A-BEA526A644A5}" />
+    <sh:task idref="{4A66B844-A291-4136-B5AC-1B48B3CAD99F}" />
+    <sh:task idref="{F3321994-6E7E-4D9E-ABDC-768477BCF916}" />
+  </category>
+  <category id="2">
+    <sh:task idref="{DAF32862-EF3D-4D61-AB92-47AEB51DDC80}" />
+    <sh:task idref="{D3D71B01-F746-499E-A426-FF63FAC98C19}" />
+    <sh:task idref="{46E84184-51CC-4A7B-A40A-6D3E86D402DE}" />
+  </category>
+  <category id="3">
+    <sh:task idref="{60AC7FA0-A928-4D45-B4DD-AC70A6175E67}" />
+    <sh:task idref="{BD256B65-94BE-4194-84BF-41D50D0EF26E}" />
+  </category>
+  <category id="5">
+    <sh:task idref="{FEBB9292-6110-4B9E-8565-91C4076E0A43}">
+      <sh:name>Review your computer&apos;s status</sh:name>
+    </sh:task>
+    <sh:task idref="{A42E8D99-83E6-4D12-B403-F46059D02CF0}" />
+    <sh:task idref="{CFC1FE08-D032-437D-BE93-96A28B3720DA}" />
+    <sh:task idref="{6CA1F1CE-1FED-4D96-A82E-08CEDB139AA3}" />
+    <sh:task idref="{E79BCB1B-EEB7-4180-98FD-BD47F6DCFF79}" />
+  </category>
+  <category id="6">
+    <sh:task idref="{5FFAA809-0961-40CF-90A4-58037867FA50}" />
+    <sh:task idref="{995D28E5-A9C1-4A82-8EFB-C1CE53C06F07}" />
+    <sh:task idref="{4C8DBC7F-EE77-44CC-8602-88AD441B1A77}" />
+    <sh:task idref="{7B083C74-CBA5-4A73-B235-8A5A71A1AE30}" />
+  </category>
+  <category id="7">
+    <sh:task idref="{F120B10E-C882-4613-955F-B4DF13C6E803}">
+      <sh:name>Let Windows suggest settings</sh:name>
+    </sh:task>
+    <sh:task idref="{54692DB7-FC98-4D5E-AC15-CC5095FA5669}" />
+  </category>
+  <category id="8">
+    <sh:task idref="{040873CB-404A-49FE-A254-A9BB9CEFAEA5}" />
+    <sh:task idref="{E07F215A-6022-40E0-A109-17078992E5F9}">
+      <sh:name>Get programs</sh:name>
+    </sh:task>
+    <sh:task idref="{7F8B6C83-2A89-47A0-B334-AA58D042CDEC}" />
+  </category>
+  <category id="9">
+    <sh:task idref="{63A7F0F7-6ACD-4D19-92FE-FB4BD9D35BA6}" />
+    <sh:task idref="{F58C814D-989E-4584-8053-A424F11D8CCF}" />
+  </category>
+</categories>
+<applications xmlns="http://schemas.microsoft.com/windows/cpltasks/v1" xmlns:sh="http://schemas.microsoft.com/windows/tasks/v1" xmlns:sh2="http://schemas.microsoft.com/windows/tasks/v2">
+  <application id="{D555645E-D4F8-4C29-A827-D93C859C4F2A}">
+    <sh:task id="{EE439E7E-CE1E-4ABE-9EA8-50F12ED01FE0}">
+      <sh:name>Accommodate learning abilities</sh:name>
+      <sh:keywords>accomidate;accomodates;accomodating;adjust;for;</sh:keywords>
+      <sh:keywords>can;not;cannot;can&apos;t;difficult;to;difficulty;does;doesn&apos;t;hard;not;will;willnot;won&apos;t;</sh:keywords>
+      <sh:keywords>disabilities;disability;empaired;impaired;imparied;trouble;</sh:keywords>
+      <sh:keywords>cognitive;learning;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageQuestionsCognitive" />
+    </sh:task>
+    <sh:task id="{C3915CF9-A3D9-4EFD-B209-62C05793EE0F}">
+      <sh:name>Accommodate low vision</sh:name>
+      <sh:keywords>accomidate;accomodates;accomodating;adjust;for;</sh:keywords>
+      <sh:keywords>blindness;blurred;blurry;half;legally;low;vision;poor;seeing;seems;sight;weak;bad;eyesight;eye-sight;</sh:keywords>
+      <sh:keywords>disabilities;disability;empaired;impaired;imparied;trouble;</sh:keywords>
+      <sh:keywords>best;better;easier;easy;enhance;improvement;make;more;most;optimal;optimise;optimize;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageEasierToSee" />
+    </sh:task>
+    <sh:task id="{7B086E4E-366C-454A-85CC-B8B533482B10}">
+      <sh:name>Change how your keyboard works</sh:name>
+      <sh:keywords>filterkeys;keys;stickykeys;togglekeys;sticky-keys;toggle-keys;repeat;delay;hold;down;rate;</sh:keywords>
+      <sh:keywords>accessibility;acessibility;ease;of;</sh:keywords>
+      <sh:keywords>best;better;easier;easy;enhance;improvement;make;more;most;optimal;optimise;optimize;</sh:keywords>
+      <sh:keywords>board;bord;keyboards;keyborads;keybord;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageKeyboardEasierToUse" />
+    </sh:task>
+    <sh:task id="{EE3E6FA5-C412-4A11-9370-1ED4D42E62B2}">
+      <sh:name>Change how your mouse works</sh:name>
+      <sh:keywords>accessibility;acessibility;ease;of;</sh:keywords>
+      <sh:keywords>butons;buttons;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>lock;clicking;doubleclick;double-click;single-click;</sh:keywords>
+      <sh:keywords>best;better;easier;easy;enhance;improvement;make;more;most;optimal;optimise;optimize;</sh:keywords>
+      <sh:keywords>move;moving;shadow;speed;tails;</sh:keywords>
+      <sh:keywords>mice;mouses;pointer;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageEasierToClick" />
+    </sh:task>
+    <sh:task id="{B57D7134-6BAB-47B2-A506-E885E104EC99}">
+      <sh:name>Use screen reader</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>screan;readers;screenreader;windows;narrator;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageNoVisual" />
+    </sh:task>
+    <sh:task id="{DB5EC38C-915C-4897-AE67-D9858FE7D2FD}">
+      <sh:name>Change the Narrator voice</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>sound;voices;</sh:keywords>
+      <sh:keywords>screan;readers;screenreader;windows;narrator;</sh:keywords>
+      <sh:command>%windir%\system32\narrator.exe</sh:command>
+    </sh:task>
+    <sh:task id="{EF462183-352B-4DCF-811C-07FA7CFCD5AC}">
+      <sh:name>Control the computer without the mouse or keyboard</sh:name>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>board;bord;keyboards;keyborads;keybord;</sh:keywords>
+      <sh:keywords>mice;mouses;pointer;</sh:keywords>
+      <sh:keywords>activated;commanding;dictate;dictation;recogination;recognition;recognize;recongition;reconition;speaking;speechrecognition;speech-recognition;talk;to;understand;voice;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageNoMouseOrKeyboard" />
+    </sh:task>
+    <sh:task id="{B3C577FA-7C51-4259-A1C4-088BD0B0932E}">
+      <sh:name>Hear a tone when keys are pressed</sh:name>
+      <sh:keywords>hearing;deaf;deafness;hard;of;problem;impaired;imparied;</sh:keywords>
+      <sh:keywords>audio;beeps;music;noises;schemes;sounds;tones;wav;sound;beep;noise;</sh:keywords>
+      <sh:keywords>soundsentry;sentry;settings;customize;captions;showsounds;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageFilterKeysSettings" />
+    </sh:task>
+    <sh:task id="{D048311B-5C71-40E0-9EC4-FA5DCBB49EE0}">
+      <sh:name>Hear text read aloud with Narrator</sh:name>
+      <sh:keywords>reading;</sh:keywords>
+      <sh:keywords>screan;readers;screenreader;windows;narrator;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" />
+    </sh:task>
+    <sh:task id="{1A0593CC-3C1C-4CB7-BBB0-00E54E706D3C}">
+      <sh:name>Ignore repeated keystrokes using FilterKeys</sh:name>
+      <sh:keywords>keys;filterkeys;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageFilterKeysSettings" />
+    </sh:task>
+    <sh:task id="{F120B10E-C882-4613-955F-B4DF13C6E803}">
+      <sh:name>Let Windows suggest Ease of Access settings</sh:name>
+      <sh:keywords>accessibility;acessibility;ease;of;</sh:keywords>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>best;better;easier;easy;enhance;improvement;make;more;most;optimal;optimise;optimize;</sh:keywords>
+      <sh:keywords>questionaire;questionnaire;survey;</sh:keywords>
+      <sh:keywords>wizard;wizzard;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageQuestionsEyesight" />
+    </sh:task>
+    <sh:task id="{3D8638E3-EC96-4CE8-8279-36B0065B5F2C}">
+      <sh:name>Magnify portions of the screen using Magnifier</sh:name>
+      <sh:keywords>blindness;blurred;blurry;half;legally;low;vision;poor;seeing;seems;sight;weak;bad;eyesight;eye-sight;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>magnification;magnified;magnifying;make;bigger;larger;zoom;in;</sh:keywords>
+      <sh:keywords>crt;displays;monitors;screeens;screens;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageEasierToSee" />
+    </sh:task>
+    <sh:task id="{7238DF62-4FD5-410A-9ED2-55B1DBB3442D}">
+      <sh:name>Move the pointer with the keypad using MouseKeys</sh:name>
+      <sh:keywords>arrows;cursors;mouse;pointers;</sh:keywords>
+      <sh:keywords>mice;mouses;pointer;</sh:keywords>
+      <sh:keywords>keys;mousekeys;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageKeyboardEasierToUse" />
+    </sh:task>
+    <sh:task id="{AD312C84-CB4F-4C49-9D5D-E84123D33DE4}">
+      <sh:name>Optimize for blindness</sh:name>
+      <sh:keywords>blindness;blurred;blurry;half;legally;low;vision;poor;seeing;seems;sight;weak;bad;eyesight;eye-sight;</sh:keywords>
+      <sh:keywords>can;not;cannot;can&apos;t;difficult;to;difficulty;does;doesn&apos;t;hard;not;will;willnot;won&apos;t;</sh:keywords>
+      <sh:keywords>customisation;customises;customization;customizes;customizing;personalisation;personalise;personalization;personalize;</sh:keywords>
+      <sh:keywords>low;dimming;diming;dimmer;dimer;display;fade;brightness;</sh:keywords>
+      <sh:keywords>disabilities;disability;empaired;impaired;imparied;trouble;</sh:keywords>
+      <sh:keywords>best;better;easier;easy;enhance;improvement;make;more;most;optimal;optimise;optimize;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageNoVisual" />
+    </sh:task>
+    <sh:task id="{54692DB7-FC98-4D5E-AC15-CC5095FA5669}">
+      <sh:name>Optimize visual display</sh:name>
+      <sh:keywords>filterkeys;keys;stickykeys;togglekeys;sticky-keys;toggle-keys;repeat;delay;hold;down;rate;</sh:keywords>
+      <sh:keywords>appearance;out;layout;of;looks;way;displayed;</sh:keywords>
+      <sh:keywords>blindness;blurred;blurry;half;legally;low;vision;poor;seeing;seems;sight;weak;bad;eyesight;eye-sight;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>customisation;customises;customization;customizes;customizing;personalisation;personalise;personalization;personalize;</sh:keywords>
+      <sh:keywords>best;better;easier;easy;enhance;improvement;make;more;most;optimal;optimise;optimize;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageEasierToSee" />
+    </sh:task>
+    <sh:task id="{E5A79670-70E6-43F8-9143-E0D334599E6C}">
+      <sh:name>Press key combinations one at a time</sh:name>
+      <sh:keywords>board;bord;keyboards;keyborads;keybord;</sh:keywords>
+      <sh:keywords>keys;stickykeys;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageKeyboardEasierToUse" />
+    </sh:task>
+    <sh:task id="{C3F521C1-249F-48FD-9D9D-731EA4568776}">
+      <sh:name>Replace sounds with visual cues</sh:name>
+      <sh:keywords>can;not;cannot;can&apos;t;difficult;to;difficulty;does;doesn&apos;t;hard;not;will;willnot;won&apos;t;</sh:keywords>
+      <sh:keywords>hearing;deaf;deafness;hard;of;problem;impaired;imparied;</sh:keywords>
+      <sh:keywords>disabilities;disability;empaired;impaired;imparied;trouble;</sh:keywords>
+      <sh:keywords>cards;soundcards;</sh:keywords>
+      <sh:keywords>audio;beeps;music;noises;schemes;sounds;tones;wav;sound;beep;noise;</sh:keywords>
+      <sh:keywords>soundsentry;sentry;settings;customize;captions;showsounds;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageEasierWithSounds" />
+    </sh:task>
+    <sh:task id="{3A0EF024-0434-4E4D-8548-6940D00EF72A}">
+      <sh:name>Turn High Contrast on or off</sh:name>
+      <sh:keywords>brightness;contrast;hi-contrast;high-contrast;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>monitors;screens;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>crt;displays;monitors;screeens;screens;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL desk.cpl,,2</sh:command>
+    </sh:task>
+    <sh:task id="{9C945AFD-77F9-4BDA-94B8-58D2A9DCDB2E}">
+      <sh:name>Turn Magnifier on or off</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>magnification;magnified;magnifying;make;bigger;larger;zoom;in;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" />
+    </sh:task>
+    <sh:task id="{E2990AA8-20F1-435D-9D78-679171138FD5}">
+      <sh:name>Turn off background images</sh:name>
+      <sh:keywords>ground;background;</sh:keywords>
+      <sh:keywords>image;photograph;picture;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageEasierToSee" />
+    </sh:task>
+    <sh:task id="{0374B07C-9111-4B30-BE13-BFC947F27ADA}">
+      <sh:name>Turn off unnecessary animations</sh:name>
+      <sh:keywords>animations;cartoons;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageEasierToSee" />
+    </sh:task>
+    <sh:task id="{08E0BCF8-0E51-4C9F-9425-F7A2B8AF88D5}">
+      <sh:name>Turn On-Screen keyboard on or off</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>board;bord;keyboards;keyborads;keybord;</sh:keywords>
+      <sh:keywords>screen;keyboard;onscreen;on-screen;osk;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" />
+    </sh:task>
+    <sh:task id="{73C9C58C-2E01-4F68-B1B9-7A4DD2EF71F7}">
+      <sh:name>Turn on easy access keys</sh:name>
+      <sh:keywords>board;bord;keyboards;keyborads;keybord;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageKeyboardEasierToUse" />
+    </sh:task>
+    <sh:task id="{B0B4886C-4B31-4824-ADCD-0DAF5C8BAFF6}">
+      <sh:name>Use audio description for video</sh:name>
+      <sh:keywords>text;to;speech;tts;voice;narrator;</sh:keywords>
+      <sh:keywords>videoes;videos;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageEasierToSee" />
+    </sh:task>
+    <sh:task id="{7ABBE8E6-757F-419A-B2E0-07D5694F8E0F}">
+      <sh:name>View current accessibility settings</sh:name>
+      <sh:keywords>accessibility;acessibility;ease;of;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>check;list;see;show;viewing;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" />
+    </sh:task>
+    <sh:task id="{CE4F7091-EEC0-400E-A019-38503D525293}">
+      <sh:name>Turn off automatic window arrangement</sh:name>
+      <sh:keywords>mice;mouses;pointer;</sh:keywords>
+      <sh:keywords>management;managment;</sh:keywords>
+      <sh:keywords>movement;movment;movemnet;motion;</sh:keywords>
+      <sh:keywords>snapping;shake;shaking;dock;drag;edge;sides;top;screen;size;resize;maximize;restore;minimize;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.EaseOfAccessCenter" page="pageEasierToClick" />
+    </sh:task>
+    <category id="1">
+      <sh:task idref="{C3915CF9-A3D9-4EFD-B209-62C05793EE0F}" />
+      <sh:task idref="{B57D7134-6BAB-47B2-A506-E885E104EC99}" />
+      <sh:task idref="{73C9C58C-2E01-4F68-B1B9-7A4DD2EF71F7}" />
+      <sh:task idref="{3A0EF024-0434-4E4D-8548-6940D00EF72A}" />
+    </category>
+    <category id="7">
+      <sh:task idref="{F120B10E-C882-4613-955F-B4DF13C6E803}">
+        <sh:name>Let Windows suggest settings</sh:name>
+      </sh:task>
+      <sh:task idref="{54692DB7-FC98-4D5E-AC15-CC5095FA5669}" />
+      <sh:task idref="{C3F521C1-249F-48FD-9D9D-731EA4568776}" />
+      <sh:task idref="{EE3E6FA5-C412-4A11-9370-1ED4D42E62B2}" />
+      <sh:task idref="{7B086E4E-366C-454A-85CC-B8B533482B10}" />
+      <sh:task idref="{AD312C84-CB4F-4C49-9D5D-E84123D33DE4}" />
+      <sh:task idref="{7ABBE8E6-757F-419A-B2E0-07D5694F8E0F}" />
+    </category>
+  </application>
+  <application id="{D20EA4E1-3957-11D2-A40B-0C5020524153}">
+    <sh:task id="{EE423D17-7ED8-4B33-9555-C23DEEAFB4B6}" needsElevation="true">
+      <sh:name>Create and format hard disk partitions</sh:name>
+      <sh:keywords>check;disk;dsk;chkdsk;cleandisk;cleaner;cleanup;up;</sh:keywords>
+      <sh:keywords>add;create;make;new;</sh:keywords>
+      <sh:keywords>disc;disks;drive;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>fdisc;fdisk;</sh:keywords>
+      <sh:keywords>formated;formating;formatted;formatting;</sh:keywords>
+      <sh:keywords>disk;drive;harddisk;hard-disk;harddrive;hard-drive;</sh:keywords>
+      <sh:keywords>boot;disc;extended;format;disk;drive;harddisk;harddrive;ntfs;fat;partitian;partitioning;primary;reformat;sector;unpartition;volume;</sh:keywords>
+      <sh:keywords>check;list;see;show;viewing;</sh:keywords>
+      <sh:keywords>management;managment;</sh:keywords>
+      <sh:command>%windir%\system32\mmc.exe %windir%\system32\diskmgmt.msc</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsUserAdmin" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{7D13A5DB-6081-48BD-8EA3-A9D7FE67A335}">
+      <sh:name>Defragment and optimize your drives</sh:name>
+      <sh:keywords>check;disk;dsk;chkdsk;cleandisk;cleaner;cleanup;up;</sh:keywords>
+      <sh:keywords>defragment;free;up;space;</sh:keywords>
+      <sh:keywords>disc;disks;drive;</sh:keywords>
+      <sh:keywords>disk;drive;harddisk;hard-disk;harddrive;hard-drive;</sh:keywords>
+      <sh:keywords>disc;disk;scandisc;scandisk;scandsk;</sh:keywords>
+      <sh:keywords>check;list;see;show;viewing;</sh:keywords>
+      <sh:command>%windir%\system32\dfrgui.exe</sh:command>
+    </sh:task>
+    <sh:task id="{9430DB91-B966-4971-A955-E3DBA1F889E7}" needsElevation="true">
+      <sh:name>Diagnose your computer&apos;s memory problems</sh:name>
+      <sh:keywords>diagnose;diagnostics;diagnosis;find;problems;analyse;analyze;analysis;troubleshooter;errors;</sh:keywords>
+      <sh:keywords>gigabytes;gigs;megabytes;megs;memory;ram;</sh:keywords>
+      <sh:command>%windir%\system32\mdsched.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegKeyExists">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Reliability\MemoryDiagnostic" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{C5AE651D-D027-4D11-8125-595B9933C78B}" needsElevation="true">
+      <sh:name>Edit group policy</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>grouping;</sh:keywords>
+      <sh:keywords>policies;policys;</sh:keywords>
+      <sh:command>%windir%\system32\mmc.exe %windir%\system32\gpedit.msc</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#SkuEquals" invert="true">
+          <sh:parameter name="Sku" value="anyhome" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{AACA901F-E74F-4894-B074-F55059532853}">
+      <sh:name>Free up disk space by deleting unnecessary files</sh:name>
+      <sh:keywords>check;disk;dsk;chkdsk;cleandisk;cleaner;cleanup;up;</sh:keywords>
+      <sh:keywords>check;up;cleanup;free;space;room;release;available;</sh:keywords>
+      <sh:keywords>disk;drive;harddisk;hard-disk;harddrive;hard-drive;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>cached;files;history;local;temorary;temporary;temperary;tmp;unnecessary;unneeded;useless;web;</sh:keywords>
+      <sh:command>%windir%\system32\cleanmgr.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{08D48377-1C06-416D-B382-61E8D5F6CD18}" needsElevation="true">
+      <sh:name>Generate a system health report</sh:name>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>healthy;</sh:keywords>
+      <sh:keywords>crawl;degrade;faster;frozen;hanging;hung;improve;inactive;optimize;performance;quicker;sluggish;speed;thrashing;too;slow;unresponsive;</sh:keywords>
+      <sh:keywords>diagnose;diagnostics;diagnosis;find;problems;analyse;analyze;analysis;troubleshooter;errors;</sh:keywords>
+      <sh:command>%windir%\system32\perfmon.exe /report</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{C16A18A2-DC4F-4B7D-92F1-14C430AD17DC}" needsElevation="true">
+      <sh:name>Schedule tasks</sh:name>
+      <sh:keywords>automated;automatically;</sh:keywords>
+      <sh:keywords>scheduled;scheduling;</sh:keywords>
+      <sh:command>%windir%\system32\mmc.exe %windir%\system32\taskschd.msc</sh:command>
+    </sh:task>
+    <sh:task id="{68F4F33C-658C-4278-94C1-22B8E653F3E8}" needsElevation="true">
+      <sh:name>Set up ODBC data sources</sh:name>
+      <sh:keywords>datum;odbc;data-base;database;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:command>%windir%\system32\odbcad32.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValEquals">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" />
+          <sh:parameter name="Regval" value="PROCESSOR_ARCHITECTURE" />
+          <sh:parameter name="RegvalExpected" value="x86" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{420C524A-2A76-43F7-B1B2-C3CF736557C7}" needsElevation="true">
+      <sh:name>Set up ODBC data sources (32-bit)</sh:name>
+      <sh:keywords>datum;odbc;data-base;database;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:command>%windir%\syswow64\odbcad32.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValEquals">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" />
+          <sh:parameter name="Regval" value="PROCESSOR_ARCHITECTURE" />
+          <sh:parameter name="RegvalExpected" value="AMD64" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{4BCD16D0-BA72-4F0D-88F9-50D912BFA2B2}" needsElevation="true">
+      <sh:name>Set up ODBC data sources (64-bit)</sh:name>
+      <sh:keywords>datum;odbc;data-base;database;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:command>%windir%\system32\odbcad32.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValEquals">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" />
+          <sh:parameter name="Regval" value="PROCESSOR_ARCHITECTURE" />
+          <sh:parameter name="RegvalExpected" value="AMD64" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{D5BAC999-E706-4311-9DB0-86E117B1FD25}" needsElevation="true">
+      <sh:name>Set up ODBC data sources</sh:name>
+      <sh:keywords>datum;odbc;data-base;database;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:command>%windir%\system32\odbcad32.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValEquals">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" />
+          <sh:parameter name="Regval" value="PROCESSOR_ARCHITECTURE" />
+          <sh:parameter name="RegvalExpected" value="ARM" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{944A41B9-C0FD-41AE-A6DF-5AC4FE5A59B4}" needsElevation="true">
+      <sh:name>Set up iSCSI initiator</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>iscsi;scsi;</sh:keywords>
+      <sh:keywords>storage;</sh:keywords>
+      <sh:command>%windir%\system32\iscsicpl.exe</sh:command>
+    </sh:task>
+    <sh:task id="{45FDB5DF-1457-4A41-A824-7AD9C75767BC}" needsElevation="true">
+      <sh:name>View event logs</sh:name>
+      <sh:keywords>viewer;events;tracker;eventviewer;</sh:keywords>
+      <sh:keywords>check;list;see;show;viewing;</sh:keywords>
+      <sh:command>%windir%\system32\mmc.exe %windir%\system32\eventvwr.msc</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{6CA1F1CE-1FED-4D96-A82E-08CEDB139AA3}" needsElevation="true">
+      <sh:name>View event logs</sh:name>
+      <sh:keywords>viewer;events;tracker;eventviewer;</sh:keywords>
+      <sh:keywords>check;list;see;show;viewing;</sh:keywords>
+      <sh:command>%windir%\system32\mmc.exe %windir%\system32\eventvwr.msc</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{6775CCA4-CC42-44F7-800C-4E94FF1EA8C0}" needsElevation="true">
+      <sh:name>View local services</sh:name>
+      <sh:keywords>disable;stop;</sh:keywords>
+      <sh:keywords>services;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:command>%windir%\system32\mmc.exe %windir%\system32\services.msc</sh:command>
+    </sh:task>
+    <sh:task id="{693E4EF5-9060-469B-AB2E-948B6B68A883}" needsElevation="true">
+      <sh:name>Manage computer certificates</sh:name>
+      <sh:keywords>certificate;key</sh:keywords>
+      <sh:command>%windir%\system32\mmc.exe %windir%\system32\certlm.msc</sh:command>
+    </sh:task>
+    <category id="5">
+      <sh:task idref="{AACA901F-E74F-4894-B074-F55059532853}">
+        <sh:name>Free up disk space</sh:name>
+      </sh:task>
+      <sh:task idref="{7D13A5DB-6081-48BD-8EA3-A9D7FE67A335}" />
+      <sh:task idref="{EE423D17-7ED8-4B33-9555-C23DEEAFB4B6}" />
+      <sh:task idref="{45FDB5DF-1457-4A41-A824-7AD9C75767BC}" />
+      <sh:task idref="{6CA1F1CE-1FED-4D96-A82E-08CEDB139AA3}" />
+      <sh:task idref="{C16A18A2-DC4F-4B7D-92F1-14C430AD17DC}" />
+      <sh:task idref="{08D48377-1C06-416D-B382-61E8D5F6CD18}" />
+    </category>
+  </application>
+  <application id="{7B81BE6A-CE2B-4676-A29E-EB907A5126C5}">
+    <sh:task id="{040873CB-404A-49FE-A254-A9BB9CEFAEA5}">
+      <sh:name>Uninstall a program</sh:name>
+      <sh:keywords>applets;applications;apps;aps;files;programmes;programs;softare;softwares;sofware;sotfware;windos;windows;</sh:keywords>
+      <sh:keywords>browsers;ie;microsoft;windows;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>deinstall;uninstalled;uninstalling;uninstalls;unistall;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.ProgramsAndFeatures" />
+    </sh:task>
+    <sh:task id="{A3C2D653-DD00-40F1-8E53-796F9BA1EE01}">
+      <sh:name>Add or remove programs</sh:name>
+      <sh:keywords>add;or;remove;programs;and;arp;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.ProgramsAndFeatures" />
+    </sh:task>
+    <sh:task id="{A7160DE5-E591-4D98-9BB0-0CAC99D5F2D5}">
+      <sh:name>View installed updates</sh:name>
+      <sh:keywords>previous;old;installed;already;previously;</sh:keywords>
+      <sh:keywords>atuo;automatically;automaticupdates;autoupdate;fixes;bugfixes;bugs;download;live;microsoft;patches;scan;security;service;packs;dater;dates;dating;updater;up-dater;updater.exe;updates;up-dates;up-dating;windows;windowsupdate.com;wizard;wupdater;</sh:keywords>
+      <sh:keywords>notifications;notifying;notified;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.ProgramsAndFeatures" page="::{D450A8A1-9568-45C7-9C0E-B4F9FB4537BD}" />
+    </sh:task>
+    <sh:task id="{91BA8E01-F854-4418-A108-E63323DDAE60}" needsElevation="true">
+      <sh:name>Turn Windows features on or off</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>accessories;accessory;components;feature;features;programs;tools;utilities;utility;</sh:keywords>
+      <sh:command>%windir%\system32\OptionalFeatures.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#COMCondition" invert="true">
+          <sh:parameter name="CLSID" value="{1478864A-2452-442C-B972-D4A7BA3F8BC3}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{7F8B6C83-2A89-47A0-B334-AA58D042CDEC}" needsElevation="true">
+      <sh:name>Turn Windows features on or off</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>accessories;accessory;components;feature;features;programs;tools;utilities;utility;</sh:keywords>
+      <sh:command>%windir%\system32\ServerManager.exe -arw</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#COMCondition">
+          <sh:parameter name="CLSID" value="{1478864A-2452-442C-B972-D4A7BA3F8BC3}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{8766D9F4-521B-4B59-9F56-5ADF4F206C0E}">
+      <sh:name>Show which programs are installed on your computer</sh:name>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>applets;applications;apps;aps;files;programmes;programs;softare;softwares;sofware;sotfware;windos;windows;</sh:keywords>
+      <sh:keywords>automatically;autoshow;auto-show;make;visible;see;show;unlock;view;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.ProgramsAndFeatures" />
+    </sh:task>
+    <sh:task id="{0747A7B5-1806-45A4-9C3B-9CA4B0349754}">
+      <sh:name>How to install a program</sh:name>
+      <sh:keywords>added;adding;addon;add-on;adds;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>applets;applications;apps;aps;files;programmes;programs;softare;softwares;sofware;sotfware;windos;windows;</sh:keywords>
+      <sh:keywords>browsers;ie;microsoft;windows;</sh:keywords>
+      <sh:command>mshelp://windows/?id=fe7ea80e-52a2-48d6-947a-05e02e78bc37</sh:command>
+    </sh:task>
+    <sh:task id="{E07F215A-6022-40E0-A109-17078992E5F9}">
+      <sh:name>Install a program from the network</sh:name>
+      <sh:keywords>add;or;remove;programs;and;arp;</sh:keywords>
+      <sh:keywords>add;new;installed;installing;</sh:keywords>
+      <sh:keywords>applets;applications;apps;aps;files;programmes;programs;softare;softwares;sofware;sotfware;windos;windows;</sh:keywords>
+      <sh:command>shell:::{26EE0668-A00A-44D7-9371-BEB064C98683}\8\::{15EAE92E-F17A-4431-9F28-805E482dAFD4}</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineOnDomain" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{98CCA0B9-CF6C-4FFD-98E1-87BFEDDD4D21}">
+      <sh:name>Change or remove a program</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>applets;applications;apps;aps;files;programmes;programs;softare;softwares;sofware;sotfware;windos;windows;</sh:keywords>
+      <sh:keywords>browsers;ie;microsoft;windows;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>deinstall;uninstalled;uninstalling;uninstalls;unistall;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.ProgramsAndFeatures" />
+    </sh:task>
+    <sh:task id="{06628900-13DD-4fc3-A18B-0E9CE7B663ED}">
+      <sh:name>16-Bit Application Support</sh:name>
+      <sh:keywords>applets;applications;apps;aps;files;programmes;programs;softare;softwares;sofware;sotfware;windos;windows;</sh:keywords>
+      <sh:keywords>applications;apps;application;app</sh:keywords>
+      <sh:keywords>apcompat;appcompat;compatable;compatibility;compatible;still;use;</sh:keywords>
+      <sh:keywords>16;bit;16-bit;legacy;old;dos;win31;emulation;ntvdm;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL ntvdmcpl.dll</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\WOW" />
+          <sh:parameter name="Regval" value="KnownDLLs" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{29B87534-19A8-4A39-AA81-2148E7DE5894}">
+      <sh:name>Run programs made for previous versions of Windows</sh:name>
+      <sh:keywords>applications;apps;application;app</sh:keywords>
+      <sh:keywords>apcompat;appcompat;compatable;compatibility;compatible;still;use;</sh:keywords>
+      <sh:keywords>earlier;older;</sh:keywords>
+      <sh:keywords>previous;old;installed;already;previously;</sh:keywords>
+      <sh:keywords>browsers;ie;microsoft;windows;</sh:keywords>
+      <sh:keywords>applets;applications;apps;aps;files;programmes;programs;softare;softwares;sofware;sotfware;windos;windows;</sh:keywords>
+      <sh:command>%windir%\system32\msdt.exe -id PCWDiagnostic -ep ControlPanelSearch</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValEquals" invert="true">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SOFTWARE\Classes\AppID\{513D916F-2A8E-4F51-AEAB-0CBC76FB1AF8}" />
+          <sh:parameter name="Regval" value="BuildArch" />
+          <sh:parameter name="RegvalExpected" value="ARM" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <category id="8">
+      <sh:task idref="{040873CB-404A-49FE-A254-A9BB9CEFAEA5}" />
+      <sh:task idref="{91BA8E01-F854-4418-A108-E63323DDAE60}" />
+      <sh:task idref="{7F8B6C83-2A89-47A0-B334-AA58D042CDEC}" />
+      <sh:task idref="{A7160DE5-E591-4D98-9BB0-0CAC99D5F2D5}" />
+      <sh:task idref="{29B87534-19A8-4A39-AA81-2148E7DE5894}" />
+      <sh:task idref="{0747A7B5-1806-45A4-9C3B-9CA4B0349754}" />
+    </category>
+  </application>
+  <application id="{17CD9488-1228-4B2F-88CE-4298E93E0966}">
+    <sh:task id="{78746308-57E7-4628-BD0F-860CE07C691E}">
+      <sh:name>Make a file type always open in a specific program</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>associate;association;associations;extensions;extentions;type;filetype;open;with;</sh:keywords>
+      <sh:keywords>applets;applications;apps;aps;files;programmes;programs;softare;softwares;sofware;sotfware;windos;windows;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.DefaultPrograms" page="pageFileAssoc" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#AreAppDefaultsRestricted" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{A8E9221B-E02C-4816-8735-B872126611DB}">
+      <sh:name>Set your default programs</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>by;defaults;defualt;standard;</sh:keywords>
+      <sh:keywords>associate;association;associations;extensions;extentions;type;filetype;open;with;</sh:keywords>
+      <sh:keywords>applets;applications;apps;aps;files;programmes;programs;softare;softwares;sofware;sotfware;windos;windows;</sh:keywords>
+      <sh:keywords>protocols;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.DefaultPrograms" page="pageDefaultProgram" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#AreAppDefaultsRestricted" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <category id="8">
+      <sh:task idref="{3A8452A5-BD28-4A7D-AC38-A2E0BA64852D}" />
+      <sh:task idref="{4F9B0706-0A8F-45B0-BFA6-C66CD45246D7}" />
+      <sh:task idref="{78746308-57E7-4628-BD0F-860CE07C691E}" />
+      <sh:task idref="{A8E9221B-E02C-4816-8735-B872126611DB}" />
+    </category>
+  </application>
+  <application id="{A8A91A66-3A7D-4424-8D24-04E180695C7A}">
+    <sh:task id="{DAF32862-EF3D-4D61-AB92-47AEB51DDC80}">
+      <sh:name>View devices and printers</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>connections;go;online;intranet;lan;netowrk;networking;line;on-line;www;</sh:keywords>
+      <sh:keywords>802.1x;wireless;wire-less;</sh:keywords>
+      <sh:keywords>out;printers;printing;printner;printout;print-out;pritner;</sh:keywords>
+      <sh:keywords>computer;top;laptop;mobile;pc;notebook;portable;</sh:keywords>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>1394;controller;adapter;adaptor;audio;biometric;cable;modem;card;cd-dvd;drive;CRT;devise;digial;camera;dsl;dvd;ethernet;flat;panel;game;handheld;scanner;ware;hardware;hardwear;infrared;ink-jet;input;IrDA;stick;joystick;keyboard;laser;printer;lcd;Mass;Storage;midi;mixer;mobile;monitor;motherboard;mouse;mp3;player;mpeg;music;player;network;optical;wheel;mouse;output;pen;plasma;monitor;portable;media;player;printer;raid;recording;scanner;card;reader;smartcard;sound;tape;drive;pad;touchpad;ball;trackball;tuner;tv;USB;video;capture;cards;view;USB;hub;camera;webcam;wheel;mouse;wireless;wlan;</sh:keywords>
+      <sh:keywords>added;adding;addon;add-on;adds;</sh:keywords>
+      <sh:keywords>scaners;scanners;scanning;</sh:keywords>
+      <sh:keywords>camaras;cameras;camras;</sh:keywords>
+      <sh:keywords>maneger;manager;devicemanager;dma;managar;management;managing;managment;</sh:keywords>
+      <sh:keywords>drivers;</sh:keywords>
+      <sh:keywords>audio;blank;ray;blue-ray;blu-ray;cd-rom;cds;dvd;enhanced;HD;media;super;video;</sh:keywords>
+      <sh:keywords>tooth;bluetooth;blutooth;</sh:keywords>
+      <sh:keywords>cards;videocards;videos;</sh:keywords>
+      <sh:keywords>storage;</sh:keywords>
+      <sh:keywords>ware;hardware-general;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.DevicesAndPrinters" />
+    </sh:task>
+    <sh:task id="{D3D71B01-F746-499E-A426-FF63FAC98C19}">
+      <sh:name>Add a device</sh:name>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>mice;mouses;pointer;</sh:keywords>
+      <sh:keywords>board;bord;keyboards;keyborads;keybord;</sh:keywords>
+      <sh:keywords>out;printers;printing;printner;printout;print-out;pritner;</sh:keywords>
+      <sh:keywords>added;adding;addon;add-on;adds;</sh:keywords>
+      <sh:keywords>add;new;installed;installing;</sh:keywords>
+      <sh:keywords>handset;handsets;phone;cellphone;cell;speakers;headset;headsets</sh:keywords>
+      <sh:keywords>TV;television</sh:keywords>
+      <sh:keywords>DLNA;media;player;storage;NAS</sh:keywords>
+      <sh:keywords>network;networking;networks</sh:keywords>
+      <sh:keywords>pair;pairs;associate;associates;add;adds;connects;connect;setup;playto;play</sh:keywords>
+      <sh:command>%windir%\system32\DevicePairingWizard.exe</sh:command>
+    </sh:task>
+    <sh:task id="{11E71674-7556-4E27-8D59-03B2FA846204}">
+      <sh:name>Advanced printer setup</sh:name>
+      <sh:keywords>out;printers;printing;printner;printout;print-out;pritner;</sh:keywords>
+      <sh:keywords>added;adding;addon;add-on;adds;</sh:keywords>
+      <sh:keywords>add;new;installed;installing;</sh:keywords>
+      <sh:keywords>finding;locate;locating;search;for;is;where&apos;s;the;</sh:keywords>
+      <sh:keywords>gets;getting;get-verb;</sh:keywords>
+      <sh:keywords>network;networking;networks</sh:keywords>
+      <sh:keywords>pair;pairs;associate;associates;add;adds;connects;connect;setup;playto;play</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe printui.dll,PrintUIEntryDPIAware /il</sh:command>
+    </sh:task>
+    <sh:task id="{0D2EC3D1-4305-4153-92D1-7E56311B2C00}">
+      <sh:name>Add a Bluetooth device</sh:name>
+      <sh:keywords>tooth;bluetooth;blutooth;</sh:keywords>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>802.1x;wireless;wire-less;</sh:keywords>
+      <sh:keywords>pair;pairs;associate;associates;add;adds;connects;connect;setup;playto;play</sh:keywords>
+      <sh:keywords>add;new;installed;installing;</sh:keywords>
+      <sh:command>%windir%\system32\DevicePairingWizard.exe /bluetooth</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValEquals">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\bthserv\Parameters\BluetoothControlPanelTasks" />
+          <sh:parameter name="Regval" value="State" />
+          <sh:parameter name="RegvalExpected" value="1" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{C5361E07-6AA3-4453-81BC-93E8F85EABED}" needsElevation="true">
+      <sh:name>Device Manager</sh:name>
+      <sh:keywords>maneger;manager;devicemanager;dma;managar;management;managing;managment;</sh:keywords>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>drivers;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>1394;controller;adapter;adaptor;audio;biometric;cable;modem;card;cd-dvd;drive;CRT;devise;digial;camera;dsl;dvd;ethernet;flat;panel;game;handheld;scanner;ware;hardware;hardwear;infrared;ink-jet;input;IrDA;stick;joystick;keyboard;laser;printer;lcd;Mass;Storage;midi;mixer;mobile;monitor;motherboard;mouse;mp3;player;mpeg;music;player;network;optical;wheel;mouse;output;pen;plasma;monitor;portable;media;player;printer;raid;recording;scanner;card;reader;smartcard;sound;tape;drive;pad;touchpad;ball;trackball;tuner;tv;USB;video;capture;cards;view;USB;hub;camera;webcam;wheel;mouse;wireless;wlan;</sh:keywords>
+      <sh:keywords>mine;my;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.DeviceManager" />
+    </sh:task>
+    <sh:task id="{EF8F379B-747B-4C8E-B3D1-4A29E6CF45AE}">
+      <sh:name>Change Windows To Go startup options</sh:name>
+      <sh:command>%windir%\system32\rundll32.exe pwlauncher.dll,ShowPortableWorkspaceLauncherConfigurationUX</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{CF081448-68EC-4969-9F8B-BB23B329B712}">
+      <sh:name>Change default printer</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>by;defaults;defualt;standard;</sh:keywords>
+      <sh:keywords>finding;locate;locating;search;for;is;where&apos;s;the;</sh:keywords>
+      <sh:keywords>gets;getting;get-verb;</sh:keywords>
+      <sh:keywords>out;printers;printing;printner;printout;print-out;pritner;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.DevicesAndPrinters" />
+    </sh:task>
+    <sh:task id="{5DE5B491-2CEA-4AD9-824A-982A22C0B64E}">
+      <sh:name>View scanners and cameras</sh:name>
+      <sh:keywords>camaras;cameras;camras;</sh:keywords>
+      <sh:keywords>automatically;autoshow;auto-show;make;visible;see;show;unlock;view;</sh:keywords>
+      <sh:keywords>check;list;see;show;viewing;</sh:keywords>
+      <sh:command>%ProgramFiles%\Windows Photo Viewer\ImagingDevices.exe</sh:command>
+    </sh:task>
+    <sh:task id="{1515BA81-68EB-4143-A29F-51A40A65DAE6}">
+      <sh:name>Change Bluetooth settings</sh:name>
+      <sh:keywords>tooth;bluetooth;blutooth;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>802.1x;wireless;wire-less;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL bthprops.cpl,,1</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValEquals">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\bthserv\Parameters\BluetoothControlPanelTasks" />
+          <sh:parameter name="Regval" value="State" />
+          <sh:parameter name="RegvalExpected" value="1" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{55E51B6E-7D17-4C80-859E-3007A1F2B6AA}">
+      <sh:name>Scan a document or picture</sh:name>
+      <sh:keywords>scaners;scanners;scanning;</sh:keywords>
+      <sh:keywords>add;create;make;new;</sh:keywords>
+      <sh:command>%windir%\system32\wfs.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegKeyExists">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Software\Microsoft\wfs" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{CD2A5953-36A2-427D-B762-3610F37A5D89}">
+      <sh:name>Set up USB game controllers</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>controlers;controllers;stick;joystick;</sh:keywords>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>games;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL %windir%\system32\joy.cpl</sh:command>
+    </sh:task>
+    <sh:task id="{083D5202-600A-4f38-981B-2D138FBDC4D1}">
+      <sh:name>Change device installation settings</sh:name>
+      <sh:keywords>change;changing;devices;installation;installing;settings;hardware;drivers;windows;in;out;optin;opt-in;optout;opt-out;metadata;data;icons;stage;downloads;downloading;online;fixing;working;my;searching;finding;getting;doesn&apos;t;not;for;newer;</sh:keywords>
+      <sh:keywords>notifications;notifying;notified;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe newdev.dll,DeviceInternetSettingUi 5</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValEquals" invert="true">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" />
+          <sh:parameter name="Regval" value="PROCESSOR_ARCHITECTURE" />
+          <sh:parameter name="RegvalExpected" value="ARM" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{AAF384A9-978C-41B6-B394-0C40C2EAAA4B}">
+      <sh:name>Change settings for content received using Tap and send</sh:name>
+      <sh:keywords>nfp;near;field;feild;proximity;prosimity;proxymity;tap and send</sh:keywords>
+      <sh2:controlpanel name="Microsoft.AutoPlay" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsProximityProviderAvailable" />
+      </sh:conditions>
+    </sh:task>
+    <category id="2">
+      <sh:task idref="{D3D71B01-F746-499E-A426-FF63FAC98C19}" />
+      <sh:task idref="{11E71674-7556-4E27-8D59-03B2FA846204}" />
+      <sh:task idref="{4DE175B5-44AB-4397-9E01-38E9DE4F0FB1}">
+        <sh:name>Mouse</sh:name>
+      </sh:task>
+      <sh:task idref="{C5361E07-6AA3-4453-81BC-93E8F85EABED}" />
+      <sh:task idref="{EF8F379B-747B-4C8E-B3D1-4A29E6CF45AE}" />
+    </category>
+  </application>
+  <application id="{B2C761C6-29BC-4F19-9251-E6195265BAF1}">
+    <sh:task id="{54D8069E-E75A-4437-B45B-8EB3B8C97434}">
+      <sh:name>Change advanced color management settings for displays, scanners, and printers</sh:name>
+      <sh:keywords>calibrate;calibration;</sh:keywords>
+      <sh:keywords>24;bit;24-bit;256;bit;32-bit;colors;colours;depth;num;number;of;</sh:keywords>
+      <sh:keywords>absolute;colorimetric;gamut;mapping;graphics;images;perceptual;proofing;relative;rendering;rgb;sRGB;</sh:keywords>
+      <sh:keywords>management;managment;</sh:keywords>
+      <sh:keywords>out;printers;printing;printner;printout;print-out;pritner;</sh:keywords>
+      <sh:keywords>scaners;scanners;scanning;</sh:keywords>
+      <sh:keywords>crt;displays;monitors;screeens;screens;</sh:keywords>
+      <sh:command>%windir%\system32\colorcpl.exe</sh:command>
+    </sh:task>
+  </application>
+  <application id="{E2E7934B-DCE5-43C4-9576-7FE4F75E7480}">
+    <sh:task id="{141D98AD-3E07-4C44-A578-4DCA078286A4}">
+      <sh:name>Add clocks for different time zones</sh:name>
+      <sh:keywords>additional;another;create;many;more;mutliple;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>calendar;clock;times;time;day;</sh:keywords>
+      <sh:keywords>timezone;time-zone;zones;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL timedate.cpl,,1</sh:command>
+    </sh:task>
+    <sh:task id="{1F7C24AC-B26E-4824-84EA-9026B9C0AF0D}">
+      <sh:name>Automatically adjust for daylight saving time</sh:name>
+      <sh:keywords>automated;automatically;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>calendar;clock;times;time;day;</sh:keywords>
+      <sh:keywords>light;daylight;daylite;lite;savings;savins;standard;</sh:keywords>
+      <sh:keywords>hour;12-hour;24-hour;clock;date;day;dd;display;formating;formatting;four;digit;long;mmddyyyy;month;properties;short;time;two;year;yyyy;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL timedate.cpl</sh:command>
+    </sh:task>
+    <sh:task id="{03ED382E-33A2-4E20-A7C3-26AFE018D886}">
+      <sh:name>Change the time zone</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>timezone;time-zone;zones;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL timedate.cpl</sh:command>
+    </sh:task>
+    <sh:task id="{D58D0F32-9128-40D3-89AF-8C63C5167C99}">
+      <sh:name>Set the time and date</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>calendar;clock;times;time;day;</sh:keywords>
+      <sh:keywords>hour;12-hour;24-hour;clock;date;day;dd;display;formating;formatting;four;digit;long;mmddyyyy;month;properties;short;time;two;year;yyyy;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL timedate.cpl</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{4C8DBC7F-EE77-44CC-8602-88AD441B1A77}">
+      <sh:name>Set the time and date</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>calendar;clock;times;time;day;</sh:keywords>
+      <sh:keywords>hour;12-hour;24-hour;clock;date;day;dd;display;formating;formatting;four;digit;long;mmddyyyy;month;properties;short;time;two;year;yyyy;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL timedate.cpl</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" />
+      </sh:conditions>
+    </sh:task>
+    <category id="6">
+      <sh:task idref="{D58D0F32-9128-40D3-89AF-8C63C5167C99}" />
+      <sh:task idref="{4C8DBC7F-EE77-44CC-8602-88AD441B1A77}" />
+      <sh:task idref="{03ED382E-33A2-4E20-A7C3-26AFE018D886}" />
+      <sh:task idref="{141D98AD-3E07-4C44-A578-4DCA078286A4}" />
+    </category>
+  </application>
+  <application id="{9C60DE1E-E5FC-40F4-A487-460851A8D915}">
+    <sh:task id="{4F9B0706-0A8F-45B0-BFA6-C66CD45246D7}">
+      <sh:name>Change default settings for media or devices</sh:name>
+      <sh:keywords>play;run;start;autoplay;auto-play;autorun;auto-run;autostart;auto-start;</sh:keywords>
+      <sh:keywords>audio;blank;ray;blue-ray;blu-ray;cd-rom;cds;dvd;enhanced;HD;media;super;video;</sh:keywords>
+      <sh:keywords>import;photo;connection;camera;flash;removable;storage;stage;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.AutoPlay" />
+    </sh:task>
+    <sh:task id="{E6243488-3449-4D4D-98AA-FFC14E3FF0F8}">
+      <sh:name>Play CDs or other media automatically</sh:name>
+      <sh:keywords>automated;automatically;</sh:keywords>
+      <sh:keywords>play;run;start;autoplay;auto-play;autorun;auto-run;autostart;auto-start;</sh:keywords>
+      <sh:keywords>disc;disks;drive;</sh:keywords>
+      <sh:keywords>audio;blank;ray;blue-ray;blu-ray;cd-rom;cds;dvd;enhanced;HD;media;super;video;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.AutoPlay" />
+    </sh:task>
+    <sh:task id="{6565D6E8-06A0-481C-A209-D43263C5A3B3}">
+      <sh:name>Start or stop using AutoPlay for all media and devices</sh:name>
+      <sh:keywords>play;run;start;autoplay;auto-play;autorun;auto-run;autostart;auto-start;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.AutoPlay" />
+    </sh:task>
+    <category id="2">
+      <sh:task idref="{4F9B0706-0A8F-45B0-BFA6-C66CD45246D7}" />
+      <sh:task idref="{E6243488-3449-4D4D-98AA-FFC14E3FF0F8}" />
+    </category>
+  </application>
+  <application id="{6DFD7C5C-2451-11D3-A299-00C04F8EF6AF}">
+    <sh:task id="{5BB16858-F647-465E-BCFD-010EE9DD41B7}">
+      <sh:name>Change search options for files and folders</sh:name>
+      <sh:keywords>folders;subfolders;</sh:keywords>
+      <sh:keywords>search;behavior;</sh:keywords>
+      <sh:keywords>search;options;</sh:keywords>
+      <sh:keywords>finder;indexing;reindex;re-index;searches;searching;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Options_RunDLL 2</sh:command>
+    </sh:task>
+    <sh:task id="{ABB4509D-9043-4EF2-8796-E4646ECF951D}">
+      <sh:name>Change the file type associated with a file extension</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>associate;association;associations;extensions;extentions;type;filetype;open;with;</sh:keywords>
+      <sh:keywords>applets;applications;apps;aps;files;programmes;programs;softare;softwares;sofware;sotfware;windos;windows;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.DefaultPrograms" page="pageFileAssoc" />
+    </sh:task>
+    <sh:task id="{9891D47B-7E37-4265-BAD2-1FA991543B90}">
+      <sh:name>Show hidden files and folders</sh:name>
+      <sh:keywords>folders;subfolders;</sh:keywords>
+      <sh:keywords>automatically;autoshow;auto-show;make;visible;see;show;unlock;view;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Options_RunDLL 7</sh:command>
+    </sh:task>
+    <sh:task id="{4A2F952E-0618-467F-ADC5-FEBB66AEB82F}">
+      <sh:name>Show or hide file extensions</sh:name>
+      <sh:keywords>associate;association;associations;extensions;extentions;type;filetype;open;with;</sh:keywords>
+      <sh:keywords>autohide;auto-hide;automatically;hide;make;invisible;</sh:keywords>
+      <sh:keywords>automatically;autoshow;auto-show;make;visible;see;show;unlock;view;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Options_RunDLL 7</sh:command>
+    </sh:task>
+    <sh:task id="{B1207959-FFBF-4417-A6B1-4BF0EDA51F5A}">
+      <sh:name>Specify single- or double-click to open</sh:name>
+      <sh:keywords>chooses;choosing;chose;picked;picks;selected;selects;</sh:keywords>
+      <sh:keywords>lock;clicking;doubleclick;double-click;single-click;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.FolderOptions" />
+    </sh:task>
+    <category id="1">
+      <sh:task idref="{B1207959-FFBF-4417-A6B1-4BF0EDA51F5A}" />
+      <sh:task idref="{79DC3639-0B91-46BE-BED2-702FC5167337}" />
+      <sh:task idref="{9891D47B-7E37-4265-BAD2-1FA991543B90}" />
+    </category>
+  </application>
+  <application id="{BD84B380-8CA2-1069-AB1D-08000948F534}">
+    <sh:task id="{D1AF7F5F-18C1-4143-81E5-EDAF02255883}">
+      <sh:name>Preview, delete, or show and hide fonts</sh:name>
+      <sh:keywords>faunt;fonts;type;truetype;type;opentype;fount;</sh:keywords>
+      <sh:keywords>added;adding;addon;add-on;adds;</sh:keywords>
+      <sh:keywords>add;new;installed;installing;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>deinstall;uninstalled;uninstalling;uninstalls;unistall;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Fonts" />
+    </sh:task>
+    <sh:task id="{7429F4F9-AE58-401a-82AD-723F3C6BDDD6}">
+      <sh:name>Change Font Settings</sh:name>
+      <sh:keywords>faunt;fonts;type;truetype;type;opentype;fount;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>autohide;auto-hide;automatically;hide;make;invisible;</sh:keywords>
+      <sh:keywords>automatically;autoshow;auto-show;make;visible;see;show;unlock;view;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Fonts" page="::{93412589-74D4-4E4E-AD0E-E0CB621440FD}" />
+    </sh:task>
+    <sh:task id="{96BC4455-FDA3-4DE2-8B71-9D1953F0B32D}">
+      <sh:name>View installed fonts</sh:name>
+      <sh:keywords>faunt;fonts;type;truetype;type;opentype;fount;</sh:keywords>
+      <sh:keywords>add;new;installed;installing;</sh:keywords>
+      <sh:keywords>check;list;see;show;viewing;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Fonts" />
+    </sh:task>
+    <sh:task id="{FFA33B6C-DC4D-438C-893F-EBF44A09BFC0}">
+      <sh:name>Private Character Editor</sh:name>
+      <sh:keywords>eudcedit.exe;private;character;editor;</sh:keywords>
+      <sh:command>%windir%\system32\eudcedit.exe</sh:command>
+    </sh:task>
+    <category id="1">
+      <sh:task idref="{D1AF7F5F-18C1-4143-81E5-EDAF02255883}" />
+      <sh:task idref="{7429F4F9-AE58-401a-82AD-723F3C6BDDD6}" />
+      <sh:task idref="{3F0AD6DB-3246-48E4-ACD7-696FF62AE68D}" />
+    </category>
+  </application>
+  <application id="{5EA4F148-308C-46D7-98A9-49041B1DD468}">
+    <sh:task id="{46E84184-51CC-4A7B-A40A-6D3E86D402DE}">
+      <sh:name>Adjust commonly used mobility settings</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>computer;top;laptop;mobile;pc;notebook;portable;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:command>%windir%\system32\mblctr.exe /open</sh:command>
+    </sh:task>
+    <sh:task id="{F3FD1F8E-B34A-49AE-95B9-5DBEAB5BFB49}">
+      <sh:name>Adjust settings before giving a presentation</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>pixels;reslution;resoltion;resolution;resolutoin;rezolution;size;</sh:keywords>
+      <sh:keywords>crt;displays;monitors;screeens;screens;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:command>%windir%\system32\presentationsettings.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsPresentationSettingsEnabled" />
+      </sh:conditions>
+    </sh:task>
+    <category id="2">
+      <sh:task idref="{46E84184-51CC-4A7B-A40A-6D3E86D402DE}" />
+      <sh:task idref="{F3FD1F8E-B34A-49AE-95B9-5DBEAB5BFB49}" />
+    </category>
+  </application>
+  <application id="{A3DD4F92-658A-410F-84FD-6FBBBEF2FFFE}">
+    <sh:task id="{201CEF4B-7444-4B2F-B885-5E8F0AA1D614}">
+      <sh:name>Block or allow pop-ups</sh:name>
+      <sh:keywords>banned;blocker;filter;nanny;prevent;restrict;stopper;</sh:keywords>
+      <sh:keywords>from;the;web;inet;internet;intrnet;net;online;on-line;sites;pages;webpages;websites;world;wide;www;</sh:keywords>
+      <sh:keywords>ads;advertising;advertizing;adverts;adware;adwear;malware;ups;popupblocker;pop-upblocker;popups;pop-ups;popupstopper;spyware;spywear;unwanted;windows;</sh:keywords>
+      <sh:keywords>privacy;secrecy;</sh:keywords>
+      <sh:keywords>restricted;safety;secure;securing;security;sites;trusted;trusting;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,2</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SOFTWARE\Clients\StartMenuInternet\IEXPLORE.EXE\InstallInfo" />
+          <sh:parameter name="Regval" value="ShowIconsCommand" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{9BA8A9A5-F1C1-4F09-AE9A-EFEAA5961BE3}">
+      <sh:name>Block or allow third-party cookies</sh:name>
+      <sh:keywords>allowed;let;through;permitted;</sh:keywords>
+      <sh:keywords>banned;blocker;filter;nanny;prevent;restrict;stopper;</sh:keywords>
+      <sh:keywords>3rd;party;cookies;cooky;from;others;third-party;unwanted;</sh:keywords>
+      <sh:keywords>from;the;web;inet;internet;intrnet;net;online;on-line;sites;pages;webpages;websites;world;wide;www;</sh:keywords>
+      <sh:keywords>restricted;safety;secure;securing;security;sites;trusted;trusting;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,2</sh:command>
+    </sh:task>
+    <sh:task id="{21A5437E-D266-4F56-A146-06744A8BC071}">
+      <sh:name>Change how web pages are displayed in tabs</sh:name>
+      <sh:keywords>browsers;browsing;web;</sh:keywords>
+      <sh:keywords>ie;internet;explorer;</sh:keywords>
+      <sh:keywords>from;the;web;inet;internet;intrnet;net;online;on-line;sites;pages;webpages;websites;world;wide;www;</sh:keywords>
+      <sh:keywords>tabs;tabbed;browsing;quick;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,0</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SOFTWARE\Clients\StartMenuInternet\IEXPLORE.EXE\InstallInfo" />
+          <sh:parameter name="Regval" value="ShowIconsCommand" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{4228F99D-227F-4058-9EA3-BB2B616D7444}">
+      <sh:name>Change security settings</sh:name>
+      <sh:keywords>allowed;let;through;permitted;</sh:keywords>
+      <sh:keywords>banned;blocker;filter;nanny;prevent;restrict;stopper;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>from;the;web;inet;internet;intrnet;net;online;on-line;sites;pages;webpages;websites;world;wide;www;</sh:keywords>
+      <sh:keywords>restricted;safety;secure;securing;security;sites;trusted;trusting;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,1</sh:command>
+    </sh:task>
+    <sh:task id="{84C9670E-825D-4128-B173-2963886C5A3E}">
+      <sh:name>Change temporary Internet file settings</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>3rd;party;cookies;cooky;from;others;third-party;unwanted;</sh:keywords>
+      <sh:keywords>from;the;web;inet;internet;intrnet;net;online;on-line;sites;pages;webpages;websites;world;wide;www;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>cached;files;history;local;temorary;temporary;temperary;tmp;unnecessary;unneeded;useless;web;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,0</sh:command>
+    </sh:task>
+    <sh:task id="{A73DCDB5-E233-4FC2-8083-6E431939002A}">
+      <sh:name>Change the search provider in Internet Explorer</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>by;defaults;defualt;standard;</sh:keywords>
+      <sh:keywords>provider;engine;searching;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,0</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SOFTWARE\Clients\StartMenuInternet\IEXPLORE.EXE\InstallInfo" />
+          <sh:parameter name="Regval" value="ShowIconsCommand" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{BABB24A6-0242-4AE5-BD83-C5816526F63D}">
+      <sh:name>Change your homepage</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>page;homepage;</sh:keywords>
+      <sh:keywords>from;the;web;inet;internet;intrnet;net;online;on-line;sites;pages;webpages;websites;world;wide;www;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,0</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SOFTWARE\Clients\StartMenuInternet\IEXPLORE.EXE\InstallInfo" />
+          <sh:parameter name="Regval" value="ShowIconsCommand" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{B7622F10-9A47-4BF2-B6EF-2C20B4510254}">
+      <sh:name>Configure proxy server</sh:name>
+      <sh:keywords>server;web;winsock;socks;socket;dns;sas;winproxy;rpoxy;client;hosts;tmproxy;proxycfg;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,4</sh:command>
+    </sh:task>
+    <sh:task id="{60AC7FA0-A928-4D45-B4DD-AC70A6175E67}">
+      <sh:name>Connect to the Internet</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>from;the;web;inet;internet;intrnet;net;online;on-line;sites;pages;webpages;websites;world;wide;www;</sh:keywords>
+      <sh:keywords>connections;go;online;intranet;lan;netowrk;networking;line;on-line;www;</sh:keywords>
+      <sh:keywords>wizard;wizzard;</sh:keywords>
+      <sh:command>ms-availablenetworks:</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsConnectedToInternet" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{6CBA2898-2EFE-4604-9933-F1F64DAE2A32}">
+      <sh:name>Delete browsing history</sh:name>
+      <sh:keywords>browsers;browsing;web;</sh:keywords>
+      <sh:keywords>autohide;auto-hide;automatically;hide;make;invisible;</sh:keywords>
+      <sh:keywords>ie;internet;explorer;</sh:keywords>
+      <sh:keywords>from;the;web;inet;internet;intrnet;net;online;on-line;sites;pages;webpages;websites;world;wide;www;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>cached;files;history;local;temorary;temporary;temperary;tmp;unnecessary;unneeded;useless;web;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,0</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SOFTWARE\Clients\StartMenuInternet\IEXPLORE.EXE\InstallInfo" />
+          <sh:parameter name="Regval" value="ShowIconsCommand" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{2D06D17B-2A5F-4835-AF30-6D2D58A4A66C}">
+      <sh:name>Delete cookies or temporary files</sh:name>
+      <sh:keywords>3rd;party;cookies;cooky;from;others;third-party;unwanted;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>cached;files;history;local;temorary;temporary;temperary;tmp;unnecessary;unneeded;useless;web;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,0</sh:command>
+    </sh:task>
+    <sh:task id="{8050502B-9B94-408C-BF49-D2D8887C1BCF}">
+      <sh:name>Enable or disable session cookies</sh:name>
+      <sh:keywords>3rd;party;cookies;cooky;from;others;third-party;unwanted;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>from;the;web;inet;internet;intrnet;net;online;on-line;sites;pages;webpages;websites;world;wide;www;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>restricted;safety;secure;securing;security;sites;trusted;trusting;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,2</sh:command>
+    </sh:task>
+    <sh:task id="{0F1B68F6-B72D-4229-BC9C-A87F0B16B17B}">
+      <sh:name>Manage browser add-ons</sh:name>
+      <sh:keywords>activex;ons;add-ons;extension;</sh:keywords>
+      <sh:keywords>browsers;browsing;web;</sh:keywords>
+      <sh:keywords>add;new;installed;installing;</sh:keywords>
+      <sh:keywords>administer;configure;managed;manages;managing;up;setup;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>deinstall;uninstalled;uninstalling;uninstalls;unistall;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,5</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SOFTWARE\Clients\StartMenuInternet\IEXPLORE.EXE\InstallInfo" />
+          <sh:parameter name="Regval" value="ShowIconsCommand" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{907F262A-012A-4F6A-94C9-F479F3E6EE16}">
+      <sh:name>Tell if an RSS feed is available on a website</sh:name>
+      <sh:keywords>from;the;web;inet;internet;intrnet;net;online;on-line;sites;pages;webpages;websites;world;wide;www;</sh:keywords>
+      <sh:keywords>rss;feed;aggregator;csrss;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,3</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SOFTWARE\Clients\StartMenuInternet\IEXPLORE.EXE\InstallInfo" />
+          <sh:parameter name="Regval" value="ShowIconsCommand" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{9389633E-8BCB-4448-93CD-EBFFA0759257}">
+      <sh:name>Turn autocomplete in Internet Explorer on or off</sh:name>
+      <sh:keywords>autocomplete;complete;completion;finish;autofinish;fill;autofill;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,3</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SOFTWARE\Clients\StartMenuInternet\IEXPLORE.EXE\InstallInfo" />
+          <sh:parameter name="Regval" value="ShowIconsCommand" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{D5D5B38A-0FD8-43B6-8C7D-372D84BD357D}">
+      <sh:name>Choose how you open links</sh:name>
+      <sh:keywords>desktops;dekstops;</sh:keywords>
+      <sh:keywords>lanch;launches;</sh:keywords>
+      <sh:keywords>ie;internet;explorer;</sh:keywords>
+      <sh:keywords>browsers;browsing;web;</sh:keywords>
+      <sh:keywords>opens;opening;opened;</sh:keywords>
+      <sh:keywords>links;</sh:keywords>
+      <sh:keywords>tiles;</sh:keywords>
+      <sh:keywords>always;in;</sh:keywords>
+      <sh:keywords>let;decide;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL inetcpl.cpl,,5</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SOFTWARE\Clients\StartMenuInternet\IEXPLORE.EXE\InstallInfo" />
+          <sh:parameter name="Regval" value="ShowIconsCommand" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <category id="3">
+      <sh:task idref="{60AC7FA0-A928-4D45-B4DD-AC70A6175E67}" />
+      <sh:task idref="{BABB24A6-0242-4AE5-BD83-C5816526F63D}" />
+      <sh:task idref="{0F1B68F6-B72D-4229-BC9C-A87F0B16B17B}" />
+      <sh:task idref="{6CBA2898-2EFE-4604-9933-F1F64DAE2A32}">
+        <sh:name>Delete browsing history and cookies</sh:name>
+      </sh:task>
+    </category>
+  </application>
+  <application id="{725BE8F7-668E-4C7B-8F90-46BDB0936430}">
+    <sh:task id="{33843DB0-24E7-4682-A019-5393D7F2BFFA}">
+      <sh:name>Change cursor blink rate</sh:name>
+      <sh:keywords>blinking;blinkrate;flashing;rate;</sh:keywords>
+      <sh:keywords>arrows;cursors;mouse;pointers;</sh:keywords>
+      <sh:keywords>board;bord;keyboards;keyborads;keybord;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Keyboard" />
+    </sh:task>
+    <sh:task id="{E00117F3-53BA-4E06-B9BF-B8E22A1469E6}">
+      <sh:name>Check keyboard status</sh:name>
+      <sh:keywords>board;bord;keyboards;keyborads;keybord;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Keyboard" page="1" />
+    </sh:task>
+  </application>
+  <application id="{6C8EEC18-8D75-41B2-A177-8831D59D2D50}">
+    <sh:task id="{4DE175B5-44AB-4397-9E01-38E9DE4F0FB1}">
+      <sh:name>Change mouse settings</sh:name>
+      <sh:keywords>butons;buttons;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>lock;clicking;doubleclick;double-click;single-click;</sh:keywords>
+      <sh:keywords>mice;mouses;pointer;</sh:keywords>
+      <sh:keywords>flip;handed;hander;left-handed;left-hander;lefty;reverse;handed;right-handed;switch;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Mouse" />
+    </sh:task>
+    <sh:task id="{53440D79-CD2D-4013-B192-D478AE882E53}">
+      <sh:name>Change how the mouse pointer looks</sh:name>
+      <sh:keywords>appearance;out;layout;of;looks;way;displayed;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>arrows;cursors;mouse;pointers;</sh:keywords>
+      <sh:keywords>mice;mouses;pointer;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Mouse" page="1" />
+    </sh:task>
+    <sh:task id="{0DF721FA-F921-4416-A491-1924F212C705}">
+      <sh:name>Change how the mouse pointer looks when it&apos;s moving</sh:name>
+      <sh:keywords>appearance;out;layout;of;looks;way;displayed;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>arrows;cursors;mouse;pointers;</sh:keywords>
+      <sh:keywords>move;moving;shadow;speed;tails;</sh:keywords>
+      <sh:keywords>mice;mouses;pointer;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Mouse" page="2" />
+    </sh:task>
+    <sh:task id="{88ABF088-D78C-4F13-A7DE-6FC3F3C987D8}">
+      <sh:name>Change mouse click settings</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>lock;clicking;doubleclick;double-click;single-click;</sh:keywords>
+      <sh:keywords>mice;mouses;pointer;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Mouse" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMobilePC" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{F14A9477-D4A5-4AEE-AF28-8F750F1B85FA}">
+      <sh:name>Change mouse click settings</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>lock;clicking;doubleclick;double-click;single-click;</sh:keywords>
+      <sh:keywords>mice;mouses;pointer;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Mouse" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMobilePC" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{7613CE69-E922-4432-980F-136A1A26C487}">
+      <sh:name>Change mouse wheel settings</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>mice;mouses;pointer;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>wheel;scrolling;scrollwheel;mousewheel;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Mouse" page="3" />
+    </sh:task>
+    <sh:task id="{6AE88B06-50B2-46B0-93EA-4B5C73D3A0B5}">
+      <sh:name>Change the mouse pointer display or speed</sh:name>
+      <sh:keywords>appearance;out;layout;of;looks;way;displayed;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>arrows;cursors;mouse;pointers;</sh:keywords>
+      <sh:keywords>move;moving;shadow;speed;tails;</sh:keywords>
+      <sh:keywords>mice;mouses;pointer;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Mouse" page="2" />
+    </sh:task>
+    <sh:task id="{7EB05C8F-39D3-4E6F-9B4F-23B31D6F79AD}">
+      <sh:name>Customize the mouse buttons</sh:name>
+      <sh:keywords>butons;buttons;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>customisation;customises;customization;customizes;customizing;personalisation;personalise;personalization;personalize;</sh:keywords>
+      <sh:keywords>mice;mouses;pointer;</sh:keywords>
+      <sh:keywords>flip;handed;hander;left-handed;left-hander;lefty;reverse;handed;right-handed;switch;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Mouse" />
+    </sh:task>
+    <sh:task id="{265DF4DF-E185-4C09-9BA9-710521133A43}">
+      <sh:name>Make it easier to see the mouse pointer</sh:name>
+      <sh:keywords>arrows;cursors;mouse;pointers;</sh:keywords>
+      <sh:keywords>finding;locate;locating;search;for;is;where&apos;s;the;</sh:keywords>
+      <sh:keywords>cant;find;can&apos;t;see;gone;hidden;invisible;missing;vanished;where;is;</sh:keywords>
+      <sh:keywords>mice;mouses;pointer;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Mouse" page="2" />
+    </sh:task>
+  </application>
+  <application id="{BE122A0E-4503-11DA-8BDE-F66BAD1E3F3A}">
+    <sh:task id="{821FB666-D307-4865-86BB-68725A30999C}" needsElevation="true">
+      <sh:name>Get more features with a new edition of Windows</sh:name>
+      <sh:keywords>compare;comparison;side-by-side;</sh:keywords>
+      <sh:keywords>features;get;more;next;version;vista;home;business;premium;ultimate;starter;</sh:keywords>
+      <sh:keywords>vista;windows;windw;7</sh:keywords>
+      <sh:keywords>release;version;edition;</sh:keywords>
+      <sh:keywords>windows;anytime;upgrade;media;center;play;dvd;watch;tv;television;record;</sh:keywords>
+      <sh:command>%SystemRoot%\system32\WindowsAnytimeUpgradeUI.exe</sh:command>
+    </sh:task>
+    <category id="5">
+      <sh:task idref="{821FB666-D307-4865-86BB-68725A30999C}" />
+    </category>
+  </application>
+  <application id="{40419485-C444-4567-851A-2DD7BFA1684D}">
+    <sh:task id="{3A100872-EC27-46A5-BBCC-92C90635AE3B}">
+      <sh:name>Set up dialing rules</sh:name>
+      <sh:keywords>calling;calls;</sh:keywords>
+      <sh:keywords>area;code;carrier;city;up;dialing;dialling;dialup;dial-up;pulse;tone;touchtone;touch-tone;</sh:keywords>
+      <sh:keywords>modem;</sh:keywords>
+      <sh:keywords>phone;line;telephone;</sh:keywords>
+      <sh:keywords>rules;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.PhoneAndModemOptions" />
+    </sh:task>
+  </application>
+  <application id="{025A5937-A6BE-4686-A844-36FE4BEC8B6D}">
+    <sh:task id="{E7A08F5A-9615-4599-B07D-9A9086A6903E}">
+      <sh:name>Change battery settings</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>batteries;battery;life;conserve;energy;last;longer;management;plugged;in;supply;powersaver;preserve;save;mode;saving;unplugged;ups;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.PowerOptions" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMobilePC" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{7A38E74B-40E2-483F-B353-E6E391E54052}">
+      <sh:name>Change power-saving settings</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>customisation;customises;customization;customizes;customizing;personalisation;personalise;personalization;personalize;</sh:keywords>
+      <sh:keywords>batteries;battery;life;conserve;energy;last;longer;management;plugged;in;supply;powersaver;preserve;save;mode;saving;unplugged;ups;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.PowerOptions" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMobilePC" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{75AC9145-7EC9-4883-82A7-AD3429020AA0}">
+      <sh:name>Change what closing the lid does</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>close;closing;</sh:keywords>
+      <sh:keywords>hearing;deaf;deafness;hard;of;problem;impaired;imparied;</sh:keywords>
+      <sh:keywords>cover;lid;top;</sh:keywords>
+      <sh:keywords>batteries;battery;life;conserve;energy;last;longer;management;plugged;in;supply;powersaver;preserve;save;mode;saving;unplugged;ups;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.PowerOptions" page="pageGlobalSettings" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMobilePC" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{E5907A23-4A25-4D75-A16E-16822E2FA38B}">
+      <sh:name>Change what the power buttons do</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>on-off;switch;</sh:keywords>
+      <sh:keywords>hibernate;button;down;power-button;shutdown;shut-down;shuts;by;standby;stand-by;switches;turns;off;</sh:keywords>
+      <sh:keywords>batteries;battery;life;conserve;energy;last;longer;management;plugged;in;supply;powersaver;preserve;save;mode;saving;unplugged;ups;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.PowerOptions" page="pageGlobalSettings" />
+    </sh:task>
+    <sh:task id="{80A74F0F-B6B6-4314-93AF-98AFDF82A92E}">
+      <sh:name>Change when the computer sleeps</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>batteries;battery;life;conserve;energy;last;longer;management;plugged;in;supply;powersaver;preserve;save;mode;saving;unplugged;ups;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>asleep;autowake;awaken;come;back;from;hibernates;hibernating;hibernation;restarts;resumes;sleeping;standby;up;wakeup;wake-up;waking;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.PowerOptions" page="pagePlanSettings" />
+    </sh:task>
+    <sh:task id="{17266CB8-4A4F-49D1-B8AF-2316935D4768}">
+      <sh:name>Choose when to turn off display</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>hibernate;button;down;power-button;shutdown;shut-down;shuts;by;standby;stand-by;switches;turns;off;</sh:keywords>
+      <sh:keywords>crt;displays;monitors;screeens;screens;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.PowerOptions" page="pagePlanSettings" />
+    </sh:task>
+    <sh:task id="{8774b87d-a2b4-49a0-8237-bfefd00646c2}">
+      <sh:name>Adjust screen brightness</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>low;dimming;diming;dimmer;dimer;display;fade;brightness;</sh:keywords>
+      <sh:keywords>crt;displays;monitors;screeens;screens;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.PowerOptions" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsBrightnessAvailable" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{8bb27ec5-5cb3-4781-baee-3439df4806e4}">
+      <sh:name>Choose a power plan</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>plans;choose;select;power;scheme;balanced;saver;change;</sh:keywords>
+      <sh:keywords>crt;displays;monitors;screeens;screens;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.PowerOptions" />
+    </sh:task>
+    <sh:task id="{f56fbb39-e6d9-4b6d-9c29-ae82cff2925f}">
+      <sh:name>Edit power plan</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>plans;choose;select;power;scheme;balanced;saver;change;</sh:keywords>
+      <sh:keywords>crt;displays;monitors;screeens;screens;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.PowerOptions" page="pagePlanSettings" />
+    </sh:task>
+    <sh:task id="{DF7B19EF-DEA5-47D7-BBA5-9FCBE400A59D}">
+      <sh:name>Change screen saver</sh:name>
+      <sh:keywords>savers;screan;screansavers;screeen;screeensavers;screen;screen-saver;screensavers;scren;screne;screnesavers;scrensavers;scrren;scrrensavers;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL desk.cpl,screensaver,Turn screen saver on or off</sh:name>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>savers;screan;screansavers;screeen;screeensavers;screen;screen-saver;screensavers;scren;screne;screnesavers;scrensavers;scrren;scrrensavers;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL desk.cpl,screensaver,Change date, time, or number formats</sh:name>
+      <sh:keywords>appearance;out;layout;of;looks;way;displayed;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>cents;currency;dollars;euros;money;pounds;sign;symbol;won;yen;yuan;</sh:keywords>
+      <sh:keywords>show;displayed;</sh:keywords>
+      <sh:keywords>formated;formating;formatted;formatting;</sh:keywords>
+      <sh:keywords>centimeters;centimetres;cm;feet;foot;inches;kilometers;kilometres;kilos;km;lbs;measurements;meters;metres;miles;numbers;ounces;oz;pounds;weight;width;</sh:keywords>
+      <sh:keywords>countries;country;dev;region;language;localisation;localised;locality;localization;localized;1;2;3;code;regional;regions;locale;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>hour;12-hour;24-hour;clock;date;day;dd;display;formating;formatting;four;digit;long;mmddyyyy;month;properties;short;time;two;year;yyyy;</sh:keywords>
+      <sh:keywords>alphabetise;alphabetize;order;sorting;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL intl.cpl</sh:command>
+    </sh:task>
+    <sh:task id="{71D0780F-10D2-459C-983B-94A642161220}">
+      <sh:name>Change the way currency is displayed</sh:name>
+      <sh:keywords>appearance;out;layout;of;looks;way;displayed;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>cents;currency;dollars;euros;money;pounds;sign;symbol;won;yen;yuan;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL intl.cpl</sh:command>
+    </sh:task>
+    <sh:task id="{50DF4F13-4188-49C3-B2FB-A76404DC0ACF}">
+      <sh:name>Change the way dates and lists are displayed</sh:name>
+      <sh:keywords>appearance;out;layout;of;looks;way;displayed;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>hour;12-hour;24-hour;clock;date;day;dd;display;formating;formatting;four;digit;long;mmddyyyy;month;properties;short;time;two;year;yyyy;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL intl.cpl</sh:command>
+    </sh:task>
+    <sh:task id="{1A5712E4-AAD7-4717-B22A-CF0B8438E2E6}">
+      <sh:name>Change the way measurements are displayed</sh:name>
+      <sh:keywords>appearance;out;layout;of;looks;way;displayed;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>centimeters;centimetres;cm;feet;foot;inches;kilometers;kilometres;kilos;km;lbs;measurements;meters;metres;miles;numbers;ounces;oz;pounds;weight;width;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL intl.cpl</sh:command>
+    </sh:task>
+    <sh:task id="{AF43E35C-47E7-4CD6-9D98-1319CA58AB0F}">
+      <sh:name>Change the way time is displayed</sh:name>
+      <sh:keywords>appearance;out;layout;of;looks;way;displayed;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>hour;12-hour;24-hour;clock;date;day;dd;display;formating;formatting;four;digit;long;mmddyyyy;month;properties;short;time;two;year;yyyy;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL intl.cpl</sh:command>
+    </sh:task>
+    <category id="6">
+      <sh:task idref="{7B083C74-CBA5-4A73-B235-8A5A71A1AE30}" />
+    </category>
+  </application>
+  <application id="{BF782CC9-5A52-4A17-806C-2A894FFEEAC5}">
+    <sh:task id="{5FFAA809-0961-40CF-90A4-58037867FA50}">
+      <sh:name>Add a language</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>chooses;choosing;chose;picked;picks;selected;selects;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>british;english;foreign;languages;french;german;hindi;international;japanese;korean;langpack;langs;languages;multilanguage;multi-language;pack;spanish;uk;usa;</sh:keywords>
+      <sh:keywords>text;words;menus;dialogs;buttons;labels;writing;ui;language;</sh:keywords>
+      <sh:keywords>messages;mesages;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Language" />
+    </sh:task>
+    <sh:task id="{995D28E5-A9C1-4A82-8EFB-C1CE53C06F07}">
+      <sh:name>Change input methods</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>characters;chinese;hangul;japanese;kanji;korean;writing;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>input;methods;imes;</sh:keywords>
+      <sh:keywords>board;bord;keyboards;keyborads;keybord;</sh:keywords>
+      <sh:keywords>british;english;foreign;languages;french;german;hindi;international;japanese;korean;langpack;langs;languages;multilanguage;multi-language;pack;spanish;uk;usa;</sh:keywords>
+      <sh:keywords>layout;out</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Language" />
+    </sh:task>
+    <sh:task id="{10cbe5dd-9921-4090-b412-361339a230ad}">
+      <sh:name>Settings for Microsoft IME (Japanese)</sh:name>
+      <sh:keywords>msime;ime;settings;japanese;</sh:keywords>
+      <sh:command>%windir%\system32\ime\imejp\imjpset.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Control Panel\International\User Profile\ja" />
+          <sh:parameter name="Regval" value="0411:{03B5835F-F03C-411B-9CE2-AA23E1171E36}{A76C93D9-5523-4E90-AAFA-4DB112F9AC76}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{27c7f1fd-44a2-4d71-8582-94b68161155e}">
+      <sh:name>Microsoft Pinyin SimpleFast Options</sh:name>
+      <sh:keywords>msime;ime;settings;pinyin;mspy;</sh:keywords>
+      <sh:command>%windir%\system32\ime\imesc\imscprop.exe /EXPRESS</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Control Panel\International\User Profile\zh-Hans-CN" />
+          <sh:parameter name="Regval" value="0804:{81D4E9C9-1D3B-41BC-9E6C-4B40BF79E35E}{FA550B04-5AD7-411f-A5AC-CA038EC515D7}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{3e89109c-f33a-4816-97bb-4aafb2a4cc3a}">
+      <sh:name>Microsoft Pinyin SimpleFast Options</sh:name>
+      <sh:keywords>msime;ime;settings;pinyin;mspy;</sh:keywords>
+      <sh:command>%windir%\system32\ime\imesc\imscprop.exe /EXPRESS</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Control Panel\International\User Profile\zh-Hans-SG" />
+          <sh:parameter name="Regval" value="0804:{81D4E9C9-1D3B-41BC-9E6C-4B40BF79E35E}{FA550B04-5AD7-411f-A5AC-CA038EC515D7}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{3a3b049c-15cf-4168-92a4-4daa9e73d754}">
+      <sh:name>Microsoft New Phonetic Settings</sh:name>
+      <sh:keywords>msime;ime;settings;phonetic;</sh:keywords>
+      <sh:command>%windir%\system32\ime\imetc\imtcprop.exe /NPH</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Control Panel\International\User Profile\zh-Hant-HK" />
+          <sh:parameter name="Regval" value="0404:{B115690A-EA02-48D5-A231-E3578D2FDF80}{B2F9C502-1742-11D4-9790-0080C882687E}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{ca265c6e-a2cc-43bd-a89f-15a5dd36b864}">
+      <sh:name>Microsoft New Phonetic Settings</sh:name>
+      <sh:keywords>msime;ime;settings;phonetic;</sh:keywords>
+      <sh:command>%windir%\system32\ime\imetc\imtcprop.exe /NPH</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Control Panel\International\User Profile\zh-Hant-MO" />
+          <sh:parameter name="Regval" value="0404:{B115690A-EA02-48D5-A231-E3578D2FDF80}{B2F9C502-1742-11D4-9790-0080C882687E}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{dcdff5fe-976a-4ebb-b3af-48d6502f95a5}">
+      <sh:name>Microsoft New Phonetic Settings</sh:name>
+      <sh:keywords>msime;ime;settings;phonetic;</sh:keywords>
+      <sh:command>%windir%\system32\ime\imetc\imtcprop.exe /NPH</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Control Panel\International\User Profile\zh-Hant-TW" />
+          <sh:parameter name="Regval" value="0404:{B115690A-EA02-48D5-A231-E3578D2FDF80}{B2F9C502-1742-11D4-9790-0080C882687E}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{3b6b0a88-6fe6-4850-9d84-0950e4841e0b}">
+      <sh:name>Microsoft ChangJie Settings</sh:name>
+      <sh:keywords>msime;ime;settings;changjie;</sh:keywords>
+      <sh:command>%windir%\system32\ime\imetc\imtcprop.exe /CJ</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Control Panel\International\User Profile\zh-Hant-HK" />
+          <sh:parameter name="Regval" value="0404:{531FDEBF-9B4C-4A43-A2AA-960E8FCDC732}{4BDF9F03-C7D3-11D4-B2AB-0080C882687E}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{a06064a2-4d92-4283-a7a3-4b071750880d}">
+      <sh:name>Microsoft ChangJie Settings</sh:name>
+      <sh:keywords>msime;ime;settings;changjie;</sh:keywords>
+      <sh:command>%windir%\system32\ime\imetc\imtcprop.exe /CJ</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Control Panel\International\User Profile\zh-Hant-MO" />
+          <sh:parameter name="Regval" value="0404:{531FDEBF-9B4C-4A43-A2AA-960E8FCDC732}{4BDF9F03-C7D3-11D4-B2AB-0080C882687E}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{b76c505d-3e8f-48e6-afea-60dd2998a3c9}">
+      <sh:name>Microsoft ChangJie Settings</sh:name>
+      <sh:keywords>msime;ime;settings;changjie;</sh:keywords>
+      <sh:command>%windir%\system32\ime\imetc\imtcprop.exe /CJ</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Control Panel\International\User Profile\zh-Hant-TW" />
+          <sh:parameter name="Regval" value="0404:{531FDEBF-9B4C-4A43-A2AA-960E8FCDC732}{4BDF9F03-C7D3-11D4-B2AB-0080C882687E}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{3ba397ea-1b49-4f90-b492-ba39c8b971b9}">
+      <sh:name>Microsoft Quick Settings</sh:name>
+      <sh:keywords>msime;ime;settings;quick;</sh:keywords>
+      <sh:command>%windir%\system32\ime\imetc\imtcprop.exe /QK</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Control Panel\International\User Profile\zh-Hant-HK" />
+          <sh:parameter name="Regval" value="0404:{531FDEBF-9B4C-4A43-A2AA-960E8FCDC732}{6024B45F-5C54-11D4-B921-0080C882687E}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{889971be-c1c8-43dc-ae16-c8bfc27ce564}">
+      <sh:name>Microsoft Quick Settings</sh:name>
+      <sh:keywords>msime;ime;settings;quick;</sh:keywords>
+      <sh:command>%windir%\system32\ime\imetc\imtcprop.exe /QK</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Control Panel\International\User Profile\zh-Hant-MO" />
+          <sh:parameter name="Regval" value="0404:{531FDEBF-9B4C-4A43-A2AA-960E8FCDC732}{6024B45F-5C54-11D4-B921-0080C882687E}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{a1c946ba-b127-444d-ac3a-716099e2c92f}">
+      <sh:name>Microsoft Quick Settings</sh:name>
+      <sh:keywords>msime;ime;settings;quick;</sh:keywords>
+      <sh:command>%windir%\system32\ime\imetc\imtcprop.exe /QK</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Control Panel\International\User Profile\zh-Hant-TW" />
+          <sh:parameter name="Regval" value="0404:{531FDEBF-9B4C-4A43-A2AA-960E8FCDC732}{6024B45F-5C54-11D4-B921-0080C882687E}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{7a4d0c5d-51ad-443e-87c7-66b757586c56}">
+      <sh:name>Microsoft IME Register Word (Japanese)</sh:name>
+      <sh:keywords>msime;ime;register;word;japanese;</sh:keywords>
+      <sh:command>%windir%\system32\ime\imejp\imjpdct.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Control Panel\International\User Profile\ja" />
+          <sh:parameter name="Regval" value="0411:{03B5835F-F03C-411B-9CE2-AA23E1171E36}{A76C93D9-5523-4E90-AAFA-4DB112F9AC76}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <category id="6">
+      <sh:task idref="{5FFAA809-0961-40CF-90A4-58037867FA50}" />
+      <sh:task idref="{995D28E5-A9C1-4A82-8EFB-C1CE53C06F07}" />
+    </category>
+  </application>
+  <application id="{87D66A43-7B11-4A28-9811-C86EE395ACF7}">
+    <sh:task id="{D4690CFE-6A59-4BAB-BFF7-9ED0D083E798}">
+      <sh:name>Change how Windows searches</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>finder;indexing;reindex;re-index;searches;searching;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>vista;windows;windw;7</sh:keywords>
+      <sh2:controlpanel name="Microsoft.IndexingOptions" page="2" />
+    </sh:task>
+  </application>
+  <application id="{BB64F8A7-BEE7-4E1A-AB8D-7D8273F7FDB6}">
+    <sh:task id="{950fd00b-c4a9-4465-852a-b1eb51e2e7f6}">
+      <sh:name>View recent messages about your computer</sh:name>
+      <sh:keywords>warning;report;alert;windows;crash;hang;balloon;reminder;solution;</sh:keywords>
+      <sh:keywords>messages;mesages;</sh:keywords>
+      <sh:keywords>notifications;notifying;notified;</sh:keywords>
+      <sh:keywords>analysis;answers;solutions;arounds;workarounds;checking;look;for;scanning;verify;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.ActionCenter" />
+    </sh:task>
+    <sh:task id="{FEBB9292-6110-4B9E-8565-91C4076E0A43}">
+      <sh:name>Review your computer&apos;s status and resolve issues</sh:name>
+      <sh:keywords>healthy;</sh:keywords>
+      <sh:keywords>checking;look;for;scanning;verify;</sh:keywords>
+      <sh:keywords>restricted;safety;secure;securing;security;sites;trusted;trusting;</sh:keywords>
+      <sh:keywords>condition;running;state;status;</sh:keywords>
+      <sh:keywords>fix;repair;error;warning;alert;windows;crash;hang;troubleshoot;diagnose;reports;diagnostic;diagnosis;balloon;reminder;performance;maintenance;maintain;reinstall;recovery;restore;cpc;completepc;pc;system;antivirus;anti-virus;spyware;networking;connection;connectivity;solution;</sh:keywords>
+      <sh:keywords>messages;mesages;</sh:keywords>
+      <sh:keywords>notifications;notifying;notified;</sh:keywords>
+      <sh:keywords>download;view;solutions;drivers;get;instructions;recommendations;messages;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.ActionCenter" />
+    </sh:task>
+    <sh:task id="{30137454-0E1F-43bb-9CB8-AEF452964B0B}">
+      <sh:name>View solutions to problems</sh:name>
+      <sh:keywords>check;for;new;solutions;problems;reports;and;fixed;fixes;fixing;bugs;crashes;errors;feedback;reporting;wer;windows;screen;bluescreen;crashing;freezes;freezing;frozen;up;hanging;not;working;</sh:keywords>
+      <sh:keywords>analysis;answers;solutions;arounds;workarounds;checking;look;for;scanning;verify;</sh:keywords>
+      <sh:keywords>view;solutions;to;problems;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.ActionCenter" />
+    </sh:task>
+    <sh:task id="{638f8e21-e157-40d7-97e0-a0c8e4c4e2b5}" needsElevation="true">
+      <sh:name>Change User Account Control settings</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>restricted;safety;secure;securing;security;sites;trusted;trusting;</sh:keywords>
+      <sh:keywords>credentials;elevations;LUA;prompts;prompting;security;warnings;UAC;administrator;rights;privileges;permissions;users;accounts;controls;administrater;dialogs;popups;</sh:keywords>
+      <sh:command>%windir%\system32\UserAccountControlSettings.exe</sh:command>
+    </sh:task>
+    <sh:task id="{90ab71ce-bab6-4ca2-84fe-629338405756}">
+      <sh:name>View reliability history</sh:name>
+      <sh:keywords>repair;problem;error;crash;hang;solution;</sh:keywords>
+      <sh:keywords>reliability;monitor;problem;history;system;stability;index;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.ActionCenter" page="pageReliabilityView" />
+    </sh:task>
+    <sh:task id="{36fb1658-3a23-4d62-9bfd-37f4b18a85e9}">
+      <sh:name>Fix problems with your computer</sh:name>
+      <sh:keywords>fix;repair;crash;hang;performance;maintenance;maintain;solutions;problems;reports;and;</sh:keywords>
+      <sh:keywords>recovery;recover;reinstall;factory;re-image;reimage;re-install;repair;restore;reinstate;reset;wipe;rollback;fix;troubleshoot;pc;refresh;erase;format;</sh:keywords>
+      <sh:keywords>messages;mesages;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.ActionCenter" />
+    </sh:task>
+    <sh:task id="{0e1d43a6-f261-491c-84ea-8bfcc6a4b70b}">
+      <sh:name>View recommended actions to keep Windows running smoothly</sh:name>
+      <sh:keywords>fix;repair;crash;hang;performance;maintenance;maintain;solutions;problems;reports;and;</sh:keywords>
+      <sh:keywords>messages;mesages;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.ActionCenter" />
+    </sh:task>
+    <sh:task id="{1a4635ec-181d-45ae-b691-bc75bec02756}">
+      <sh:name>Check security status</sh:name>
+      <sh:keywords>security;center;firewall;malware;virus;warning;windows;crash;antivirus;anti-virus;spyware;worm;trojan;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.ActionCenter" />
+    </sh:task>
+    <sh:task id="{AA9D2032-E8FB-4f8c-99C9-09F539AEBD59}">
+      <sh:name>View archived messages</sh:name>
+      <sh:keywords>check;for;new;solutions;problems;reports;and;fixed;fixes;fixing;bugs;crashes;errors;feedback;reporting;wer;windows;screen;bluescreen;crashing;freezes;freezing;frozen;up;hanging;not;working;</sh:keywords>
+      <sh:keywords>download;view;solutions;drivers;get;instructions;recommendations;messages;</sh:keywords>
+      <sh:keywords>view;archived;messages;analysis;answers;arounds;workarounds;solutions;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.ActionCenter" page="pageResponseArchive" />
+    </sh:task>
+    <sh:task id="{FEFF8F5D-EB40-485d-AC2A-EB7942DDF624}">
+      <sh:name>View all problem reports</sh:name>
+      <sh:keywords>reports;tell;microsoft;send;sent;clear;problems;delete;solutions;history;and;erase;view;all;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.ActionCenter" page="pageProblems" />
+    </sh:task>
+    <sh:task id="{FADA4BFB-4853-4547-B70F-1B565E7D907B}">
+      <sh:name>Change Automatic Maintenance settings</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.ActionCenter" page="MaintenanceSettings" />
+    </sh:task>
+    <category id="5">
+      <sh:task idref="{FEBB9292-6110-4B9E-8565-91C4076E0A43}" />
+      <sh:task idref="{638f8e21-e157-40d7-97e0-a0c8e4c4e2b5}" />
+      <sh:task idref="{5902614C-D9C7-4902-9F7F-BAF85454D0B2}">
+        <sh:name>Troubleshoot common computer problems</sh:name>
+      </sh:task>
+      <sh:task idref="{08EB53B7-3384-473A-8D2C-6C0E71F3BF34}">
+        <sh:name>Troubleshoot common computer problems</sh:name>
+      </sh:task>
+    </category>
+  </application>
+  <application id="{F2DDFC82-8F12-4CDD-B7DC-D4FE1425AA4D}">
+    <sh:task id="{37E2F32E-C821-4094-B429-2B4E8EA810AA}">
+      <sh:name>Adjust system volume</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>customisation;customises;customization;customizes;customizing;personalisation;personalise;personalization;personalize;</sh:keywords>
+      <sh:keywords>not;hear;can&apos;t;sound;volume;is;off;too;low;</sh:keywords>
+      <sh:keywords>audio;beeps;music;noises;schemes;sounds;tones;wav;sound;beep;noise;</sh:keywords>
+      <sh:keywords>audio;card;computer;external;internal;pc;speakers;</sh:keywords>
+      <sh:keywords>louder;mute;noise;quiet;quite;soft;volume;</sh:keywords>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:command>%windir%\system32\sndvol.exe</sh:command>
+    </sh:task>
+    <sh:task id="{96DF8B78-8299-4BC1-B56B-6C375FBEC228}">
+      <sh:name>Change sound card settings</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>cards;soundcards;</sh:keywords>
+      <sh:keywords>audio;beeps;music;noises;schemes;sounds;tones;wav;sound;beep;noise;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Sound" />
+    </sh:task>
+    <sh:task id="{0CDC534D-A9FF-450D-91D8-96C341ED44AA}">
+      <sh:name>Change system sounds</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>not;hear;can&apos;t;sound;volume;is;off;too;low;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>audio;beeps;music;noises;schemes;sounds;tones;wav;sound;beep;noise;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Sound" page="2" />
+    </sh:task>
+    <sh:task id="{5D611F64-7985-459B-BDFF-AEC069CB2625}">
+      <sh:name>Manage audio devices</sh:name>
+      <sh:keywords>audio;balance;card;effect;encoding;jack;level;line;microphone;mono;multichannel;multi-channel;port;sound;speaker;stereo;subwoofer;surround;</sh:keywords>
+      <sh:keywords>in;line-in;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>customisation;customises;customization;customizes;customizing;personalisation;personalise;personalization;personalize;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>midi;musical;instrument;digital;interface;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>audio;beeps;music;noises;schemes;sounds;tones;wav;sound;beep;noise;</sh:keywords>
+      <sh:keywords>used;using;</sh:keywords>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Sound" />
+    </sh:task>
+    <category id="2">
+      <sh:task idref="{37E2F32E-C821-4094-B429-2B4E8EA810AA}" />
+      <sh:task idref="{0CDC534D-A9FF-450D-91D8-96C341ED44AA}" />
+      <sh:task idref="{5D611F64-7985-459B-BDFF-AEC069CB2625}" />
+    </category>
+  </application>
+  <application id="{58E3C745-D971-4081-9034-86E34B30836A}">
+    <sh:task id="{89A2270D-DF2E-4172-8BA5-159D6AD00C15}">
+      <sh:name>Change text to speech settings</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>text;to;speech;tts;voice;narrator;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL %windir%\system32\speech\speechux\sapi.cpl</sh:command>
+    </sh:task>
+    <sh:task id="{3FBEBE8C-634C-4CBD-A9CF-C9A500C372A6}">
+      <sh:name>Print the speech reference card</sh:name>
+      <sh:keywords>adapters;adaptor;cards;</sh:keywords>
+      <sh:keywords>out;printers;printing;printner;printout;print-out;pritner;</sh:keywords>
+      <sh:keywords>card;help;instructions;paper;reference;sheet;</sh:keywords>
+      <sh:keywords>activated;commanding;dictate;dictation;recogination;recognition;recognize;recongition;reconition;speaking;speechrecognition;speech-recognition;talk;to;understand;voice;</sh:keywords>
+      <sh:command>http://go.microsoft.com/fwlink/?LinkId=619882</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValEquals">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Software\Microsoft\Speech\Preferences" />
+          <sh:parameter name="Regval" value="CompletedFTUE" />
+          <sh:parameter name="RegvalExpected" value="1" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{F96E2F30-2018-4F0E-BBEE-7CCBEE8CE714}">
+      <sh:name>Set up a microphone</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>external;headset;internal;jack;phone;microphones;mics;mikes;</sh:keywords>
+      <sh:keywords>activated;commanding;dictate;dictation;recogination;recognition;recognize;recongition;reconition;speaking;speechrecognition;speech-recognition;talk;to;understand;voice;</sh:keywords>
+      <sh:keywords>used;using;</sh:keywords>
+      <sh:command>%WINDIR%\system32\msdt.exe /id SpeechDiagnosticCalibrate /ep ControlPanel /skip true</sh:command>
+    </sh:task>
+    <sh:task id="{FD4FB8FA-F752-4E78-933B-8969E18BC9B5}">
+      <sh:name>Start speech recognition</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>activated;commanding;dictate;dictation;recogination;recognition;recognize;recongition;reconition;speaking;speechrecognition;speech-recognition;talk;to;understand;voice;</sh:keywords>
+      <sh:command>%windir%\speech\common\sapisvr.exe -SpeechUX</sh:command>
+    </sh:task>
+    <sh:task id="{028DE9F5-65F3-4A06-A048-421056F3E421}">
+      <sh:name>Take speech tutorials</sh:name>
+      <sh:keywords>activated;commanding;dictate;dictation;recogination;recognition;recognize;recongition;reconition;speaking;speechrecognition;speech-recognition;talk;to;understand;voice;</sh:keywords>
+      <sh:keywords>teach;training;tutorial;</sh:keywords>
+      <sh:keywords>learn;lessons;teach;tutorial;example;training;wizard;to;use;how;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe %windir%\system32\speech\speechux\SpeechUX.dll,RunWizard Tutorial</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValEquals">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Software\Microsoft\Speech\Preferences" />
+          <sh:parameter name="Regval" value="CompletedFTUE" />
+          <sh:parameter name="RegvalExpected" value="1" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{8902C92D-5AB7-433B-9065-3F55F8334E29}">
+      <sh:name>Train the computer to recognize your voice</sh:name>
+      <sh:keywords>accuracy;accurately;precise;precision;correct;mistakes;</sh:keywords>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>customisation;customises;customization;customizes;customizing;personalisation;personalise;personalization;personalize;</sh:keywords>
+      <sh:keywords>best;better;easier;easy;enhance;improvement;make;more;most;optimal;optimise;optimize;</sh:keywords>
+      <sh:keywords>activated;commanding;dictate;dictation;recogination;recognition;recognize;recongition;reconition;speaking;speechrecognition;speech-recognition;talk;to;understand;voice;</sh:keywords>
+      <sh:keywords>teach;training;tutorial;</sh:keywords>
+      <sh:command>%%windir%\system32\rundll32.exe %windir%\system32\speech\speechux\SpeechUX.dll,RunWizard UserTraining</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValEquals">
+          <sh:parameter name="Regkey" value="HKEY_CURRENT_USER\Software\Microsoft\Speech\Preferences" />
+          <sh:parameter name="Regval" value="CompletedFTUE" />
+          <sh:parameter name="RegvalExpected" value="1" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <category id="7">
+      <sh:task idref="{FD4FB8FA-F752-4E78-933B-8969E18BC9B5}" />
+      <sh:task idref="{F96E2F30-2018-4F0E-BBEE-7CCBEE8CE714}" />
+      <sh:task idref="{028DE9F5-65F3-4A06-A048-421056F3E421}" />
+      <sh:task idref="{8902C92D-5AB7-433B-9065-3F55F8334E29}" />
+      <sh:task idref="{3FBEBE8C-634C-4CBD-A9CF-C9A500C372A6}" />
+    </category>
+  </application>
+  <application id="{9C73F5E5-7AE7-4E32-A8E8-8D23B85255BF}">
+    <sh:task id="{030C20F0-E20B-417A-B7AD-CEC6EE955CD3}">
+      <sh:name>Manage offline files</sh:name>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>line;offline;off-line;ofline;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL %windir%\system32\cscui.dll</sh:command>
+    </sh:task>
+    <sh:task id="{875FE7D6-5BDF-496F-B349-91E5E3625B86}">
+      <sh:name>Encrypt your offline files</sh:name>
+      <sh:keywords>line;offline;off-line;ofline;</sh:keywords>
+      <sh:keywords>guard;protect;secure;preserve;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL %windir%\system32\cscui.dll ,2</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsOfflineFilesEnabled" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{14DEC75C-D6CE-44A9-8349-AD0F46EF96BE}">
+      <sh:name>Manage disk space used by your offline files</sh:name>
+      <sh:keywords>disc;disks;drive;</sh:keywords>
+      <sh:keywords>line;offline;off-line;ofline;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>space;cache;room;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL %windir%\system32\cscui.dll ,1</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsOfflineFilesEnabled" />
+      </sh:conditions>
+    </sh:task>
+  </application>
+  <application id="{BB06C0E4-D293-4F75-8A90-CB05B6477EEE}">
+    <sh:task id="{6A10BC7B-2586-4B57-A5AA-C14BDE743DC4}" needsElevation="true">
+      <sh:name>Adjust the appearance and performance of Windows</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>crawl;degrade;faster;frozen;hanging;hung;improve;inactive;optimize;performance;quicker;sluggish;speed;thrashing;too;slow;unresponsive;</sh:keywords>
+      <sh:keywords>visuals;effects;drop;shadows;smooth;scrolling;slide;fade;sliding;fading;</sh:keywords>
+      <sh:command>%windir%\system32\SystemPropertiesPerformance.exe</sh:command>
+    </sh:task>
+    <sh:task id="{728047C0-00D2-4FDB-A069-06338B92E93B}" needsElevation="true">
+      <sh:name>Allow remote access to your computer</sh:name>
+      <sh:keywords>allowed;let;through;permitted;</sh:keywords>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>access;control;RAS;acess;assistance;desktop;remotely;terminal;services;ts;</sh:keywords>
+      <sh:keywords>top;remote;desktop;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:command>%windir%\system32\SystemPropertiesRemote.exe</sh:command>
+    </sh:task>
+    <sh:task id="{33F1F9B5-BD94-4D77-96AE-62F10E4A010A}" needsElevation="true">
+      <sh:name>Allow Remote Assistance invitations to be sent from this computer</sh:name>
+      <sh:keywords>allowed;let;through;permitted;</sh:keywords>
+      <sh:keywords>invitations;invite;inviting;send;</sh:keywords>
+      <sh:keywords>access;control;RAS;acess;assistance;desktop;remotely;terminal;services;ts;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:command>%windir%\system32\SystemPropertiesRemote.exe</sh:command>
+    </sh:task>
+    <sh:task id="{D652F9E4-08FD-4A24-8EAC-05715188233E}">
+      <sh:name>Invite someone to connect to your PC and help you, or offer to help someone else</sh:name>
+      <sh:keywords>access;control;RAS;acess;assistance;desktop;remotely;terminal;services;ts;</sh:keywords>
+      <sh:keywords>invitations;invite;inviting;send;</sh:keywords>
+      <sh:command>%SystemRoot%\system32\msra.exe</sh:command>
+    </sh:task>
+    <sh:task id="{B935C3B6-969C-4FC2-B96C-7F06794471AF}" needsElevation="true">
+      <sh:name>Change workgroup name</sh:name>
+      <sh:keywords>connect;to;enter;join;plug;into;</sh:keywords>
+      <sh:keywords>names;rename;renaming;</sh:keywords>
+      <sh:keywords>group;workgroup;</sh:keywords>
+      <sh:command>%windir%\system32\SystemPropertiesComputerName.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineOnDomain" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{87454AD9-0669-4C0B-8DFE-D1FD83EDD787}">
+      <sh:name>Check processor speed</sh:name>
+      <sh:keywords>checking;look;for;scanning;verify;</sh:keywords>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>486;agp;amd;bus;chip;clock;cpu;fast;intel;overclock;pentium;performance;processing;processor;ram;up;speedup;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.System" />
+    </sh:task>
+    <sh:task id="{059ECE57-19D1-4112-B05C-86F8ED5DA6B0}">
+      <sh:name>Configure advanced user profile properties</sh:name>
+      <sh:keywords>accounts;alias;login;useraccount;useracount;users;</sh:keywords>
+      <sh:keywords>administer;configure;managed;manages;managing;up;setup;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe sysdm.cpl,EditUserProfiles</sh:command>
+    </sh:task>
+    <sh:task id="{DD338333-7000-45CC-A84D-64680D6E683D}" needsElevation="true">
+      <sh:name>Create a restore point</sh:name>
+      <sh:keywords>add;create;make;new;</sh:keywords>
+      <sh:keywords>data;recovering;recovers;recovery;</sh:keywords>
+      <sh:keywords>points;wizard;system;protection;restores;systemrestores;</sh:keywords>
+      <sh:command>%windir%\system32\SystemPropertiesProtection.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValEquals" invert="true">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" />
+          <sh:parameter name="Regval" value="PROCESSOR_ARCHITECTURE" />
+          <sh:parameter name="RegvalExpected" value="ARM" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{37092408-D49C-451D-B56D-78B243DC475C}">
+      <sh:name>Edit environment variables for your account</sh:name>
+      <sh:keywords>environment;variables;path;envvar;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe sysdm.cpl,EditEnvironmentVariables</sh:command>
+    </sh:task>
+    <sh:task id="{E2394C16-F45A-496F-83CC-49E163281662}" needsElevation="true">
+      <sh:name>Edit the system environment variables</sh:name>
+      <sh:keywords>environment;variables;path;envvar;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:command>%windir%\system32\SystemPropertiesAdvanced.exe</sh:command>
+    </sh:task>
+    <sh:task id="{025CD993-3A34-409A-8BD0-928B06BEE68F}">
+      <sh:name>How to change the size of virtual memory</sh:name>
+      <sh:keywords>bigger;decrease;enlarge;increase;larger;resize;shape;short;shrink;size;skinny;smaller;taller;thin;too;wider;width;</sh:keywords>
+      <sh:keywords>memory;virtualmemory;pagefile;file;</sh:keywords>
+      <sh:command>mshelp://windows/?id=89ca317f-649d-40a6-8934-e5707ee5c4b8</sh:command>
+    </sh:task>
+    <sh:task id="{33C56305-BA7B-48E0-9784-2D05E3F5D27E}" needsElevation="true">
+      <sh:name>Join a domain</sh:name>
+      <sh:keywords>connect;to;enter;join;plug;into;</sh:keywords>
+      <sh:keywords>domain;domian;</sh:keywords>
+      <sh:keywords>server;</sh:keywords>
+      <sh:command>%windir%\system32\SystemPropertiesComputerName.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineNotOnDomainAndDomainIsAvail" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{1845AA13-3644-4FBC-B766-EEEF29683256}" needsElevation="true">
+      <sh:name>Rename this computer</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>names;rename;renaming;</sh:keywords>
+      <sh:command>%windir%\system32\SystemPropertiesComputerName.exe</sh:command>
+    </sh:task>
+    <sh:task id="{C86B1923-8E1F-414B-83DB-94B09BA73E15}" needsElevation="true">
+      <sh:name>Create a recovery drive</sh:name>
+      <sh:keywords>add;create;make;new;</sh:keywords>
+      <sh:keywords>disk;drive;harddisk;hard-disk;harddrive;hard-drive;</sh:keywords>
+      <sh:keywords>recovery;recover;reinstall;factory;re-image;reimage;re-install;repair;restore;reinstate;reset;wipe;rollback;fix;troubleshoot;pc;refresh;erase;format;</sh:keywords>
+      <sh:command>%windir%\system32\RecoveryDrive.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{231A4A2D-E36A-46CD-84E6-F38551540242}">
+      <sh:name>See the name of this computer</sh:name>
+      <sh:keywords>names;rename;renaming;</sh:keywords>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>check;list;see;show;viewing;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.System" />
+    </sh:task>
+    <sh:task id="{E2E2F6CF-9D1A-4004-8999-8AB81010B5AC}" needsElevation="true">
+      <sh:name>Select users who can use remote desktop</sh:name>
+      <sh:keywords>accounts;alias;login;useraccount;useracount;users;</sh:keywords>
+      <sh:keywords>allowed;let;through;permitted;</sh:keywords>
+      <sh:keywords>access;permissions;priveleges;priviledges;privileges;rights;</sh:keywords>
+      <sh:keywords>access;control;RAS;acess;assistance;desktop;remotely;terminal;services;ts;</sh:keywords>
+      <sh:keywords>top;remote;desktop;</sh:keywords>
+      <sh:command>%windir%\system32\SystemPropertiesRemote.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#SkuEquals" invert="true">
+          <sh:parameter name="Sku" value="anyhome" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{9AF7F177-BD1C-4E3A-902F-BA0276FDC9ED}">
+      <sh:name>Show how much RAM is on this computer</sh:name>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>amount;of;many;much;howmuch;</sh:keywords>
+      <sh:keywords>gigabytes;gigs;megabytes;megs;memory;ram;</sh:keywords>
+      <sh:keywords>automatically;autoshow;auto-show;make;visible;see;show;unlock;view;</sh:keywords>
+      <sh:keywords>check;list;see;show;viewing;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.System" />
+    </sh:task>
+    <sh:task id="{C7C81DAD-835C-45B0-9632-60F3EB5D55AC}">
+      <sh:name>Show which domain your computer is on</sh:name>
+      <sh:keywords>domain;domian;</sh:keywords>
+      <sh:keywords>automatically;autoshow;auto-show;make;visible;see;show;unlock;view;</sh:keywords>
+      <sh:keywords>check;list;see;show;viewing;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.System" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineOnDomain" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{B0A7A618-4DC5-4C8D-996A-70DE2F8BAD25}">
+      <sh:name>Show which operating system your computer is running</sh:name>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>operating;system;os;</sh:keywords>
+      <sh:keywords>release;version;edition;</sh:keywords>
+      <sh:keywords>what;which;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.System" />
+    </sh:task>
+    <sh:task id="{D995F7E9-727D-4AD6-83F3-A4A753965A8F}">
+      <sh:name>Show which workgroup this computer is on</sh:name>
+      <sh:keywords>group;workgroup;</sh:keywords>
+      <sh:keywords>automatically;autoshow;auto-show;make;visible;see;show;unlock;view;</sh:keywords>
+      <sh:keywords>check;list;see;show;viewing;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.System" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineOnDomain" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{B1FE5142-DEDD-409B-BCC8-547EC08DE84E}" needsElevation="true">
+      <sh:name>View advanced system settings</sh:name>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:command>%windir%\system32\SystemPropertiesAdvanced.exe</sh:command>
+    </sh:task>
+    <sh:task id="{E79BCB1B-EEB7-4180-98FD-BD47F6DCFF79}">
+      <sh:name>View basic information about your computer</sh:name>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>gigabytes;gigs;megabytes;megs;memory;ram;</sh:keywords>
+      <sh:keywords>automatically;autoshow;auto-show;make;visible;see;show;unlock;view;</sh:keywords>
+      <sh:keywords>check;list;see;show;viewing;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.System" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#SkuEquals">
+          <sh:parameter name="Sku" value="starter" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{E9C71548-B580-43B2-ACDB-1BA924002754}">
+      <sh:name>Task Manager</sh:name>
+      <sh:keywords>proceses;processes;</sh:keywords>
+      <sh:keywords>task manager;mgr;manager;taskmgr;view;task;application;taskman;end task;close;</sh:keywords>
+      <sh:command>%windir%\system32\taskmgr.exe /6</sh:command>
+    </sh:task>
+    <sh:task id="{CD95D0E3-6B3A-495B-9FDA-57FAD586304D}">
+      <sh:name>View system resource usage in Task Manager</sh:name>
+      <sh:keywords>disk;drive;harddisk;hard-disk;harddrive;hard-drive;</sh:keywords>
+      <sh:keywords>network;connections;netwerk;conection;</sh:keywords>
+      <sh:keywords>486;agp;amd;bus;chip;clock;cpu;fast;intel;overclock;pentium;performance;processing;processor;ram;up;speedup;</sh:keywords>
+      <sh:keywords>memory;virtualmemory;pagefile;file;</sh:keywords>
+      <sh:command>%windir%\system32\taskmgr.exe /6</sh:command>
+    </sh:task>
+    <sh:task id="{E4B554C8-B067-4540-A478-0565BB1F76B9}">
+      <sh:name>See which processes start up automatically when you start Windows</sh:name>
+      <sh:keywords>items;up;startup;programs;</sh:keywords>
+      <sh:command>%windir%\system32\taskmgr.exe /6 /Startup</sh:command>
+    </sh:task>
+    <category id="5">
+      <sh:task idref="{9AF7F177-BD1C-4E3A-902F-BA0276FDC9ED}">
+        <sh:name>View amount of RAM and processor speed</sh:name>
+      </sh:task>
+      <sh:task idref="{728047C0-00D2-4FDB-A069-06338B92E93B}">
+        <sh:name>Allow remote access</sh:name>
+      </sh:task>
+      <sh:task idref="{D652F9E4-08FD-4A24-8EAC-05715188233E}">
+        <sh:name>Launch remote assistance</sh:name>
+      </sh:task>
+      <sh:task idref="{231A4A2D-E36A-46CD-84E6-F38551540242}" />
+      <sh:task idref="{14CD8B31-A191-435E-B709-C32E79C93079}" />
+    </category>
+  </application>
+  <application id="{0DF44EAA-FF21-4412-828E-260A8728E7F1}">
+    <sh:task id="{FE777427-D33C-485B-A414-3BD5A2943162}">
+      <sh:name>Auto-hide the taskbar</sh:name>
+      <sh:keywords>flicks;gestures;flik;filcks;penflick;</sh:keywords>
+      <sh:keywords>autohide;auto-hide;automatically;hide;make;invisible;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>automatically;autoshow;auto-show;make;visible;see;show;unlock;view;</sh:keywords>
+      <sh:keywords>icons;area;sgtray.exe;start;tray;systemtray;systray;task;toolbar;tray;taskbar;task-bar;bars;toolbars;</sh:keywords>
+      <sh:keywords>notifications;notifying;notified;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Taskbar" />
+    </sh:task>
+    <sh:task id="{09BF6A57-7BF7-4389-8D6F-2BCF6A26BB4E}">
+      <sh:name>Navigation properties</sh:name>
+      <sh:keywords>customisation;customises;customization;customizes;customizing;personalisation;personalise;personalization;personalize;</sh:keywords>
+      <sh:keywords>navigation;desktop;mouse;start;corner;corners;background;windows logo key;windows key;win;winkey;sign in;signin;apps view;boot;to;charm;charms;powershell;command prompt</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Options_RunDLL 8</sh:command>
+    </sh:task>
+    <sh:task id="{16C327FA-D8A8-41C0-B022-64AC67715327}">
+      <sh:name>Customize the taskbar</sh:name>
+      <sh:keywords>customisation;customises;customization;customizes;customizing;personalisation;personalise;personalization;personalize;</sh:keywords>
+      <sh:keywords>icons;area;sgtray.exe;start;tray;systemtray;systray;task;toolbar;tray;taskbar;task-bar;bars;toolbars;</sh:keywords>
+      <sh:keywords>notifications;notifying;notified;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Taskbar" />
+    </sh:task>
+    <sh:task id="{2B6FE85A-C7AA-440F-B9A3-3F5EDCA3F6C2}">
+      <sh:name>Group similar windows on the taskbar</sh:name>
+      <sh:keywords>grouping;</sh:keywords>
+      <sh:keywords>icons;area;sgtray.exe;start;tray;systemtray;systray;task;toolbar;tray;taskbar;task-bar;bars;toolbars;</sh:keywords>
+      <sh:keywords>vista;windows;windw;7</sh:keywords>
+      <sh:keywords>notifications;notifying;notified;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Taskbar" />
+    </sh:task>
+    <sh:task id="{06FF5AE9-8F7C-41AD-B71B-62137DE26715}">
+      <sh:name>Lock or unlock the taskbar</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>icons;area;sgtray.exe;start;tray;systemtray;systray;task;toolbar;tray;taskbar;task-bar;bars;toolbars;</sh:keywords>
+      <sh:keywords>release;version;edition;</sh:keywords>
+      <sh:keywords>what;which;</sh:keywords>
+      <sh:keywords>notifications;notifying;notified;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Taskbar" />
+    </sh:task>
+    <sh:task id="{DECD0904-8AB3-4467-B095-2DAB159871E7}">
+      <sh:name>What happened to the Quick Launch toolbar?</sh:name>
+      <sh:keywords>icons;area;sgtray.exe;start;tray;systemtray;systray;task;toolbar;tray;taskbar;task-bar;bars;toolbars;</sh:keywords>
+      <sh:keywords>launch;quicklaunch;quiklaunch;tray;taskbar;task-bar;bars;toolbars;pin;</sh:keywords>
+      <sh:keywords>notifications;notifying;notified;</sh:keywords>
+      <sh:command>mshelp://windows/?id=329cf1bc-0f32-41ba-b717-362880a7f6df</sh:command>
+    </sh:task>
+    <category id="1">
+      <sh:task idref="{09BF6A57-7BF7-4389-8D6F-2BCF6A26BB4E}" />
+    </category>
+  </application>
+  <application id="{60632754-C523-4B62-B45C-4172DA012619}">
+    <sh:task id="{33C29E1D-D8BE-4811-8496-1FE0F9164F63}" needsElevation="true">
+      <sh:name>Remove user accounts</sh:name>
+      <sh:keywords>accounts;alias;login;useraccount;useracount;users;</sh:keywords>
+      <sh:keywords>added;adding;addon;add-on;adds;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>users;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.UserAccounts" page="pageAdminTasks" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineOnDomain" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{F58C814D-989E-4584-8053-A424F11D8CCF}" needsElevation="true">
+      <sh:name>Change account type</sh:name>
+      <sh:keywords>accounts;alias;login;useraccount;useracount;users;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>add;create;make;new;</sh:keywords>
+      <sh:keywords>names;rename;renaming;</sh:keywords>
+      <sh:keywords>users;</sh:keywords>
+      <sh:command>%windir%\system32\netplwiz.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineOnDomain" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{63A7F0F7-6ACD-4D19-92FE-FB4BD9D35BA6}" needsElevation="true">
+      <sh:name>Change account type</sh:name>
+      <sh:keywords>accounts;alias;login;useraccount;useracount;users;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>add;create;make;new;</sh:keywords>
+      <sh:keywords>names;rename;renaming;</sh:keywords>
+      <sh:keywords>users;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.UserAccounts" page="pageAdminTasks" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineOnDomain" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{906435EC-336D-4B77-BCD6-397DE8318852}">
+      <sh:name>Create a password reset disk</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>add;create;make;new;</sh:keywords>
+      <sh:keywords>disc;disks;drive;</sh:keywords>
+      <sh:keywords>can&apos;t;remember;don&apos;t;forget;forgotten;lost;</sh:keywords>
+      <sh:keywords>word;pass-word;passwords;passwork;passwrod;pasword;paswrod;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe keymgr.dll,PRShowSaveWizardExW</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineOnDomain" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{392226F2-0330-41AC-A14C-930BF2ECD136}" needsElevation="true">
+      <sh:name>Create an account</sh:name>
+      <sh:keywords>accounts;alias;login;useraccount;useracount;users;</sh:keywords>
+      <sh:keywords>add;create;make;new;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.UserAccounts" page="pageAdminTasks" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineOnDomain" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{181A6367-8AD9-4D95-B244-3CA1B1C8F947}" needsElevation="true">
+      <sh:name>Create standard user account</sh:name>
+      <sh:keywords>accounts;alias;login;useraccount;useracount;users;</sh:keywords>
+      <sh:keywords>add;create;make;new;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.UserAccounts" page="pageAdminTasks" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineOnDomain" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{A88F43D0-B9C8-42F2-B9F3-90902FC0B22B}" needsElevation="true">
+      <sh:name>Edit local users and groups</sh:name>
+      <sh:keywords>accounts;alias;login;useraccount;useracount;users;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:command>%windir%\system32\mmc.exe %windir%\system32\lusrmgr.msc</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineOnDomain" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{9BA82944-3278-44BB-B77A-2971088BF558}" needsElevation="true">
+      <sh:name>Give administrative rights to a domain user</sh:name>
+      <sh:keywords>accounts;alias;login;useraccount;useracount;users;</sh:keywords>
+      <sh:keywords>administrator;admins;</sh:keywords>
+      <sh:keywords>allowed;let;through;permitted;</sh:keywords>
+      <sh:keywords>add;create;make;new;</sh:keywords>
+      <sh:keywords>domain;domian;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>access;permissions;priveleges;priviledges;privileges;rights;</sh:keywords>
+      <sh:command>%windir%\system32\netplwiz.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineOnDomain" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{ABFED31C-B7D3-41F2-90AC-5E89EC2FCC5B}" needsElevation="true">
+      <sh:name>Give other users access to this computer</sh:name>
+      <sh:keywords>accounts;alias;login;useraccount;useracount;users;</sh:keywords>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>add;create;make;new;</sh:keywords>
+      <sh:keywords>access;permissions;priveleges;priviledges;privileges;rights;</sh:keywords>
+      <sh:command>%windir%\system32\netplwiz.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineOnDomain" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{9CBCDFA2-56DE-4847-921E-B2A6625AD0CE}">
+      <sh:name>How to change your Windows password</sh:name>
+      <sh:keywords>accounts;alias;login;useraccount;useracount;users;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>add;create;make;new;</sh:keywords>
+      <sh:keywords>names;rename;renaming;</sh:keywords>
+      <sh:keywords>word;pass-word;passwords;passwork;passwrod;pasword;paswrod;</sh:keywords>
+      <sh:command>mshelp://windows/?id=5c07e067-286d-4b8d-b342-431306e696aa</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineOnDomain" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{DED00988-1B8D-4390-924D-C7E85A254953}" needsElevation="true">
+      <sh:name>Make changes to accounts</sh:name>
+      <sh:keywords>accounts;alias;login;useraccount;useracount;users;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>access;permissions;priveleges;priviledges;privileges;rights;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.UserAccounts" page="pageAdminTasks" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsMachineOnDomain" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{7E5BC096-F558-419A-9326-BC6414D592C3}">
+      <sh:name>Manage file encryption certificates</sh:name>
+      <sh:keywords>certificates;keys;signatures;signed;</sh:keywords>
+      <sh:keywords>guard;protect;secure;preserve;</sh:keywords>
+      <sh:keywords>files;</sh:keywords>
+      <sh:keywords>administer;configure;managed;manages;managing;up;setup;</sh:keywords>
+      <sh:command>%windir%\system32\rekeywiz.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#SkuEquals" invert="true">
+          <sh:parameter name="Sku" value="anyhome" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{693E4EF4-9060-469B-AB2E-948B6B68A883}">
+      <sh:name>Manage user certificates</sh:name>
+      <sh:keywords>certificate;key</sh:keywords>
+      <sh:command>%windir%\system32\mmc.exe %windir%\system32\certmgr.msc</sh:command>
+    </sh:task>
+    <sh:task id="{082594D9-8481-43F0-AE8F-62EA920A4220}">
+      <sh:name>Manage network passwords</sh:name>
+      <sh:keywords>administer;configure;managed;manages;managing;up;setup;</sh:keywords>
+      <sh:keywords>connections;go;online;intranet;lan;netowrk;networking;line;on-line;www;</sh:keywords>
+      <sh:keywords>word;pass-word;passwords;passwork;passwrod;pasword;paswrod;</sh:keywords>
+      <sh:keywords>restricted;safety;secure;securing;security;sites;trusted;trusting;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.CredentialManager" page="?SelectedVault=CredmanVault" />
+    </sh:task>
+    <sh:task id="{D679D992-D843-4D3C-BFEA-5EDF4D37EE9F}">
+      <sh:name>Reset Security Policies</sh:name>
+      <sh:keywords>policies;policys;</sh:keywords>
+      <sh:keywords>Reset;Security;Exchange;ActiveSync</sh:keywords>
+      <sh2:controlpanel name="Microsoft.UserAccounts" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#COMCondition">
+          <sh:parameter name="CLSID" value="{133736A7-1B6C-4FE8-BDD6-DF1F4CF7102A}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <category id="9">
+      <sh:task idref="{63A7F0F7-6ACD-4D19-92FE-FB4BD9D35BA6}" />
+      <sh:task idref="{33C29E1D-D8BE-4811-8496-1FE0F9164F63}" />
+      <sh:task idref="{ABFED31C-B7D3-41F2-90AC-5E89EC2FCC5B}" />
+      <sh:task idref="{F58C814D-989E-4584-8053-A424F11D8CCF}" />
+    </category>
+  </application>
+  <application id="{4026492F-2F69-46B8-B9BF-5654FC07E423}">
+    <sh:task id="{1928DA28-C5A7-4F13-AF81-8238D57A793F}">
+      <sh:name>Allow an app through Windows Firewall</sh:name>
+      <sh:keywords>allowed;let;through;permitted;</sh:keywords>
+      <sh:keywords>ecxeption;exception;exeption;</sh:keywords>
+      <sh:keywords>builtin;built-in;fire-wall;firewalled;firwall;frewall;ifc;protection;walled;</sh:keywords>
+      <sh:keywords>from;the;web;inet;internet;intrnet;net;online;on-line;sites;pages;webpages;websites;world;wide;www;</sh:keywords>
+      <sh:keywords>applets;applications;apps;aps;files;programmes;programs;softare;softwares;sofware;sotfware;windos;windows;</sh:keywords>
+      <sh:keywords>restricted;safety;secure;securing;security;sites;trusted;trusting;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.WindowsFirewall" page="PageConfigureApps" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValEquals" invert="true">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" />
+          <sh:parameter name="Regval" value="PROCESSOR_ARCHITECTURE" />
+          <sh:parameter name="RegvalExpected" value="ARM" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{F2E71049-6F88-4A3B-9475-5A2B40B36092}">
+      <sh:name>Check firewall status</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>builtin;built-in;fire-wall;firewalled;firwall;frewall;ifc;protection;walled;</sh:keywords>
+      <sh:keywords>from;the;web;inet;internet;intrnet;net;online;on-line;sites;pages;webpages;websites;world;wide;www;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>restricted;safety;secure;securing;security;sites;trusted;trusting;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.WindowsFirewall" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValEquals" invert="true">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" />
+          <sh:parameter name="Regval" value="PROCESSOR_ARCHITECTURE" />
+          <sh:parameter name="RegvalExpected" value="ARM" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <category id="5">
+      <sh:task idref="{F2E71049-6F88-4A3B-9475-5A2B40B36092}" />
+      <sh:task idref="{1928DA28-C5A7-4F13-AF81-8238D57A793F}" />
+    </category>
+  </application>
+  <application id="{D9EF8727-CAC2-4E60-809E-86F80A666C91}">
+    <sh:task id="{886EDAFC-1051-483F-8AE2-904087A7E580}">
+      <sh:name>Manage BitLocker</sh:name>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>disc;disks;drive;</sh:keywords>
+      <sh:keywords>locker;bitlocker;cryptology;decrypt;encode;encryption;device encryption;</sh:keywords>
+      <sh:keywords>disk;drive;harddisk;hard-disk;harddrive;hard-drive;</sh:keywords>
+      <sh:keywords>guard;protect;secure;preserve;</sh:keywords>
+      <sh:keywords>restricted;safety;secure;securing;security;sites;trusted;trusting;</sh:keywords>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.BitLockerDriveEncryption" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#COMCondition">
+          <sh:parameter name="CLSID" value="{8d29c9d4-762d-4ac3-8e77-395aad7790ca}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{685e7dc2-db57-4ed0-8b6d-5fe44d78d4f0}">
+      <sh:name>Back up your recovery key</sh:name>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>disc;disks;drive;</sh:keywords>
+      <sh:keywords>locker;bitlocker;cryptology;decrypt;encode;encryption;device encryption;</sh:keywords>
+      <sh:keywords>disk;drive;harddisk;hard-disk;harddrive;hard-drive;</sh:keywords>
+      <sh:keywords>guard;protect;secure;preserve;</sh:keywords>
+      <sh:keywords>restricted;safety;secure;securing;security;sites;trusted;trusting;</sh:keywords>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.BitLockerDriveEncryption" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#COMCondition">
+          <sh:parameter name="CLSID" value="{fa7fe544-5d0c-48d8-a05f-dc0ee14d61e8}" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <category id="5">
+      <sh:task idref="{886EDAFC-1051-483F-8AE2-904087A7E580}" />
+      <sh:task idref="{685e7dc2-db57-4ed0-8b6d-5fe44d78d4f0}" />
+    </category>
+  </application>
+  <application id="{F942C606-0914-47AB-BE56-1321B8035096}">
+    <sh:task id="{232A1851-808C-4B44-A92A-38E862989CE5}">
+      <sh:name>Manage Storage Spaces</sh:name>
+      <sh:keywords>disk;drive;harddisk;hard-disk;harddrive;hard-drive;</sh:keywords>
+      <sh:keywords>data;recovering;recovers;recovery;</sh:keywords>
+      <sh:keywords>disc;disks;drive;</sh:keywords>
+      <sh:keywords>storage;</sh:keywords>
+      <sh:keywords>spaces;storage-spaces;mirror;mirror-space;resilient;resilient-space;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.StorageSpaces" />
+    </sh:task>
+    <category id="5">
+      <sh:task idref="{232A1851-808C-4B44-A92A-38E862989CE5}" />
+    </category>
+  </application>
+  <application id="{ECDB0924-4208-451E-8EE0-373C0956DE16}">
+    <sh:task id="{38BD6D6E-BF78-4C31-B05A-7447EE37669F}">
+      <sh:name>Manage Work Folders</sh:name>
+      <sh:keywords>files;</sh:keywords>
+      <sh:keywords>line;offline;off-line;ofline;</sh:keywords>
+      <sh:keywords>folders;subfolders;</sh:keywords>
+      <sh:keywords>work;work-folders;work-files;company-folders;company-files;sync-center;synchronize;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.WorkFolders" />
+    </sh:task>
+    <category id="5">
+      <sh:task idref="{38BD6D6E-BF78-4C31-B05A-7447EE37669F}" />
+    </category>
+  </application>
+  <application id="{F82DF8F7-8B9F-442E-A48C-818EA735FF9B}">
+    <sh:task id="{B6B2793F-F4B9-49FD-B578-212C3C020892}">
+      <sh:name>Set flicks to perform certain tasks</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>flicks;gestures;flik;filcks;penflick;</sh:keywords>
+      <sh:keywords>hand-writing;handwriting;write;pen;stylus;handrighting;hand-righting;penmanship;calligraphy;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL TabletPC.cpl @0,flicks</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsPenAvailable" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{31DD3DA1-ED44-4BA8-A67B-6EA93DEA77E7}">
+      <sh:name>Change tablet pen settings</sh:name>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>hand-writing;handwriting;write;pen;stylus;handrighting;hand-righting;penmanship;calligraphy;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL TabletPC.cpl @0,pen</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsPenAvailable" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{641102EF-6463-46E9-842D-176013D7ACC8}">
+      <sh:name>Turn flicks on and off</sh:name>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>flicks;gestures;flik;filcks;penflick;</sh:keywords>
+      <sh:keywords>hand-writing;handwriting;write;pen;stylus;handrighting;hand-righting;penmanship;calligraphy;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL TabletPC.cpl @0,flicks</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsPenAvailable" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{ED0FF627-BFD1-4F68-9A74-974E73F41A3A}">
+      <sh:name>Change touch input settings</sh:name>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>touch;pointer;finger;pointing;cursor;mouse;</sh:keywords>
+      <sh:keywords>touch;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL TabletPC.cpl @0,touch</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsTouchAvailable" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{DDF23EF5-6677-42C1-92CB-29BDCB7375B8}">
+      <sh:name>Change multi-touch gesture settings</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>touch;pointer;finger;pointing;cursor;mouse;</sh:keywords>
+      <sh:keywords>touch;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL TabletPC.cpl @0,touch</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsTouchAvailable" />
+      </sh:conditions>
+    </sh:task>
+    <category id="2">
+      <sh:task idref="{31DD3DA1-ED44-4BA8-A67B-6EA93DEA77E7}" />
+      <sh:task idref="{641102EF-6463-46E9-842D-176013D7ACC8}" />
+      <sh:task idref="{B6B2793F-F4B9-49FD-B578-212C3C020892}" />
+      <sh:task idref="{ED0FF627-BFD1-4F68-9A74-974E73F41A3A}" />
+    </category>
+  </application>
+  <application id="{80F3F1D5-FECA-45F3-BC32-752C152E456E}">
+    <sh:task id="{7DE6CF7C-B699-421B-A808-139E798E6C64}">
+      <sh:name>Calibrate the screen for pen or touch input</sh:name>
+      <sh:keywords>accuracy;accurately;precise;precision;correct;mistakes;</sh:keywords>
+      <sh:keywords>calibrate;calibration;</sh:keywords>
+      <sh:keywords>monitors;screens;</sh:keywords>
+      <sh:keywords>crt;displays;monitors;screeens;screens;</sh:keywords>
+      <sh:keywords>pen;</sh:keywords>
+      <sh:keywords>touch;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL TabletPC.cpl @1,general</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsTabletPC" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{A10DFF38-B2D2-44AC-952B-A2B5DC5D0C9F}">
+      <sh:name>Choose the order of how your screen rotates</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>monitors;screens;</sh:keywords>
+      <sh:keywords>angle;landscape;orientation;portrait;rotate;rotation;</sh:keywords>
+      <sh:keywords>crt;displays;monitors;screeens;screens;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL TabletPC.cpl @1,display</sh:command>
+    </sh:task>
+    <sh:task id="{5A2C0E5E-5974-4E44-B4C6-AD4C2B6BAF53}">
+      <sh:name>Set tablet buttons to perform certain tasks</sh:name>
+      <sh:keywords>butons;buttons;</sh:keywords>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>customisation;customises;customization;customizes;customizing;personalisation;personalise;personalization;personalize;</sh:keywords>
+      <sh:keywords>tablets;pc</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL TabletPC.cpl @1,buttons</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsTabletPC" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{5DD91132-02E8-43F6-88BD-E50B7BE2EF29}">
+      <sh:name>Specify which hand you write with</sh:name>
+      <sh:keywords>hand-writing;handwriting;write;pen;stylus;handrighting;hand-righting;penmanship;calligraphy;</sh:keywords>
+      <sh:keywords>flip;handed;hander;left-handed;left-hander;lefty;reverse;handed;right-handed;switch;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL TabletPC.cpl @1,other</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsTabletPC" />
+      </sh:conditions>
+    </sh:task>
+    <category id="2">
+      <sh:task idref="{7DE6CF7C-B699-421B-A808-139E798E6C64}" />
+      <sh:task idref="{5A2C0E5E-5974-4E44-B4C6-AD4C2B6BAF53}" />
+      <sh:task idref="{A10DFF38-B2D2-44AC-952B-A2B5DC5D0C9F}" />
+      <sh:task idref="{5DD91132-02E8-43F6-88BD-E50B7BE2EF29}" />
+    </category>
+  </application>
+  <application id="{A0275511-0E86-4ECA-97C2-ECD8F1221D08}">
+    <sh:task id="{06D12455-F35D-44D6-8E00-3F6A360CC030}">
+      <sh:name>Send or receive a file</sh:name>
+      <sh:keywords>infrared;infra-red;wireless;</sh:keywords>
+      <sh:keywords>beam;send;transmit;</sh:keywords>
+      <sh:command>%windir%\system32\rundll32.exe shell32.dll,Control_RunDLL irprops.cpl</sh:command>
+    </sh:task>
+    <category id="2">
+      <sh:task idref="{06D12455-F35D-44D6-8E00-3F6A360CC030}" />
+    </category>
+    <category id="3">
+      <sh:task idref="{06D12455-F35D-44D6-8E00-3F6A360CC030}" />
+    </category>
+  </application>
+  <application id="{E95A4861-D57A-4BE1-AD0F-35267E261739}">
+    <sh:task id="{5271A485-4571-4b06-A7EF-49785280C68D}">
+      <sh:name>Change Windows SideShow-compatible device settings</sh:name>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>ware;hardware-general;</sh:keywords>
+      <sh:keywords>auxiliary;display;show;sideshow;</sh:keywords>
+      <sh:keywords>change;settings</sh:keywords>
+      <sh:keywords>gadgets;widgets;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.WindowsSideShow" page="pageChangeSettingsDeviceSelector" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsAuxDisplayConnected" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{85459553-8E27-415b-96FF-B0A774FEBD55}">
+      <sh:name>Change the order of Windows SideShow gadgets</sh:name>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>gadgets;widgets;</sh:keywords>
+      <sh:keywords>arrange;arranging;ordering;organize;organizing;reorder;</sh:keywords>
+      <sh:keywords>auxiliary;display;show;sideshow;</sh:keywords>
+      <sh:keywords>alphabetise;alphabetize;order;sorting;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.WindowsSideShow" page="pageReorderGadgetsDeviceSelector" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsAuxDisplayConnected" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{94CC0013-5997-4934-B215-5DDDA5D6FB00}">
+      <sh:name>Change Windows SideShow settings</sh:name>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>gadgets;widgets;</sh:keywords>
+      <sh:keywords>cancel;deactivates;delete;deleting;disable;disallow;exit;get;rid;of;prevent;remove;removing;shut;down;off;stop;turn;turnoff;</sh:keywords>
+      <sh:keywords>auxiliary;display;show;sideshow;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.WindowsSideShow" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsAuxDisplayConnected" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{C386DDAD-3386-4dfe-97A3-EB6D2F3FD49E}">
+      <sh:name>Change PC wakeup settings</sh:name>
+      <sh:keywords>automated;automatically;</sh:keywords>
+      <sh:keywords>compuer;machine;my;computer;pc;personal;system;</sh:keywords>
+      <sh:keywords>auxiliary;display;show;sideshow;</sh:keywords>
+      <sh:keywords>auto;out;period;timeout;timer;timing;</sh:keywords>
+      <sh:keywords>asleep;autowake;awaken;come;back;from;hibernates;hibernating;hibernation;restarts;resumes;sleeping;standby;up;wakeup;wake-up;waking;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.WindowsSideShow" page="pageAutoWake" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsAuxDisplayConnectedAndAutoWakeEnabled" />
+      </sh:conditions>
+    </sh:task>
+    <category id="2">
+      <sh:task idref="{5271A485-4571-4b06-A7EF-49785280C68D}" />
+      <sh:task idref="{94CC0013-5997-4934-B215-5DDDA5D6FB00}" />
+      <sh:task idref="{85459553-8E27-415b-96FF-B0A774FEBD55}" />
+      <sh:task idref="{C386DDAD-3386-4dfe-97A3-EB6D2F3FD49E}" />
+    </category>
+    <category id="8">
+      <sh:task idref="{5271A485-4571-4b06-A7EF-49785280C68D}" />
+      <sh:task idref="{94CC0013-5997-4934-B215-5DDDA5D6FB00}" />
+      <sh:task idref="{85459553-8E27-415b-96FF-B0A774FEBD55}" />
+      <sh:task idref="{C386DDAD-3386-4dfe-97A3-EB6D2F3FD49E}" />
+    </category>
+  </application>
+  <application id="{C555438B-3C23-4769-A71F-B6D3D9B6053A}">
+    <sh:task id="{5163E94E-4C07-420B-B173-320232B8AFB7}" needsElevation="true">
+      <sh:name>Calibrate display color</sh:name>
+      <sh:keywords>adjust;ajust;alter;change;edit;modify;replace;reset;set;switch;</sh:keywords>
+      <sh:keywords>crt;displays;monitors;screeens;screens;</sh:keywords>
+      <sh:keywords>adapters;adaptor;cards;</sh:keywords>
+      <sh:keywords>calibrate;calibration;</sh:keywords>
+      <sh:keywords>brightness;contrast;hi-contrast;high-contrast;</sh:keywords>
+      <sh:keywords>troubleshooting;history;problem;</sh:keywords>
+      <sh:command>%windir%\system32\dccw.exe</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValExists">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ICM\Calibration" />
+          <sh:parameter name="Regval" value="DisplayCalibrator" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{3F0AD6DB-3246-48E4-ACD7-696FF62AE68D}">
+      <sh:name>Adjust ClearType text</sh:name>
+      <sh:keywords>faunt;fonts;type;truetype;type;opentype;fount;</sh:keywords>
+      <sh:keywords>dots;per;inch;dpi;pixels;high;</sh:keywords>
+      <sh:keywords>pixels;reslution;resoltion;resolution;resolutoin;rezolution;size;</sh:keywords>
+      <sh:keywords>wizard;wizzard;</sh:keywords>
+      <sh:keywords>personalize;personalization;</sh:keywords>
+      <sh:keywords>type;cleartype;tuning;tuner;settings;contrast;gamma;text;aliasing;anti-aliasing;filtering;blurry;fuzzy;</sh:keywords>
+      <sh:keywords>typography;reading;readability;easier;to;easy;font;clarity;color;colour;enable;cleartype;tweak;typeface;text;size;ppi;legible;legibility;</sh:keywords>
+      <sh:command>%windir%\system32\cttune.exe</sh:command>
+    </sh:task>
+  </application>
+  <application id="{8E908FC9-BECC-40F6-915B-F4CA0E70D03D}">
+    <sh:task id="{EDB046FF-3554-4BD0-B152-DE4DF7071CA8}">
+      <sh:name>Connect to a network</sh:name>
+      <sh:keywords>connect;to;enter;join;plug;into;</sh:keywords>
+      <sh:keywords>from;the;web;inet;internet;intrnet;net;online;on-line;sites;pages;webpages;websites;world;wide;www;</sh:keywords>
+      <sh:keywords>connections;go;online;intranet;lan;netowrk;networking;line;on-line;www;</sh:keywords>
+      <sh:keywords>802.1x;wireless;wire-less;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>wireless;LAN;wifi;Wi-Fi;WLAN;</sh:keywords>
+      <sh:keywords>all;wireless;on;off;plane;flight;radio;airplane;connection;</sh:keywords>
+      <sh:keywords>DA;direct;access;directaccess</sh:keywords>
+      <sh:keywords>mobile;broadband;2G;2.5G;3G;3.5G;4G;LTE;CDMA;GSM;wireless;cellphone;mbb;telco;carrier;</sh:keywords>
+      <sh:command>ms-availablenetworks:</sh:command>
+    </sh:task>
+    <sh:task id="{60C811E8-C857-404E-98BB-EE5D83C1DF5A}">
+      <sh:name>Set up a connection or network</sh:name>
+      <sh:keywords>tooth;bluetooth;blutooth;</sh:keywords>
+      <sh:keywords>connect;to;enter;join;plug;into;</sh:keywords>
+      <sh:keywords>infrared;infra-red;wireless;</sh:keywords>
+      <sh:keywords>connections;go;online;intranet;lan;netowrk;networking;line;on-line;www;</sh:keywords>
+      <sh:keywords>802.1x;wireless;wire-less;</sh:keywords>
+      <sh:command>%windir%\system32\xwizard.exe RunWizard {7071ECE0-663B-4bc1-A1FA-B97F3B917C55}</sh:command>
+    </sh:task>
+    <sh:task id="{3911D4F8-AD61-4911-A151-5682C26A7427}">
+      <sh:name>Identify and repair network problems</sh:name>
+      <sh:keywords>broken;doesn&apos;t;not;working;problems;won&apos;t;</sh:keywords>
+      <sh:keywords>diagnose;diagnostics;diagnosis;find;problems;analyse;analyze;analysis;troubleshooter;errors;</sh:keywords>
+      <sh:keywords>from;the;web;inet;internet;intrnet;net;online;on-line;sites;pages;webpages;websites;world;wide;www;</sh:keywords>
+      <sh:keywords>connections;go;online;intranet;lan;netowrk;networking;line;on-line;www;</sh:keywords>
+      <sh:keywords>corrects;fixes;repairs;</sh:keywords>
+      <sh:keywords>internet;wireless;ethernet;packet;dhcp;tcp/ip;protocol;nic;cable;certificate;</sh:keywords>
+      <sh:keywords>wireless;LAN;wifi;Wi-Fi;WLAN;</sh:keywords>
+      <sh:command>%windir%\system32\Rundll32.exe ndfapi,NdfRunDllDiagnoseIncident</sh:command>
+    </sh:task>
+    <sh:task id="{5530E8CC-1B9E-4798-A880-BA719ADFBBBD}">
+      <sh:name>Manage advanced sharing settings</sh:name>
+      <sh:keywords>sharing;shared;files;network;folder;target;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.NetworkAndSharingCenter" page="Advanced" />
+    </sh:task>
+    <sh:task id="{8E21794E-9303-44C5-A493-C3DC53C0E463}">
+      <sh:name>Set up a dial-up connection</sh:name>
+      <sh:keywords>area;code;carrier;city;up;dialing;dialling;dialup;dial-up;pulse;tone;touchtone;touch-tone;</sh:keywords>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>modem;</sh:keywords>
+      <sh:keywords>connections;go;online;intranet;lan;netowrk;networking;line;on-line;www;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:command>%windir%\system32\xwizard.exe RunWizard {7071EC71-663B-4bc1-A1FA-B97F3B917C55}</sh:command>
+    </sh:task>
+    <sh:task id="{7171F741-718B-49BD-9362-8E847D44CFDA}">
+      <sh:name>Set up a virtual private network (VPN) connection</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>connections;go;online;intranet;lan;netowrk;networking;line;on-line;www;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>virtual;private;network;vpn;workplace;</sh:keywords>
+      <sh:command>%windir%\system32\xwizard.exe RunWizard {7071EC75-663B-4bc1-A1FA-B97F3B917C55}</sh:command>
+    </sh:task>
+    <sh:task id="{9B802EF5-59B7-4974-9022-06DC2A9B1677}">
+      <sh:name>Set up a broadband connection</sh:name>
+      <sh:keywords>pppoe;broadband</sh:keywords>
+      <sh:keywords>add;create;make;new;</sh:keywords>
+      <sh:keywords>connections;go;online;intranet;lan;netowrk;networking;line;on-line;www;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:command>%windir%\system32\xwizard.exe RunWizard {C03E8585-781E-49a1-8190-CE902D0B2CE7}</sh:command>
+    </sh:task>
+    <sh:task id="{88C9D04D-39DD-41EE-A63B-23218D69717F}">
+      <sh:name>View network computers and devices</sh:name>
+      <sh:keywords>adapters;adaptor;cards;</sh:keywords>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>connections;go;online;intranet;lan;netowrk;networking;line;on-line;www;</sh:keywords>
+      <sh:keywords>check;list;see;show;viewing;</sh:keywords>
+      <sh:command>shell:::{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}</sh:command>
+    </sh:task>
+    <sh:task id="{9EF86966-2F35-49BE-A9F6-398E0B844411}">
+      <sh:name>View network connections</sh:name>
+      <sh:keywords>adapters;adaptor;cards;</sh:keywords>
+      <sh:keywords>internet;protocol;ip;addresses;v6;version;6;IP6;IPv6;tcp/ip;tcp\ip;tcpip;</sh:keywords>
+      <sh:keywords>connections;go;online;intranet;lan;netowrk;networking;line;on-line;www;</sh:keywords>
+      <sh:keywords>check;list;see;show;viewing;</sh:keywords>
+      <sh:keywords>internet;wireless;ethernet;packet;dhcp;tcp/ip;protocol;nic;cable;certificate;</sh:keywords>
+      <sh:keywords>virtual;private;network;vpn;workplace;</sh:keywords>
+      <sh:command>shell:::{26EE0668-A00A-44D7-9371-BEB064C98683}\3\::{7007ACC7-3202-11D1-AAD2-00805FC1270E}</sh:command>
+    </sh:task>
+    <sh:task id="{BD256B65-94BE-4194-84BF-41D50D0EF26E}">
+      <sh:name>View network status and tasks</sh:name>
+      <sh:keywords>connections;go;online;intranet;lan;netowrk;networking;line;on-line;www;</sh:keywords>
+      <sh:keywords>automatically;autoshow;auto-show;make;visible;see;show;unlock;view;</sh:keywords>
+      <sh:keywords>condition;running;state;status;</sh:keywords>
+      <sh:keywords>check;list;see;show;viewing;</sh:keywords>
+      <sh:keywords>locations;networks;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.NetworkAndSharingCenter" />
+    </sh:task>
+    <sh:task id="{12BBBD91-8E16-4C3F-9715-16E5C8299244}">
+      <sh:name>Media streaming options</sh:name>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>sharing;shared;files;network;folder;target;</sh:keywords>
+      <sh:keywords>stream;media;library;options;with;to;mediasharing;mediastreaming;sharemedia;internetsharing;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.NetworkAndSharingCenter" page="ShareMedia" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#RegValEquals">
+          <sh:parameter name="Regkey" value="HKEY_LOCAL_MACHINE\Software\Microsoft\Active Setup\Installed Components\{6BF52A52-394A-11d3-B153-00C04F79FAA6}" />
+          <sh:parameter name="Regval" value="IsInstalled" />
+          <sh:parameter name="RegvalExpected" value="1" />
+        </sh:condition>
+      </sh:conditions>
+    </sh:task>
+    <category id="3">
+      <sh:task idref="{BD256B65-94BE-4194-84BF-41D50D0EF26E}" />
+      <sh:task idref="{EDB046FF-3554-4BD0-B152-DE4DF7071CA8}" />
+      <sh:task idref="{88C9D04D-39DD-41EE-A63B-23218D69717F}" />
+    </category>
+  </application>
+  <application id="{241D7C96-F8BF-4F85-B01F-E2B043341A4B}">
+    <sh:task id="{7940ACF8-60BA-4213-A7C3-F3B400EE266D}">
+      <sh:name>Access RemoteApp and desktops</sh:name>
+      <sh:keywords>activate;add;begin;enable;intsall;invoke;make;up;setting;setup;start;on;turnon;unlock;</sh:keywords>
+      <sh:keywords>confg;configuration;configure;define;management;options;personalise;personalize;up;settings;setup;</sh:keywords>
+      <sh:keywords>RemoteApp;Desktop;RemoteDesktop;Connection;work;</sh:keywords>
+      <sh:command>%windir%\system32\xwizard.exe RunWizard {7940ACF8-60BA-4213-A7C3-F3B400EE266D}</sh:command>
+    </sh:task>
+  </application>
+  <application id="{C58C4893-3BE0-4B45-ABB5-A63E4B8C8651}">
+    <sh:task id="{5902614C-D9C7-4902-9F7F-BAF85454D0B2}">
+      <sh:name>Find and fix problems</sh:name>
+      <sh:keywords>troubleshoot;shoot;troubleshooter;trubleshoot;help;solution</sh:keywords>
+      <sh:keywords>diagnose;diagnostics;diagnosis;find;problems;analyse;analyze;analysis;troubleshooter;errors;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Troubleshooting" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{08EB53B7-3384-473A-8D2C-6C0E71F3BF34}">
+      <sh:name>Find and fix problems</sh:name>
+      <sh:keywords>troubleshoot;shoot;troubleshooter;trubleshoot;help;solution</sh:keywords>
+      <sh:keywords>diagnose;diagnostics;diagnosis;find;problems;analyse;analyze;analysis;troubleshooter;errors;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Troubleshooting" />
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{B896819B-CF73-4da0-8F59-6E744A6BCD5F}" needsElevation="true">
+      <sh:name>Find and fix audio playback problems</sh:name>
+      <sh:keywords>Playing;sound;volume;audible;speaker;headphone;stereo;listen;hear;output;MP3;player;</sh:keywords>
+      <sh:command>%windir%\system32\msdt.exe -id AudioPlaybackDiagnostic -ep ControlPanelSearch</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{B123B0AB-2E4E-4325-804A-32F99784DA0B}" needsElevation="true">
+      <sh:name>Find and fix audio recording problems</sh:name>
+      <sh:keywords>Capture;sample;mix;level;input;sound;audible;volume;stereo;tape;microphone;mike;</sh:keywords>
+      <sh:command>%windir%\system32\msdt.exe -id AudioRecordingDiagnostic -ep ControlPanelSearch</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{895607E0-D0F9-48bd-B19E-96FBE9BBDCF9}">
+      <sh:name>Perform recommended maintenance tasks automatically</sh:name>
+      <sh:keywords>maintain;defrag;optimize;performance;</sh:keywords>
+      <sh:keywords>operating;system;os;</sh:keywords>
+      <sh:command>%windir%\system32\msdt.exe -id MaintenanceDiagnostic -ep ControlPanelSearch</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{955E7FFD-4DD9-4124-96FC-86C3C653DD33}">
+      <sh:name>Find and fix networking and connection problems</sh:name>
+      <sh:keywords>sharing;shared;files;network;folder;target;</sh:keywords>
+      <sh:keywords>internet;wireless;ethernet;packet;dhcp;tcp/ip;protocol;nic;cable;certificate;</sh:keywords>
+      <sh:keywords>wireless;LAN;wifi;Wi-Fi;WLAN;</sh:keywords>
+      <sh:command>%windir%\system32\msdt.exe -id NetworkDiagnosticsWeb -ep ControlPanelSearch</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{87842A7E-D784-458d-BEF4-CFDC632DCF3E}">
+      <sh:name>Find and fix printing problems</sh:name>
+      <sh:keywords>print;paper;ink;toner;laser;bubble;jet;cartridge;</sh:keywords>
+      <sh:keywords>out;printers;printing;printner;printout;print-out;pritner;</sh:keywords>
+      <sh:command>%windir%\system32\msdt.exe -id PrinterDiagnostic -ep ControlPanelSearch</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{F025B6FD-D1CA-4a32-9BEB-DBEF1D2F6926}">
+      <sh:name>Troubleshooting History</sh:name>
+      <sh:keywords>troubleshooting;history;problem;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.Troubleshooting" page="HistoryPage" />
+    </sh:task>
+    <sh:task id="{BEC9E135-14C1-4e00-B5C8-899F26833A5A}">
+      <sh:name>Find and fix problems with Windows Search</sh:name>
+      <sh:keywords>finder;indexing;reindex;re-index;searches;searching;</sh:keywords>
+      <sh:command>%windir%\system32\msdt.exe -id SearchDiagnostic -ep ControlPanelSearch</sh:command>
+    </sh:task>
+    <sh:task id="{11135AE0-7372-4f85-8D1B-93D6EFBE5A99}">
+      <sh:name>Record steps to reproduce a problem</sh:name>
+      <sh:keywords>recorder;screen;problem;capture;snipping;psr;</sh:keywords>
+      <sh:keywords>reproduce;</sh:keywords>
+      <sh:command>%windir%\system32\psr.exe</sh:command>
+    </sh:task>
+    <sh:task id="{F3F491FD-B863-4227-9657-8E152DE81E7A}">
+      <sh:name>Find and fix keyboard problems</sh:name>
+      <sh:keywords>input method editor;asian input;japanese input;ime;keyboard;input</sh:keywords>
+      <sh:command>%windir%\system32\msdt.exe -id KeyboardDiagnostic -ep ControlPanelSearch</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{B3FE79D9-2B3C-46AB-9651-0FD22EC5A054}">
+      <sh:name>Find and fix bluescreen problems</sh:name>
+      <sh:keywords>blueScreen;bluescreen issues;bluescreen;bad driver;drivers;blue screen;bug check</sh:keywords>
+      <sh:command>%windir%\system32\msdt.exe -id BlueScreenDiagnostic -ep CortanaBluescreenSearch</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" invert="true" />
+      </sh:conditions>
+    </sh:task>
+    <sh:task id="{567F539A-9A6F-4E5E-A2BB-B1E58514D11A}">
+      <sh:name>Find and fix windows update problems</sh:name>
+      <sh:keywords>Windows Update;Cannot update;issues with Windows Update;Windows Update Issues;WU;Update fails;Cant install update;Windows update error;WU error</sh:keywords>
+      <sh:command>%windir%\system32\msdt.exe -id windowsupdatediagnostic -ep CortanaWUSearch</sh:command>
+      <sh:conditions>
+        <sh:condition name="shcond://v1#IsServer" invert="true" />
+      </sh:conditions>
+    </sh:task>
+  </application>
+  <application id="{E9950154-C418-419E-A90A-20C5287AE24B}">
+    <sh:task id="{207D6BD2-A09B-406f-8A72-BC90C49FC152}">
+      <sh:name>Change location settings</sh:name>
+      <sh:keywords>privacy;secrecy;</sh:keywords>
+      <sh:keywords>by;defaults;defualt;standard;</sh:keywords>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>finding;locate;locating;search;for;is;where&apos;s;the;</sh:keywords>
+      <sh:keywords>sensors;senser;</sh:keywords>
+      <sh:keywords>gps;global;positioning;systems;</sh:keywords>
+      <sh:keywords>ambient;lighting;changes;</sh:keywords>
+      <sh:keywords>personal;information;persenal;private;informatien;</sh:keywords>
+      <sh:keywords>position;positian;new;</sh:keywords>
+      <sh:keywords>network;connections;netwerk;conection;</sh:keywords>
+      <sh:keywords>sensor;definition;what;is;a;</sh:keywords>
+      <sh:keywords>movement;movment;movemnet;motion;</sh:keywords>
+      <sh:keywords>detection;detecting;changes;</sh:keywords>
+      <sh:keywords>drop;</sh:keywords>
+      <sh:keywords>locations;change;another;</sh:keywords>
+      <sh:keywords>default;defualt;location;</sh:keywords>
+      <sh:keywords>geographic;locations;geografic;geografic;geografik;</sh:keywords>
+      <sh:keywords>latitude;laditude;longitude;longetude;</sh:keywords>
+      <sh:keywords>address;adress;</sh:keywords>
+      <sh:keywords>country;contry;</sh:keywords>
+      <sh:keywords>city;</sh:keywords>
+      <sh:keywords>orientation;orientatien;orientation;orientatian;</sh:keywords>
+      <sh:keywords>state;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.LocationSettings" />
+    </sh:task>
+    <category id="2">
+      <sh:task idref="{207D6BD2-A09B-406f-8A72-BC90C49FC152}" />
+    </category>
+  </application>
+  <application id="{1206F5F1-0569-412C-8FEC-3204630DFB70}">
+    <sh:task id="{1BDB99DF-3832-49D6-9AE0-52105DB568DA}">
+      <sh:name>Manage Web Credentials</sh:name>
+      <sh:keywords>administer;configure;managed;manages;managing;up;setup;</sh:keywords>
+      <sh:keywords>connections;go;online;intranet;lan;netowrk;networking;line;on-line;www;</sh:keywords>
+      <sh:keywords>word;pass-word;passwords;passwork;passwrod;pasword;paswrod;</sh:keywords>
+      <sh:keywords>passwords;web;stored;automatic;logon;credentials;network;</sh:keywords>
+      <sh:keywords>vault;locker;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.CredentialManager" />
+    </sh:task>
+    <sh:task id="{5D461B44-2753-4DD7-B2C0-BAB71B1F4C1A}">
+      <sh:name>Manage Windows Credentials</sh:name>
+      <sh:keywords>administer;configure;managed;manages;managing;up;setup;</sh:keywords>
+      <sh:keywords>connections;go;online;intranet;lan;netowrk;networking;line;on-line;www;</sh:keywords>
+      <sh:keywords>word;pass-word;passwords;passwork;passwrod;pasword;paswrod;</sh:keywords>
+      <sh:keywords>passwords;web;stored;automatic;logon;credentials;network;</sh:keywords>
+      <sh:keywords>vault;locker;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.CredentialManager" page="?SelectedVault=CredmanVault" />
+    </sh:task>
+    <category id="9">
+      <sh:task idref="{1BDB99DF-3832-49D6-9AE0-52105DB568DA}" />
+      <sh:task idref="{5D461B44-2753-4DD7-B2C0-BAB71B1F4C1A}" />
+    </category>
+  </application>
+  <application id="{B98A2BEA-7D42-4558-8BD1-832F41BAC6FD}">
+    <sh:task id="{CFC1FE08-D032-437D-BE93-96A28B3720DA}">
+      <sh:name>Backup and Restore (Windows 7)</sh:name>
+      <sh:keywords>up;backing;backuo;back-up;backups;back-ups;data;storage;incramental;incremental;saver;shadow;copies;copy;</sh:keywords>
+      <sh:keywords>data;recovering;recovers;recovery;</sh:keywords>
+      <sh:keywords>bring;back;change;recover;restore;back;rollback;</sh:keywords>
+      <sh:keywords>points;wizard;system;protection;restores;systemrestores;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.BackupAndRestore" />
+    </sh:task>
+    <sh:task id="{D5426AA3-8F5B-4C4C-915E-901A156FFFDF}">
+      <sh:name>Restore data, files, or computer from backup (Windows 7)</sh:name>
+      <sh:keywords>up;backing;backuo;back-up;backups;back-ups;data;storage;incramental;incremental;saver;shadow;copies;copy;</sh:keywords>
+      <sh:keywords>data;recovering;recovers;recovery;</sh:keywords>
+      <sh:keywords>bring;back;change;recover;restore;back;rollback;</sh:keywords>
+      <sh:keywords>points;wizard;system;protection;restores;systemrestores;</sh:keywords>
+      <sh:keywords>recover;deleted;files;restore;get;lost;missing;rescue;retrieve;return;past;previous;protected;time;back;version;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.BackupAndRestore" />
+    </sh:task>
+    <category id="5">
+      <sh:task idref="{CFC1FE08-D032-437D-BE93-96A28B3720DA}" />
+      <sh:task idref="{D5426AA3-8F5B-4C4C-915E-901A156FFFDF}">
+        <sh:name>Restore files from backup</sh:name>
+      </sh:task>
+    </category>
+  </application>
+  <application id="{F6B6E965-E9B2-444B-9286-10C9152EDBC5}">
+    <sh:task id="{A42E8D99-83E6-4D12-B403-F46059D02CF0}">
+      <sh:name>Save backup copies of your files with File History</sh:name>
+      <sh:keywords>up;backing;backuo;back-up;backups;back-ups;data;storage;incramental;incremental;saver;shadow;copies;copy;</sh:keywords>
+      <sh:keywords>bring;back;change;recover;restore;back;rollback;</sh:keywords>
+      <sh:keywords>devices;divises;divicse;divices;</sh:keywords>
+      <sh:keywords>disk;drive;harddisk;hard-disk;harddrive;hard-drive;</sh:keywords>
+      <sh:keywords>guard;protect;secure;preserve;</sh:keywords>
+      <sh:keywords>sharing;shared;files;network;folder;target;</sh:keywords>
+      <sh:keywords>external;separate;seperate;</sh:keywords>
+      <sh:keywords>recovery;recover;reinstall;factory;re-image;reimage;re-install;repair;restore;reinstate;reset;wipe;rollback;fix;troubleshoot;pc;refresh;erase;format;</sh:keywords>
+      <sh:keywords>archive;collection;files;keep;safe;personal;retain;save;library;history;</sh:keywords>
+      <sh:keywords>associate;exclude;migrate;move;reconnect;recommend;retention;settings;store;</sh:keywords>
+      <sh2:controlpanel name="Microsoft.FileHistory" />
+    </sh:task>
+    <sh:task id="{76F31A78-3FDA-4F80-B015-95CFD81463AD}">
+      <sh:name>Restore your files with File History</sh:name>
+      <sh:keywords>up;backing;backuo;back-up;backups;back-ups;data;storage;incramental;incremental;saver;shadow;copies;copy;</sh:keywords>
+      <sh:keywords>bring;back;change;recover;restore;back;rollback;</sh:keywords>
+      <sh:keywords>recover;deleted;files;restore;get;lost;missing;rescue;retrieve;return;past;previous;protected;time;back;version;</sh:keywords>
+      <sh:keywords>archive;collection;files;keep;safe;personal;retain;save;library;history;</sh:keywords>
+      <sh:command>%windir%\system32\FileHistory.exe</sh:command>
+    </sh:task>
+    <category id="5">
+      <sh:task idref="{A42E8D99-83E6-4D12-B403-F46059D02CF0}" />
+      <sh:task idref="{76F31A78-3FDA-4F80-B015-95CFD81463AD}" />
+    </category>
+  </application>
+</applications>
+<rss version="2.0" xmlns:cf="http://schemas.microsoft.com/rss/2005" xmlns:win="http://schemas.microsoft.com/rss/2005/windows">
+  <channel>
+    <cf:treatAs>list</cf:treatAs>
+    <title>New List</title>
+  </channel>
+</rss>
+<smil>
+  <body>
+    <seq />
+  </body>
+</smil>
+
