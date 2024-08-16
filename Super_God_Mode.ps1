@@ -332,9 +332,22 @@ function Get-LocalizedString {
         [string]$CustomLanguageFolder
     )
 
+    # Check if it's the special case with multiple concatenated references
+    if ($StringReference -match '^\@\@') {
+        $references = $StringReference -split '@' | Where-Object { $_ -ne '' }
+        $resolvedStrings = @()
+        foreach ($ref in $references) {
+            $resolved = Get-LocalizedString "@$ref" $CustomLanguageFolder
+            if ($resolved) {
+                $resolvedStrings += $resolved -split ';' | ForEach-Object { $_.Trim() }
+            }
+        }
+        return ($resolvedStrings | Select-Object -Unique) -join '; '
+    }
     # Check if the string is an ms-resource reference
-    if ($StringReference -match '@\{.+\?ms-resource://.+}' -or $StringReference -match '^ms-resource://') {
+    elseif ($StringReference -match '@\{.+\?ms-resource://.+}') {
         $stringBuilder = New-Object System.Text.StringBuilder 1024
+        Write-Verbose "Attempting to retrieve ms-resource: $StringReference"
         $result = [Win32]::SHLoadIndirectString($StringReference, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
         if ($result -eq 0) {
             return $stringBuilder.ToString()
