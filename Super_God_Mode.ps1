@@ -39,6 +39,7 @@
 #
 # -UseAlternativeCategoryNames
 #     Switch (Takes no values)
+#     Looks up alternative category names for task links to prepend to the task names
 #
 # -SkipCLSID
 #     Switch (Takes no values)
