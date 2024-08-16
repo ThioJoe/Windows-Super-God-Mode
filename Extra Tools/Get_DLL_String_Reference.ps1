@@ -24,12 +24,8 @@ function Get-LocalizedString {
     param (
         [string]$StringReference
     )
-
     if ($StringReference -match '@\{.+\?ms-resource://.+}') {
         return Get-MsResource $StringReference
-    }
-    elseif ($StringReference -match '^ms-resource://.+') {
-        return Get-MsResource "@{windows?$StringReference}"
     }
     elseif ($StringReference -match '@(.+),-(\d+)') {
         $dllPath = [Environment]::ExpandEnvironmentVariables($Matches[1])
@@ -48,7 +44,6 @@ function Get-MsResource {
     )
     $stringBuilder = New-Object System.Text.StringBuilder 1024
     $result = [Win32]::SHLoadIndirectString($ResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
-
     if ($result -eq 0) {
         return $stringBuilder.ToString()
     } else {
@@ -85,7 +80,6 @@ while ($true) {
     Write-Host "Enter the string resource reference to get."
     Write-Host " > Example 1: @%SystemRoot%\system32\shell32.dll,-9227"
     Write-Host " > Example 2: @{windows?ms-resource://Windows.UI.SettingsAppThreshold/SearchResources/SystemSettings_CapabilityAccess_Gaze_UserGlobal/Description}"
-    Write-Host " > Example 3: ms-resource://Windows.UI.SettingsAppThreshold/SearchResources/SystemSettings_CapabilityAccess_Gaze_UserGlobal/Description"
     Write-Host "`nResource Reference:  " -NoNewline
     $userInput = Read-Host
     if ($userInput.ToLower() -eq 'x') {

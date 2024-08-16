@@ -1241,9 +1241,15 @@ function Get-AllSettings-Data {
                 Name = $content.Filename
                 PageID = $null
                 GroupID = $null
-                Description = $content.SettingInformation.Description
+                Description = Get-LocalizedString $content.SettingInformation.Description
+                HighKeywords = $null  # Initialize as null
                 Glyph = $content.ApplicationInformation.Glyph
                 PolicyIds = @()
+            }
+
+            # Check if HighKeywords exists before trying to resolve it
+            if ($content.SettingInformation.HighKeywords) {
+                $settingInfo.HighKeywords = Get-LocalizedString $content.SettingInformation.HighKeywords
             }
 
             # Extract PageID, GroupID, and PolicyIds from SettingPaths
@@ -1274,6 +1280,7 @@ function Get-AllSettings-Data {
 }
 
 # Function to create ms-settings shortcuts
+
 function Create-MSSettings-Shortcut {
     param (
         [string]$name,
@@ -1323,15 +1330,23 @@ function Process-MSSettings {
 
     foreach ($setting in $settingsData) {
         foreach ($policyId in $setting.PolicyIds) {
-            $sanitizedName = "$($setting.Name)_$policyId" -replace '[\\/:*?"<>|]', '_'
+            # Use Description for the shortcut name, fallback to Filename if Description is empty
+            $shortcutName = if ($setting.Description) { $setting.Description } else { $setting.Name }
+            
+            # Append PolicyId for uniqueness
+            $shortcutName = "$shortcutName ($policyId)"
+            
+            # Sanitize the shortcut name
+            $sanitizedName = $shortcutName -replace '[\\/:*?"<>|]', '_'
+            
             $shortcutPath = Join-Path $msSettingsOutputFolder "$sanitizedName.lnk"
 
-            $success = Create-MSSettings-Shortcut -name $setting.Name -policyId $policyId -shortcutPath $shortcutPath -glyph $setting.Glyph
+            $success = Create-MSSettings-Shortcut -name $shortcutName -policyId $policyId -shortcutPath $shortcutPath -glyph $setting.Glyph
 
             if ($success) {
-                Write-Host "Created MS Settings Shortcut For: $($setting.Name) ($policyId)"
+                Write-Host "Created MS Settings Shortcut: $shortcutName"
             } else {
-                Write-Host "Failed to create shortcut for $($setting.Name) ($policyId)"
+                Write-Host "Failed to create shortcut: $shortcutName"
             }
         }
     }
