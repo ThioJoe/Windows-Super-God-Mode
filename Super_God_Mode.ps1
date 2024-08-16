@@ -62,6 +62,12 @@
 #            > This is especially important if wanting to reference the data from a different computer, you need to be sure to copy the .mun file
 #        See: https://stackoverflow.com/questions/68389730/windows-dll-function-behaviour-is-different-if-dll-is-moved-to-different-locatio
 #
+# -CustomLanguageFolderPath
+#     String (Optional)
+#     Specify a path to a folder containing language-specific MUI files to use for localized string references, and it will prefer any mui files from there if available instead of the system default.
+#     For example, to use your own language file for shell32.dll, you could specify a path to a folder containing a file named "shell32.dll.mui" in the desired language, and any other such files.
+#     For another example, if you have multiple language packs installed on your system, you could specify the entire language directory in system32 such as "C:\Windows\System32\en-US" to use English strings, or "C:\Windows\System32\de-DE" for German strings.
+#
 # ---------------------------------------------------------------------
 #
 #   EXAMPLE USAGE FROM COMMAND LINE:
@@ -75,6 +81,7 @@ param(
     [switch]$SaveCSV,
     [switch]$DeletePreviousOutputFolder,
     [string]$DLLPath,
+    [string]$CustomLanguageFolderPath,
     [string]$Output,
     [switch]$SkipCLSID,
     [switch]$SkipNamedFolders,
@@ -170,6 +177,21 @@ if ($DLLPath) {
     if (-not (Test-Path $DLLPath)) {
         Write-Error "The specified DLL path does not exist: $DLLPath"
         return
+    }
+}
+
+# Validate the custom language folder path if provided. Ensure it is a folder
+if ($CustomLanguageFolderPath) {
+    if (-not (Test-Path $CustomLanguageFolderPath -PathType Container)) {
+        Write-Error "The specified custom language folder path is not a valid folder: $CustomLanguageFolderPath"
+        # Check if they insetad provided a file path, and if so, suggest they provide the folder containing the file
+        if (Test-Path $CustomLanguageFolderPath -PathType Leaf) {
+            Write-Error "If you are trying to specify a file, please provide the folder containing the file instead, and name it to correspond with whatever DLL file it is for."
+        }
+        return
+    }
+    else {
+        Write-Verbose "Using custom language folder path: $CustomLanguageFolderPath"
     }
 }
 
@@ -280,12 +302,26 @@ public class IconExtractor
 # This function retrieves a localized (meaning in the user's language) string from a DLL based on a reference string given in the registry
 # `StringReference` is a reference in the format "@<dllPath>,-<resourceId>".
 function Get-LocalizedString {
-    param ( [string]$StringReference )
+    param ( [string]$StringReference,
+            [string]$CustomLanguageFolder
+    )
 
     # Check if the provided string matches the expected format for a resource reference.
     if ($StringReference -match '@(.+),-(\d+)') {
         $dllPath = [Environment]::ExpandEnvironmentVariables($Matches[1])  # Extract and expand the DLL path.
         $resourceId = [uint32]$Matches[2]  # Extract the resource ID.
+
+        # If custom language folder is specified, check if there is a corresponding MUI file for the DLL within that folder.
+        $muiNameToCheck = "$dllPath.mui"
+        if ($CustomLanguageFolder){
+            if (Test-Path (Join-Path $CustomLanguageFolder $muiNameToCheck)) {
+                Write-Verbose "Found MUI file to use for for $dllPath in custom language folder."
+                $dllPath = Join-Path $CustomLanguageFolder $muiNameToCheck
+            }
+            else {
+                Write-Verbose "No MUI file found for $dllPath in custom language folder. Using default system language."
+            }
+        }
 
         # Load the specified DLL into memory.
         $hModule = [Windows]::LoadLibraryEx($dllPath, [IntPtr]::Zero, 0)
@@ -320,7 +356,8 @@ function Get-LocalizedString {
 # It attempts to find the name by checking several potential locations in the registry.
 function Get-FolderName {
     param (
-        [string]$clsid  # The CLSID of the shell folder.
+        [string]$clsid,  # The CLSID of the shell folder.
+        [string]$CustomLanguageFolder  # Optional: Path to a folder containing language-specific MUI files for localized string references.
     )
 
     # Initialize $nameSource to track where the folder name was found (for reporting purposes in CSV later)
@@ -338,7 +375,7 @@ function Get-FolderName {
         Write-Verbose "Found default name: $defaultName"
         if ($defaultName -match '@.+,-\d+') {
             Write-Verbose "Default name is a localized string reference"
-            $resolvedName = Get-LocalizedString $defaultName
+            $resolvedName = Get-LocalizedString -StringReference $defaultName -CustomLanguageFolder $CustomLanguageFolder
             if ($resolvedName) {
                 $nameSource = "Localized String"
                 Write-Verbose "Resolved default name to: $resolvedName"
@@ -387,7 +424,7 @@ function Get-FolderName {
     # If a LocalizedString is found, resolve it using the Get-LocalizedString function.
     if ($localizedString) {
         Write-Verbose "Found LocalizedString: $localizedString"
-        $resolvedString = Get-LocalizedString $localizedString
+        $resolvedString = Get-LocalizedString -StringReference $localizedString -CustomLanguageFolder $CustomLanguageFolder
         if ($resolvedString) {
             $nameSource = "Localized String"
             Write-Verbose "Resolved LocalizedString to: $resolvedString"
@@ -800,7 +837,8 @@ function Save-PrettyXML {
 function Get-TaskLinks {
     param(
         [switch]$SaveXML,
-        [string]$DLLPath
+        [string]$DLLPath,
+        [string]$CustomLanguageFolder
     )
     $xmlContent = Get-Shell32XMLContent -SaveXML:$SaveXML -CustomDLL:$DLLPath
 
@@ -835,7 +873,7 @@ function Get-TaskLinks {
         $name = $null
         if ($nameNode -and $nameNode.InnerText) {
             if ($nameNode.InnerText -match '@(.+),-(\d+)') {
-                $name = Get-LocalizedString $nameNode.InnerText
+                $name = Get-LocalizedString -StringReference $nameNode.InnerText -CustomLanguageFolder $CustomLanguageFolder
                 # Update resolved XML
                 $resolvedNameNode = $resolvedXml.SelectSingleNode("//sh:task[@id='$taskId']/sh:name", $nsManager)
                 if ($resolvedNameNode) {
@@ -879,7 +917,7 @@ function Get-TaskLinks {
         foreach ($keywordNode in $keywordsNodes) {
             $keyword = $null
             if ($keywordNode.InnerText -match '@(.+),-(\d+)') {
-                $keyword = Get-LocalizedString $keywordNode.InnerText
+                $keyword = Get-LocalizedString -StringReference $keywordNode.InnerText -CustomLanguageFolder $CustomLanguageFolder
                 # Update resolved XML
                 $resolvedKeywordNode = $resolvedXml.SelectSingleNode("//sh:task[@id='$taskId']/sh:keywords[text()='$($keywordNode.InnerText)']", $nsManager)
                 if ($resolvedKeywordNode) {
@@ -1151,7 +1189,7 @@ if (-not $SkipCLSID) {
     Write-Verbose "Processing CLSID: $clsid"
 
     # Retrieve the name of the shell folder using the Get-FolderName function and the source of the name within the registry
-    $resultArray = Get-FolderName -clsid $clsid
+    $resultArray = Get-FolderName -clsid $clsid -CustomLanguageFolder $CustomLanguageFolderPath
     $name = $resultArray[0]
     $nameSource = $resultArray[1]
 
@@ -1223,7 +1261,7 @@ if (-not $SkipTaskLinks) {
     # Process Task Links - Use the extracted XML data from Shell32 to create shortcuts for task links
     Write-Host "`n -----Processing Task Links -----"
     # Retrieve task links from the XML content in shell32.dll.
-    $taskLinks = Get-TaskLinks -SaveXML:$SaveXML -DLLPath:$DLLPath
+    $taskLinks = Get-TaskLinks -SaveXML:$SaveXML -DLLPath:$DLLPath -CustomLanguageFolder:$CustomLanguageFolderPath
     $createdShortcutNames = @{} # Track created shortcuts to be able to tasks with the same name but different commands by appending a number
 
     foreach ($task in $taskLinks) {
