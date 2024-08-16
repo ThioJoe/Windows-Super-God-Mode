@@ -256,13 +256,20 @@ Add-Type -TypeDefinition @"
     }
 "@
 
-# Check if System.Drawing is loaded, if not, load it to be used when getting icons from exes
-if (-not ([System.Management.Automation.PSTypeName]'System.Drawing.Icon').Type) {
-    Write-Verbose "Loading System.Drawing assembly"
-    Add-Type -AssemblyName System.Drawing
-} else {
-    Write-Verbose "System.Drawing assembly already loaded"
+# P/Invoke definitions for icon extraction from executables
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+
+public class IconExtractor
+{
+    [DllImport("shell32.dll", CharSet = CharSet.Auto)]
+    public static extern IntPtr ExtractIcon(IntPtr hInst, string lpszExeFileName, int nIconIndex);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool DestroyIcon(IntPtr hIcon);
 }
+"@
 
 # Function: Get-LocalizedString
 # This function retrieves a localized (meaning in the user's language) string from a DLL based on a reference string given in the registry
@@ -528,20 +535,21 @@ function Get-TaskIcon {
             $iconPath = (Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue).'(default)'
         }
     }
+
     # If icon path still not found but there is a command, see if the command calls an exe and use that exe's icon if so. Except if it's control.exe
     if (-not $iconPath -and $commandTarget) {
         Write-Verbose "No icon found in registry. Checking if icon can be extracted from command target: $commandTarget"
         # Extract the file name from the path if it's not just the filename
         $commandFileName = Split-Path -Path $commandTarget -Leaf
-        # Check if it's an exe. Also don't use control.exe as the icon
-        if ($commandFileName -match '\.exe$' -and $commandFileName -ne "control.exe") {
+        # Check if it's an exe. Also don't use icons from a few specific executables like control.exe
+        $ignoredExeFiles = @("control.exe", "rundll32.exe")
+        if ($commandFileName -match '\.exe$' -and $ignoredExeFiles -notcontains $commandFileName) {
             try {
-                $embeddedIcon = $null
-                # This will return a bitmap if there's an icon, otherwise it will be null
-                $embeddedIcon = [System.Drawing.Icon]::ExtractIcon($commandTarget, 0, $false)
-                if ($embeddedIcon) {
+                $hIcon = [IconExtractor]::ExtractIcon([IntPtr]::Zero, $commandTarget, 0)
+                if ($hIcon -ne [IntPtr]::Zero) {
                     Write-Verbose "Using embedded icon from $commandTarget"
                     $iconPath = $commandTarget + ",0"
+                    [void][IconExtractor]::DestroyIcon($hIcon)
                 } else {
                     Write-Verbose "No embedded icon found in $commandTarget"
                 }
@@ -550,7 +558,7 @@ function Get-TaskIcon {
             }
         }
         else {
-            Write-Verbose "Command target is not an exe or is control.exe - Ignoring."
+            Write-Verbose "Command target is not an exe or is part of ignored exe list - Ignoring."
         }
     }
 
