@@ -53,7 +53,7 @@
 #     Switch (Takes no values)
 #     Skip creating shortcuts for task links (sub-pages within shell folders and control panel menus)
 #
-# -DLLPath
+# -CustomDLLPath
 #     String (Optional)
 #     Specify a custom DLL file path to load the shell32.dll content from. If not provided, the default shell32.dll will be used.
 #     NOTE: Because of how Windows works behind the scenes, DLLs reference resources in corresponding .mui and .mun files.
@@ -80,7 +80,7 @@ param(
     [switch]$SaveXML,
     [switch]$SaveCSV,
     [switch]$DeletePreviousOutputFolder,
-    [string]$DLLPath,
+    [string]$CustomDLLPath,
     [string]$CustomLanguageFolderPath,
     [string]$Output,
     [switch]$SkipCLSID,
@@ -173,9 +173,9 @@ if ($DeletePreviousOutputFolder) {
 }
 
 # Validate the custom dll path if provided
-if ($DLLPath) {
-    if (-not (Test-Path $DLLPath)) {
-        Write-Error "The specified DLL path does not exist: $DLLPath"
+if ($CustomDLLPath) {
+    if (-not (Test-Path $CustomDLLPath)) {
+        Write-Error "The specified DLL path does not exist: $CustomDLLPath"
         return
     }
 }
@@ -1261,7 +1261,7 @@ if (-not $SkipTaskLinks) {
     # Process Task Links - Use the extracted XML data from Shell32 to create shortcuts for task links
     Write-Host "`n -----Processing Task Links -----"
     # Retrieve task links from the XML content in shell32.dll.
-    $taskLinks = Get-TaskLinks -SaveXML:$SaveXML -DLLPath:$DLLPath -CustomLanguageFolder:$CustomLanguageFolderPath
+    $taskLinks = Get-TaskLinks -SaveXML:$SaveXML -DLLPath:$CustomDLLPath -CustomLanguageFolder:$CustomLanguageFolderPath
     $createdShortcutNames = @{} # Track created shortcuts to be able to tasks with the same name but different commands by appending a number
 
     foreach ($task in $taskLinks) {
