@@ -1,7 +1,7 @@
 # This script will find text strings of "ms-settings:" in a DLL file and output them to a text file.
 # Meant to be run on "SystemSettings.dll" in C:\Windows\ImmersiveControlPanel\
 #
-# Optional Arugments:
+# Optional Arguments:
 #    -DllPath: Path to the DLL file to search
 #    -OutputFilePath: Path to the output text file
 #
@@ -22,42 +22,42 @@ function Get-DllMsSettings {
         [string]$DllPath
     )
 
-    # Check if the file exists
     if (-not (Test-Path $DllPath)) {
         Write-Error "File not found: $DllPath"
         return @()
     }
 
-    # Read the DLL file as bytes
-    $bytes = [System.IO.File]::ReadAllBytes($DllPath)
+    $results = New-Object System.Collections.Generic.HashSet[string]
+    $reader = [System.IO.File]::OpenRead($DllPath)
+    $bufferSize = 10MB
+    $buffer = New-Object byte[] $bufferSize
+    $stringBuilder = New-Object System.Text.StringBuilder
 
-    $searchString = "ms-settings:"
-    $searchBytes = [System.Text.Encoding]::Unicode.GetBytes($searchString)
-    $results = @()
-    $matchCount = 0
+    try {
+        while ($true) {
+            $read = $reader.Read($buffer, 0, $bufferSize)
+            if ($read -eq 0) { break }
 
-    for ($i = 0; $i -lt $bytes.Length - $searchBytes.Length; $i += 2) {
-        $potentialMatch = [System.Text.Encoding]::Unicode.GetString($bytes, $i, $searchBytes.Length)
-        if ($potentialMatch -like "*ms-settings:*") {
-            $end = $i
-            while ($end -lt $bytes.Length - 1 -and -not ($bytes[$end] -eq 0 -and $bytes[$end + 1] -eq 0)) {
-                $end += 2
+            $content = [System.Text.Encoding]::Unicode.GetString($buffer, 0, $read)
+            [void]$stringBuilder.Append($content)
+
+            while ($stringBuilder.ToString() -match '(ms-settings:[a-z-]+)') {
+                $match = $Matches[1]
+                [void]$results.Add($match)
+                [void]$stringBuilder.Remove(0, $stringBuilder.ToString().IndexOf($match) + $match.Length)
             }
-            $length = $end - $i
-            $result = [System.Text.Encoding]::Unicode.GetString($bytes, $i, $length)
-            $results += $result
-            $matchCount++
-            Write-Host "Match found: $result"
-            $i = $end
+
+            if ($stringBuilder.Length -gt 100) {
+                [void]$stringBuilder.Remove(0, $stringBuilder.Length - 100)
+            }
         }
     }
+    finally {
+        $reader.Close()
+    }
 
-    Write-Host "Total matches found: $matchCount"
-    $uniqueResults = $results | Select-Object -Unique
-    Write-Host "Unique matches: $($uniqueResults.Count)"
-
-    # Return unique results
-    return $uniqueResults
+    Write-Host "Unique Matches Found: $($results.Count)"
+    return $results | Sort-Object
 }
 
 # If no parameter for DLL path is provided, prompt the user
@@ -86,16 +86,11 @@ if (-not $OutputFilePath) {
     }
 }
 
-
 # Call main function
-Write-Host "`nBeginning search..."
+Write-Host "`nBeginning search...`n"
 $results = Get-DllMsSettings -DllPath $DllPath
-Write-Host "`nResults found: $($results.Count)"
-
-# Sort the results
-$results = $results | Sort-Object
 
 # Output the results to a txt file
 $results | Out-File -FilePath $OutputFilePath
 
-Write-Host "Results written to file: $OutputFilePath"
+Write-Host "Results written to file: $OutputFilePath`n"
