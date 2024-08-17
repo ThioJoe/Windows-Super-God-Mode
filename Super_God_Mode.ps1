@@ -122,6 +122,7 @@ $msSettingsListFilePath = Join-Path $statisticsOutputFolder "MS_Settings_List.tx
 
 # Other constants:
 $msSettingsXmlPath = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings_{D6E2A6C6-627C-44F2-8A5C-4959AC0C2B2D}.xml"
+$systemSettingsDllPath = "C:\Windows\ImmersiveControlPanel\SystemSettings.dll"
 
 # Creates the main directory if it does not exist; `-Force` ensures it is created without errors if it already exists. It won't overwrite any files within even if the folder already exists
 try {
@@ -1229,19 +1230,17 @@ function Create-TaskLinksCsvFile {
 function Create-MSSettingsCsvFile {
     param (
         [string]$outputPath,
-        [array]$settingsData
+        [array]$msSettingsList
     )
 
-    $csvContent = "Full Setting Name,Page ID,Description, ms-settings Names`n"
+    $csvContent = "Setting Name,Full Setting Command`n"
 
-    foreach ($item in $settingsData) {
-        $name = $item.Name -replace '"', '""'
-        $pageId = $item.PageID -replace '"', '""'
-        $description = $item.Description -replace '"', '""'
-        $policyIds = ($item.PolicyIds -join ' | ') -replace '"', '""'
-        #$glyph = $item.Glyph -replace '"', '""'
+    foreach ($fullLink in $msSettingsList) {
+        # Split on the first colon to separate the command from the name
+        $fullLinkParts = $fullLink -split ":", 2
+        $name = $fullLinkParts[1].Trim()
 
-        $csvContent += "`"$name`",`"$pageId`",`"$description`",`"$policyIds`"`n"
+        $csvContent += "`"$name`",`"$fullLink`"`n"
     }
 
     $csvContent | Out-File -FilePath $outputPath -Encoding utf8
@@ -1333,9 +1332,12 @@ function Get-AllSettings-Data {
             }
 
             # Only add to settingsData if it has a policy ID, which is what the ms-settings shortcuts use
-            if ($settingInfo.PolicyIds) {
-                $settingsData += $settingInfo
-            }
+            # if ($settingInfo.PolicyIds) {
+            #     $settingsData += $settingInfo
+            # }
+
+            # Add all data and handle it elsewhere
+            $settingsData += $settingInfo
         }
 
         # Save the resolved XML to the main output folder if the SaveXML switch is used
@@ -1352,29 +1354,41 @@ function Get-AllSettings-Data {
     }
 }
 
-# Function to create ms-settings shortcuts
+# Function to extract ms-settings links from the SystemSettings.dll file which has the ms-settings links embedded in it
+function Get-MS-SettingsFrom-SystemSettingsDLL {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$DllPath
+    )
 
+    if (-not (Test-Path $DllPath)) {
+        Write-Error "File not found: $DllPath"
+        return @()
+    }
+
+    $content = [System.IO.File]::ReadAllText($DllPath, [System.Text.Encoding]::Unicode)
+    $results = New-Object System.Collections.Generic.HashSet[string]
+
+    $matchesList = [regex]::Matches($content, 'ms-settings:[a-z-]+')
+    foreach ($match in $matchesList) {
+        [void]$results.Add($match.Value)
+    }
+
+    Write-Host "Unique Matches Found: $($results.Count)"
+    return $results | Sort-Object
+}
+
+# Function to create ms-settings shortcuts
 function Create-MSSettings-Shortcut {
     param (
-        [string]$name,
-        [string]$policyId,
-        [string]$shortcutPath,
-        [string]$glyph
+        [string]$fullName,
+        [string]$shortcutPath
     )
 
     try {
         $shell = New-Object -ComObject WScript.Shell
         $shortcut = $shell.CreateShortcut($shortcutPath)
-        $shortcut.TargetPath = "ms-settings:$policyId"
-
-        # Use a default icon if no glyph is provided
-        # if ($glyph) {
-        #     # TODO: Convert glyph to an icon. This might require additional processing.
-        #     # For now, we'll use a default icon
-        #     $shortcut.IconLocation = "%SystemRoot%\System32\shell32.dll,0"
-        # } else {
-        #     $shortcut.IconLocation = "%SystemRoot%\System32\shell32.dll,0"
-        # }
+        $shortcut.TargetPath = $fullName
 
         # Use a default icon of settings gear for each ms-settings shortcut
         $shortcut.IconLocation = "%SystemRoot%\System32\shell32.dll,-16826"
@@ -1403,7 +1417,7 @@ $taskLinks = @()
 $settingsData = @()
 
 if (-not $SkipMSSettings) {
-    $settingsData = Get-AllSettings-Data -xmlFilePath $msSettingsXmlPath -SaveXML:$SaveXML
+    $msSettingsList = Get-MS-SettingsFrom-SystemSettingsDLL -DllPath $SystemSettingsDllPath
 
     if ($null -eq $settingsData) {
         Write-Host "No MS Settings data found or error occurred while parsing."
@@ -1412,45 +1426,31 @@ if (-not $SkipMSSettings) {
 
     Write-Host "`n----- Processing MS Settings -----"
 
-    # Create a hashtable to store unique policyIDs
-    $uniqueMsSettings = @()
+    foreach ($setting in $msSettingsList) {
+        # Get the short name from the second part of the ms-settings: link
+        $settingName = $setting.Split(':')[1]
+        # Use policyId as the shortcut name
+        $fullShortcutName = $setting
 
-    foreach ($setting in $settingsData) {
-        foreach ($policyId in $setting.PolicyIds) {
-            # Skip if we've already processed this policyId
-            if ($uniqueMsSettings -contains $policyId) {
-                continue
-            }
+        # Sanitize the shortcut name (although policyId should already be safe)
+        $sanitizedName = $settingName -replace '[\\/:*?"<>|]', '_'
 
-            # Add to list of unique policyIds
-            $uniqueMsSettings += $policyId
+        $shortcutPath = Join-Path $msSettingsOutputFolder "$sanitizedName.lnk"
 
-            # Use policyId as the shortcut name
-            $shortcutName = $policyId
+        $success = Create-MSSettings-Shortcut -fullName $fullShortcutName -shortcutPath $shortcutPath
 
-            # Sanitize the shortcut name (although policyId should already be safe)
-            $sanitizedName = $shortcutName -replace '[\\/:*?"<>|]', '_'
-
-            $shortcutPath = Join-Path $msSettingsOutputFolder "$sanitizedName.lnk"
-
-            $success = Create-MSSettings-Shortcut -name $shortcutName -policyId $policyId -shortcutPath $shortcutPath -glyph $setting.Glyph
-
-            if ($success) {
-                Write-Host "Created MS Settings Shortcut: $shortcutName"
-            } else {
-                Write-Host "Failed to create shortcut: $shortcutName"
-            }
+        if ($success) {
+            Write-Host "Created MS Settings Shortcut: $fullShortcutName"
+        } else {
+            Write-Host "Failed to create shortcut: $fullShortcutName"
         }
     }
 
     # If -SaveXML, also create txt list with all policyIds within $uniqueMsSettings made into ms-settings: links
-    if ($SaveXML) {
-        # Make the list alphabetica
-        $uniqueMsSettings = $uniqueMsSettings | Sort-Object
-        $msSettingsLinks = $uniqueMsSettings | ForEach-Object { "ms-settings:$_" }
-        $msSettingsLinks | Out-File -FilePath $msSettingsListFilePath -Encoding utf8
-        #Write-Verbose "MS Settings links saved to: $msSettingsListFilePath"
-    }
+    # if ($SaveXML) {
+    #     $msSettingsList | Out-File -FilePath $msSettingsListFilePath -Encoding utf8
+    #     #Write-Verbose "MS Settings links saved to: $msSettingsListFilePath"
+    # }
 }
 
 # If statement to check if CLSID is skipped by argument
@@ -1638,7 +1638,7 @@ if ($SaveCSV) {
         $taskLinksDisplayPath = "`n  > " + $taskLinksCsvPath
     }
     if (-not $SkipMSSettings) {
-        Create-MSSettingsCsvFile -outputPath $msSettingsCsvPath -settingsData $settingsData
+        Create-MSSettingsCsvFile -outputPath $msSettingsCsvPath -msSettingsList $msSettingsList
         $msSettingsDisplayPath = "`n  > " + $msSettingsCsvPath
     }
 }
@@ -1650,7 +1650,7 @@ Write-Host "        Super God Mode Script Complete" -ForeGroundColor Yellow
 Write-Host "-----------------------------------------------`n"
 
 # Display total counts
-$totalCount = $clsidInfo.Count + $namedFolders.Count + $taskLinks.Count + $uniqueMsSettings.Count
+$totalCount = $clsidInfo.Count + $namedFolders.Count + $taskLinks.Count + $msSettingsList.Count
 
 # Output the total counts of each, and color the numbers to stand out. Done by writing the text and then the number separately with -NoNewLine. If it was skipped, also add that but not colored.
 Write-Host "Total Shortcuts Created: " -NoNewline
@@ -1669,22 +1669,22 @@ Write-Host $taskLinks.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipTaskLinks) { "   (Skipped)" })
 
 Write-Host "  > Settings Links:  " -NoNewline
-Write-Host $uniqueMsSettings.Count -ForegroundColor Cyan -NoNewline
+Write-Host $msSettingsList.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipMSSettings) { "   (Skipped)" })
 
 Write-Host "`n-----------------------------------------------`n"
 
 # If SaveXML switch was used, also output the paths to the saved XML files
-if ($SaveXML -and (-not $SkipTaskLinks -or -not $SkipMSSettings)) {
+if ($SaveXML -and -not $SkipTaskLinks) {
     Write-Host "XML & txt files have been saved at:"
     if (-not $SkipTaskLinks) {
         Write-Host "  > $xmlContentFilePath"
         Write-Host "  > $resolvedXmlContentFilePath"
     }
-    if (-not $SkipMSSettings) {
-        Write-Host "  > $resolvedSettingsXmlContentFilePath"
-        Write-Host "  > $msSettingsListFilePath"
-    }
+    # if (-not $SkipMSSettings) {
+    #     Write-Host "  > $resolvedSettingsXmlContentFilePath"
+    #     Write-Host "  > $msSettingsListFilePath"
+    # }
     Write-Host "`n"
 }
 
