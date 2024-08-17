@@ -91,6 +91,7 @@ param(
     [switch]$SkipNamedFolders,
     [switch]$SkipTaskLinks,
     [switch]$SkipMSSettings,
+    [switch]$SkipDeepLinks,
     [switch]$UseAlternativeCategoryNames
 )
 
@@ -112,6 +113,7 @@ $CLSIDshortcutsOutputFolder = Join-Path $mainShortcutsFolder "CLSID Shell Folder
 $namedShortcutsOutputFolder = Join-Path $mainShortcutsFolder "Named Shell Folder Shortcuts"
 $taskLinksOutputFolder = Join-Path $mainShortcutsFolder "All Task Links"
 $msSettingsOutputFolder = Join-Path $mainShortcutsFolder "System Settings"
+$deepLinksOutputFolder = Join-Path $mainShortcutsFolder "Other Settings"
 $statisticsOutputFolder = Join-Path $mainShortcutsFolder "_Script Result Statistics"
 
 # Set filenames for various output files (CSV and optional XML)
@@ -125,7 +127,7 @@ $resolvedSettingsXmlContentFilePath = Join-Path $statisticsOutputFolder "Setting
 #$msSettingsListFilePath = Join-Path $statisticsOutputFolder "MS_Settings_List.txt"
 
 # Other constants:
-$msSettingsXmlPath = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings_{D6E2A6C6-627C-44F2-8A5C-4959AC0C2B2D}.xml"
+$allSettingsXmlPath = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings_{D6E2A6C6-627C-44F2-8A5C-4959AC0C2B2D}.xml"
 $systemSettingsDllPath = "C:\Windows\ImmersiveControlPanel\SystemSettings.dll"
 
 # Creates the main directory if it does not exist; `-Force` ensures it is created without errors if it already exists. It won't overwrite any files within even if the folder already exists
@@ -1319,6 +1321,8 @@ function Get-AllSettings-Data {
                 Description = Get-LocalizedString $content.SettingInformation.Description
                 HighKeywords = $null
                 Glyph = $content.ApplicationInformation.Glyph
+                DeepLink = $content.ApplicationInformation.DeepLink
+                IconPath = $content.ApplicationInformation.Icon
                 PolicyIds = @()
             }
 
@@ -1417,6 +1421,10 @@ function Create-MSSettings-Shortcut {
     }
 }
 
+function Create-Deep-Link-Shortcut { 
+
+}
+
 # Main function to process ms-settings
 
 
@@ -1465,6 +1473,36 @@ if (-not $SkipMSSettings) {
     #     $msSettingsList | Out-File -FilePath $msSettingsListFilePath -Encoding utf8
     #     #Write-Verbose "MS Settings links saved to: $msSettingsListFilePath"
     # }
+}
+
+if (-not $SkipDeepLinks) {
+    # Process other settings data
+    $settingsData = Get-AllSettings-Data -xmlFilePath $allSettingsXmlPath -SaveXML:$SaveXML
+
+    if ($null -eq $settingsData) {
+        Write-Host "No MS Settings data found or error occurred while parsing."
+        return
+    }
+
+    Write-Host "`n----- Processing Other Settings -----"
+
+    foreach ($setting in $settingsData) {
+        # Use policyId as the shortcut name
+        $fullShortcutName = $REPLACEWITHSOMETHING
+
+        # Sanitize the shortcut name (although policyId should already be safe)
+        $sanitizedName = $REPLACETHIS -replace '[\\/:*?"<>|]', '_'
+
+        $shortcutPath = Join-Path $msSettingsOutputFolder "$sanitizedName.lnk"
+
+        $success = Create-Deep-Link-Shortcut
+
+        if ($success) {
+            Write-Host "Created MS Settings Shortcut: $fullShortcutName"
+        } else {
+            Write-Host "Failed to create shortcut: $fullShortcutName"
+        }
+    }
 }
 
 # If statement to check if CLSID is skipped by argument
