@@ -113,7 +113,7 @@ $CLSIDshortcutsOutputFolder = Join-Path $mainShortcutsFolder "CLSID Shell Folder
 $namedShortcutsOutputFolder = Join-Path $mainShortcutsFolder "Named Shell Folder Shortcuts"
 $taskLinksOutputFolder = Join-Path $mainShortcutsFolder "All Task Links"
 $msSettingsOutputFolder = Join-Path $mainShortcutsFolder "System Settings"
-$deepLinksOutputFolder = Join-Path $mainShortcutsFolder "Other Settings"
+$deepLinksOutputFolder = Join-Path $mainShortcutsFolder "Deep Links"
 $statisticsOutputFolder = Join-Path $mainShortcutsFolder "_Script Result Statistics"
 
 # Set filenames for various output files (CSV and optional XML)
@@ -170,6 +170,9 @@ if ($DeletePreviousOutputFolder) {
             }
             if (Test-Path $msSettingsOutputFolder){
                 Remove-Item -Path $msSettingsOutputFolder -Recurse -Force
+            }
+            if (Test-Path $deepLinksOutputFolder){
+                Remove-Item -Path $deepLinksOutputFolder -Recurse -Force
             }
         }
     } catch {
@@ -267,6 +270,10 @@ if (-not $SkipTaskLinks) {
 if (-not $SkipMSSettings) {
     New-FolderWithIcon -FolderPath $msSettingsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "114"
 }
+if (-not $SkipDeepLinks) {
+    New-FolderWithIcon -FolderPath $deepLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "114"
+}
+
 # If -SaveCSV or -SaveXML switches are used, create the statistics folder and set to default folder icon
 if ($SaveCSV -or $SaveXML) {
     New-FolderWithIcon -FolderPath $statisticsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "3"
@@ -1422,11 +1429,101 @@ function Create-MSSettings-Shortcut {
 }
 
 function Create-Deep-Link-Shortcut { 
+    param (
+        [object]$settingArray
+    )
+    $rawTarget = $settingArray.DeepLink
 
+    # Determine type of link/command. First check if it matches application ID format like "Microsoft.Recovery"
+    if ($rawTarget -match '^Microsoft\.[a-zA-Z]+$') {
+        $shortcutType = "app"
+        $target = "control.exe"
+        $targetArgs = "/name $rawTarget"
+        $fullCommand = "control.exe /name $rawTarget"
+    # Check if it's an application name but with a backslash and therefore has a page like Microsoft.Mouse\2 or Microsoft.PowerOptions\pagePlanSettings
+    } elseif ($rawTarget -match '^Microsoft\.[a-zA-Z]+\\[a-zA-Z0-9]+$') {
+        $shortcutType = "appPage"
+        $target = "control.exe"
+        $targetArgs = "/name $($rawTarget.Split('\')[0]) /page $($rawTarget.Split('\')[1])"
+        $fullCommand = "$target $targetArgs"
+    # Check if it's a shell:::{CLSID} link. It may have stuff after it as part of the link
+    } elseif ($rawTarget -match '^shell:::{[a-zA-Z0-9-]+}') {
+        $shortcutType = "clsid"
+        $fullCommand = "explorer $rawTarget"
+    # If it starts with %windir% or %%windir% assume it's a full path to an executable or URL with or without arguments like %windir%\something
+    } elseif ($rawTarget -match '^%') {
+        $shortcutType = "pathcommand"
+        $fullCommand = $rawTarget
+
+        #Split on the first space, set args to the 2nd match, otherwise assume no args
+        if ($fullCommand -match '^(\S+)\s*(.*)$') {
+            $target = $Matches[1]
+            $targetArgs = $Matches[2]
+        } else {
+            $target = $fullCommand
+            $targetArgs = ""
+        }
+    # If it's just letters deal with it later, do nothing
+    } elseif ($rawTarget -match '^[a-zA-Z]+$') {
+        $shortcutType = "unknown"
+    # Assume it's a full path to an executable or URL with or without arguments like %windir%\something
+    } else {
+        $shortcutType = "assumedPath"
+        # Try to split on the first space, set args to the 2nd match, otherwise assume no args
+        if ($rawTarget -match '^(\S+)\s*(.*)$') {
+            $target = $Matches[1]
+            $targetArgs = $Matches[2]
+        } else {
+            $target = $rawTarget
+        }
+    }
+    # If there's a description, use that as the name
+    if ($settingArray.Description) {
+        $name = $settingArray.Description
+    } else {
+        # Sanitize the name and use that
+        $name = $rawTarget
+    }
+
+    # Sanitize the name to make it a valid filename
+    $sanitizedName = $name -replace '[\\/:*?"<>|]', '_'
+
+    $shortcutPath = Join-Path $deepLinksOutputFolder "$sanitizedName.lnk"
+    try {
+        $shell = New-Object -ComObject WScript.Shell
+        $shortcut = $shell.CreateShortcut($shortcutPath)
+
+        # Set the target path and arguments based on the type of link
+        if ($shortcutType -eq "app" -or $shortcutType -eq "appPage") {
+            $shortcut.TargetPath = $target
+            $shortcut.Arguments = $targetArgs
+        } elseif ($shortcutType -eq "clsid") {
+            $shortcut.TargetPath = "explorer.exe"
+            $shortcut.Arguments = $rawTarget
+        } elseif ($shortcutType -eq "pathcommand") {
+            $shortcut.TargetPath = $target
+            $shortcut.Arguments = $targetArgs
+        } elseif ($shortcutType -eq "assumedPath") {
+            $shortcut.TargetPath = $target
+        }
+
+        # If there's an icon property try using that
+        if ($settingArray.IconPath) {
+            $shortcut.IconLocation = $settingArray.IconPath
+        } else {
+            # Use a default icon of settings gear for each ms-settings shortcut
+            $shortcut.IconLocation = "%SystemRoot%\System32\shell32.dll,-16826"
+        }
+
+        $shortcut.Save()
+        [System.Runtime.Interopservices.Marshal]::ReleaseComObject($shell) | Out-Null
+        return $true
+    }
+    catch {
+        Write-Host "Error creating shortcut for $name`: $($_.Exception.Message)"
+        return $false
+    }
 }
-
-# Main function to process ms-settings
-
 
 # ---------------------------------------------- ----------------------------------------------------------------
 # ----------------------------------------------    Main Script    ----------------------------------------------
@@ -1467,12 +1564,6 @@ if (-not $SkipMSSettings) {
             Write-Host "Failed to create shortcut: $fullShortcutName"
         }
     }
-
-    # If -SaveXML, also create txt list with all policyIds within $uniqueMsSettings made into ms-settings: links
-    # if ($SaveXML) {
-    #     $msSettingsList | Out-File -FilePath $msSettingsListFilePath -Encoding utf8
-    #     #Write-Verbose "MS Settings links saved to: $msSettingsListFilePath"
-    # }
 }
 
 if (-not $SkipDeepLinks) {
@@ -1484,23 +1575,18 @@ if (-not $SkipDeepLinks) {
         return
     }
 
-    Write-Host "`n----- Processing Other Settings -----"
+    Write-Host "`n----- Processing Deep Links -----"
 
     foreach ($setting in $settingsData) {
-        # Use policyId as the shortcut name
-        $fullShortcutName = $REPLACEWITHSOMETHING
+        # Check if it has a DeepLink
+        if ($setting.DeepLink) {
+            $success = Create-Deep-Link-Shortcut -settingArray $setting
 
-        # Sanitize the shortcut name (although policyId should already be safe)
-        $sanitizedName = $REPLACETHIS -replace '[\\/:*?"<>|]', '_'
-
-        $shortcutPath = Join-Path $msSettingsOutputFolder "$sanitizedName.lnk"
-
-        $success = Create-Deep-Link-Shortcut
-
-        if ($success) {
-            Write-Host "Created MS Settings Shortcut: $fullShortcutName"
-        } else {
-            Write-Host "Failed to create shortcut: $fullShortcutName"
+            if ($success) {
+                Write-Host "Created MS Settings Shortcut: $fullShortcutName"
+            } else {
+                Write-Host "Failed to create shortcut: $fullShortcutName"
+            }
         }
     }
 }
