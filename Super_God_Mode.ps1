@@ -68,6 +68,10 @@
 #     For example, to use your own language file for shell32.dll, you could specify a path to a folder containing a file named "shell32.dll.mui" in the desired language, and any other such files.
 #     For another example, if you have multiple language packs installed on your system, you could specify the entire language directory in system32 such as "C:\Windows\System32\en-US" to use English strings, or "C:\Windows\System32\de-DE" for German strings.
 #
+# -CustomSystemSettingsDLLPath
+#     String (Optional)
+#     Specify a custom path to the SystemSettings.dll file to load the system settings (ms-settings: links) content from. If not provided, the default SystemSettings.dll will be used.
+#
 # ---------------------------------------------------------------------
 #
 #   EXAMPLE USAGE FROM COMMAND LINE:
@@ -108,7 +112,7 @@ $CLSIDshortcutsOutputFolder = Join-Path $mainShortcutsFolder "CLSID Shell Folder
 $namedShortcutsOutputFolder = Join-Path $mainShortcutsFolder "Named Shell Folder Shortcuts"
 $taskLinksOutputFolder = Join-Path $mainShortcutsFolder "All Task Links"
 $msSettingsOutputFolder = Join-Path $mainShortcutsFolder "System Settings"
-$statisticsOutputFolder = Join-Path $mainShortcutsFolder "Script Result Statistics"
+$statisticsOutputFolder = Join-Path $mainShortcutsFolder "_Script Result Statistics"
 
 # Set filenames for various output files (CSV and optional XML)
 $clsidCsvPath = Join-Path $statisticsOutputFolder "CLSID_Shell_Folders.csv"
@@ -118,7 +122,7 @@ $msSettingsCsvPath = Join-Path $statisticsOutputFolder "MS_Settings.csv"
 $xmlContentFilePath = Join-Path $statisticsOutputFolder "Shell32_XML_Content.xml"
 $resolvedXmlContentFilePath = Join-Path $statisticsOutputFolder "Shell32_XML_Content_Resolved.xml"
 $resolvedSettingsXmlContentFilePath = Join-Path $statisticsOutputFolder "Settings_XML_Content_Resolved.xml"
-$msSettingsListFilePath = Join-Path $statisticsOutputFolder "MS_Settings_List.txt"
+#$msSettingsListFilePath = Join-Path $statisticsOutputFolder "MS_Settings_List.txt"
 
 # Other constants:
 $msSettingsXmlPath = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings_{D6E2A6C6-627C-44F2-8A5C-4959AC0C2B2D}.xml"
@@ -191,6 +195,16 @@ if ($CustomLanguageFolderPath) {
     }
     else {
         Write-Verbose "Using custom language folder path: $CustomLanguageFolderPath"
+    }
+}
+
+# Validate the custom system settings DLL path if provided
+if ($CustomSystemSettingsDLLPath) {
+    if (-not (Test-Path $CustomSystemSettingsDLLPath)) {
+        Write-Error "The specified SystemSettings.dll path does not exist: $CustomSystemSettingsDLLPath"
+        return
+    } else {
+        $systemSettingsDllPath = $CustomSystemSettingsDLLPath
     }
 }
 
@@ -1374,7 +1388,7 @@ function Get-MS-SettingsFrom-SystemSettingsDLL {
         [void]$results.Add($match.Value)
     }
 
-    Write-Host "Unique Matches Found: $($results.Count)"
+    Write-Verbose "Unique MS-Settings Matches Found: $($results.Count)"
     return $results | Sort-Object
 }
 
