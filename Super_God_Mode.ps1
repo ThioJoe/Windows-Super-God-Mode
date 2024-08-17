@@ -116,6 +116,7 @@ $taskLinksCsvPath = Join-Path $mainShortcutsFolder "Task_Links.csv"
 $msSettingsCsvPath = Join-Path $mainShortcutsFolder "MS_Settings.csv"
 $xmlContentFilePath = Join-Path $mainShortcutsFolder "Shell32_XML_Content.xml"
 $resolvedXmlContentFilePath = Join-Path $mainShortcutsFolder "Shell32_XML_Content_Resolved.xml"
+$resolvedSettingsXmlContentFilePath = Join-Path $mainShortcutsFolder "Settings_XML_Content_Resolved.xml"
 
 # Other constants:
 $msSettingsXmlPath = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings_{D6E2A6C6-627C-44F2-8A5C-4959AC0C2B2D}.xml"
@@ -319,6 +320,15 @@ if (-not ([System.Management.Automation.PSTypeName]'Win32').Type) {
     public class Win32 {
         [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
         public static extern int SHLoadIndirectString(string pszSource, StringBuilder pszOutBuf, int cchOutBuf, IntPtr ppvReserved);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        public static extern IntPtr LoadLibrary(string lpFileName);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern int LoadString(IntPtr hInstance, uint uID, StringBuilder lpBuffer, int nBufferMax);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool FreeLibrary(IntPtr hModule);
     }
 "@
 }
@@ -346,49 +356,26 @@ function Get-LocalizedString {
     }
     # Check if the string is an ms-resource reference
     elseif ($StringReference -match '@\{.+\?ms-resource://.+}') {
-        $stringBuilder = New-Object System.Text.StringBuilder 1024
-        Write-Verbose "Attempting to retrieve ms-resource: $StringReference"
-        $result = [Win32]::SHLoadIndirectString($StringReference, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
-        if ($result -eq 0) {
-            return $stringBuilder.ToString()
-        } else {
-            Write-Error "Failed to retrieve ms-resource: $StringReference. Error code: $result"
-            return $null
-        }
+        return Get-MsResource $StringReference
     }
     # Existing logic for DLL-based references
     elseif ($StringReference -match '@(.+),-(\d+)') {
-        $dllPath = [Environment]::ExpandEnvironmentVariables($Matches[1])  # Extract and expand the DLL path.
-        $resourceId = [uint32]$Matches[2]  # Extract the resource ID.
+        $dllPath = [Environment]::ExpandEnvironmentVariables($Matches[1])
+        $resourceId = [uint32]$Matches[2]
 
-        # If custom language folder is specified, check if there is a corresponding MUI file for the DLL within that folder.
-        $muiNameToCheck = "$dllPath.mui"
-        if ($CustomLanguageFolder){
-            if (Test-Path (Join-Path $CustomLanguageFolder $muiNameToCheck)) {
-                Write-Verbose "Found MUI file to use for for $dllPath in custom language folder."
-                $dllPath = Join-Path $CustomLanguageFolder $muiNameToCheck
-            }
-            else {
-                Write-Verbose "No MUI file found for $dllPath in custom language folder. Using default system language."
-            }
-        }
+        # Custom language folder logic...
 
-        # Load the specified DLL into memory.
-        $hModule = [Windows]::LoadLibraryEx($dllPath, [IntPtr]::Zero, 0)
+        $hModule = [Win32]::LoadLibrary($dllPath)
         if ($hModule -eq [IntPtr]::Zero) {
             Write-Error "Failed to load library: $dllPath"
             return $null
         }
 
-        # Prepare a StringBuilder object to hold the localized string.
         $stringBuilder = New-Object System.Text.StringBuilder 1024
-        # Load the string from the DLL.
-        $result = [Windows]::LoadString($hModule, $resourceId, $stringBuilder, $stringBuilder.Capacity)
+        $result = [Win32]::LoadString($hModule, $resourceId, $stringBuilder, $stringBuilder.Capacity)
 
-        # Free the loaded DLL from memory. Must add '[void]' or else PowerShell will make the function return as an array.
-        [void][Windows]::FreeLibrary($hModule)
+        [void][Win32]::FreeLibrary($hModule)
 
-        # If the string was successfully loaded, return it.
         if ($result -ne 0) {
             return $stringBuilder.ToString()
         } else {
@@ -397,6 +384,74 @@ function Get-LocalizedString {
         }
     } else {
         Write-Error "Invalid string reference format: $StringReference"
+        return $null
+    }
+}
+
+function Get-MsResource {
+    param (
+        [string]$ResourcePath
+    )
+    Write-Verbose "Attempting to retrieve resource: $ResourcePath"
+    $stringBuilder = New-Object System.Text.StringBuilder 1024
+    $result = [Win32]::SHLoadIndirectString($ResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
+    if ($result -eq 0) {
+        Write-Verbose "Successfully retrieved resource on first attempt"
+        return $stringBuilder.ToString()
+    } else {
+        Write-Verbose "Initial attempt failed with error code: $result. Trying alternative methods..."
+
+        # Extract package name and resource URI
+        $packageFullName = ($ResourcePath -split '\?')[0].Trim('@{}')
+        $resourceUri = ($ResourcePath -split '\?')[1]
+        Write-Verbose "Extracted package full name: $packageFullName"
+        Write-Verbose "Extracted resource URI: $resourceUri"
+
+        # Extract package name without version and architecture
+        $packageName = ($packageFullName -split '_')[0]
+        Write-Verbose "Extracted package name: $packageName"
+
+        # Find the package installation path
+        $package = Get-AppxPackage | Where-Object { $_.Name -eq $packageName }
+        if (-not $package) {
+            # If exact match fails, try matching by package family name
+            $packageFamilyName = ($packageFullName -split '_')[-1]
+            $package = Get-AppxPackage | Where-Object { $_.PackageFamilyName -eq "${packageName}_$packageFamilyName" }
+        }
+
+        if ($package) {
+            $packagePath = $package.InstallLocation
+            Write-Verbose "Package installation path: $packagePath"
+            $priPath = Join-Path $packagePath "resources.pri"
+            Write-Verbose "Attempting to use resources.pri at: $priPath"
+            if (Test-Path $priPath) {
+                $newResourcePath = "@{" + $priPath + "?" + $resourceUri
+                Write-Verbose "New resource path: $newResourcePath"
+                $result = [Win32]::SHLoadIndirectString($newResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
+                if ($result -eq 0) {
+                    Write-Verbose "Successfully retrieved resource using resources.pri"
+                    return $stringBuilder.ToString()
+                }
+                Write-Error "Failed to retrieve using resources.pri. Error code: $result"
+            } else {
+                Write-Verbose "resources.pri not found at expected location"
+            }
+        } else {
+            Write-Verbose "Package not found"
+        }
+
+        # If still failed, try without the /resources/ folder
+        $resourceUriWithoutResources = $resourceUri -replace '/resources/', '/'
+        $newResourcePath = "@{" + $priPath + "?" + $resourceUriWithoutResources
+        Write-Verbose "Attempting without /resources/ folder. New path: $newResourcePath"
+        $result = [Win32]::SHLoadIndirectString($newResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
+        if ($result -eq 0) {
+            Write-Verbose "Successfully retrieved resource without /resources/ folder"
+            return $stringBuilder.ToString()
+        }
+        Write-Verbose "Failed to retrieve without /resources/ folder. Error code: $result"
+
+        Write-Error "Failed to retrieve ms-resource: $ResourcePath. Error code: $result"
         return $null
     }
 }
@@ -1185,15 +1240,16 @@ function Create-MSSettingsCsvFile {
         [array]$settingsData
     )
 
-    $csvContent = "Name,PageID,Description,Glyph`n"
+    $csvContent = "Full Setting Name,Page ID,Description`n"
 
     foreach ($item in $settingsData) {
         $name = $item.Name -replace '"', '""'
         $pageId = $item.PageID -replace '"', '""'
         $description = $item.Description -replace '"', '""'
-        $glyph = $item.Glyph -replace '"', '""'
+        $policyIds = ($item.PolicyIds -join ';') -replace '"', '""'
+        #$glyph = $item.Glyph -replace '"', '""'
 
-        $csvContent += "`"$name`",`"$pageId`",`"$description`",`"$glyph`"`n"
+        $csvContent += "`"$name`",`"$pageId`",`"$description`"`n"
     }
 
     $csvContent | Out-File -FilePath $outputPath -Encoding utf8
@@ -1237,7 +1293,8 @@ function Prettify-App-Name {
 # Function to parse the ms-settings XML file and extract relevant data
 function Get-AllSettings-Data {
     param (
-        [string]$xmlFilePath
+        [string]$xmlFilePath,
+        [switch]$SaveXML
     )
 
     if (-not (Test-Path $xmlFilePath)) {
@@ -1255,12 +1312,12 @@ function Get-AllSettings-Data {
                 PageID = $null
                 GroupID = $null
                 Description = Get-LocalizedString $content.SettingInformation.Description
-                HighKeywords = $null  # Initialize as null
+                HighKeywords = $null
                 Glyph = $content.ApplicationInformation.Glyph
                 PolicyIds = @()
             }
 
-            # Check if HighKeywords exists before trying to resolve it
+            # Resolve HighKeywords if it exists
             if ($content.SettingInformation.HighKeywords) {
                 $settingInfo.HighKeywords = Get-LocalizedString $content.SettingInformation.HighKeywords
             }
@@ -1268,20 +1325,31 @@ function Get-AllSettings-Data {
             # Extract PageID, GroupID, and PolicyIds from SettingPaths
             $settingPaths = $content.SettingIdentity.SettingPaths.Path
             if ($settingPaths) {
-                # If there are multiple paths, take the first one
                 $firstPath = $settingPaths[0]
                 $settingInfo.PageID = $firstPath.PageID
                 $settingInfo.GroupID = $firstPath.GroupID
-                
+
                 if ($firstPath.PolicyIds) {
                     $settingInfo.PolicyIds = $firstPath.PolicyIds -split ';' | ForEach-Object { $_.Trim() }
                 }
+            }
+
+            # Update the XML content with resolved strings
+            $content.SettingInformation.Description = $settingInfo.Description
+            if ($settingInfo.HighKeywords) {
+                $content.SettingInformation.HighKeywords = $settingInfo.HighKeywords
             }
 
             # Only add to settingsData if it has a PageID (which should catch all SettingsPage* items)
             if ($settingInfo.PageID -like "SettingsPage*") {
                 $settingsData += $settingInfo
             }
+        }
+
+        # Save the resolved XML to the main output folder if the SaveXML switch is used
+        if ($SaveXML) {
+            $xmlContent.Save($resolvedSettingsXmlContentFilePath)
+            Write-Verbose "Resolved XML saved to: $resolvedSettingsXmlContentFilePath"
         }
 
         return $settingsData
@@ -1306,7 +1374,7 @@ function Create-MSSettings-Shortcut {
         $shell = New-Object -ComObject WScript.Shell
         $shortcut = $shell.CreateShortcut($shortcutPath)
         $shortcut.TargetPath = "ms-settings:$policyId"
-        
+
         # Use a default icon if no glyph is provided
         if ($glyph) {
             # TODO: Convert glyph to an icon. This might require additional processing.
@@ -1327,12 +1395,20 @@ function Create-MSSettings-Shortcut {
 }
 
 # Main function to process ms-settings
-function Process-MSSettings {
-    if (-not (Test-Path $msSettingsOutputFolder)) {
-        New-Item -Path $msSettingsOutputFolder -ItemType Directory -Force | Out-Null
-    }
 
-    $settingsData = Get-AllSettings-Data -xmlFilePath $msSettingsXmlPath
+
+# ---------------------------------------------- ----------------------------------------------------------------
+# ----------------------------------------------    Main Script    ----------------------------------------------
+# ---------------------------------------------- ----------------------------------------------------------------
+
+# Create empty arrays for each type of data to be stored
+$clsidInfo = @()
+$namedFolders = @()
+$taskLinks = @()
+$settingsData = @()
+
+if (-not $SkipMSSettings) {
+    $settingsData = Get-AllSettings-Data -xmlFilePath $msSettingsXmlPath -SaveXML:$SaveXML
 
     if ($null -eq $settingsData) {
         Write-Host "No MS Settings data found or error occurred while parsing."
@@ -1345,13 +1421,13 @@ function Process-MSSettings {
         foreach ($policyId in $setting.PolicyIds) {
             # Use Description for the shortcut name, fallback to Filename if Description is empty
             $shortcutName = if ($setting.Description) { $setting.Description } else { $setting.Name }
-            
+
             # Append PolicyId for uniqueness
             $shortcutName = "$shortcutName ($policyId)"
-            
+
             # Sanitize the shortcut name
             $sanitizedName = $shortcutName -replace '[\\/:*?"<>|]', '_'
-            
+
             $shortcutPath = Join-Path $msSettingsOutputFolder "$sanitizedName.lnk"
 
             $success = Create-MSSettings-Shortcut -name $shortcutName -policyId $policyId -shortcutPath $shortcutPath -glyph $setting.Glyph
@@ -1363,19 +1439,6 @@ function Process-MSSettings {
             }
         }
     }
-}
-
-# ---------------------------------------------- ----------------------------------------------------------------
-# ----------------------------------------------    Main Script    ----------------------------------------------
-# ---------------------------------------------- ----------------------------------------------------------------
-
-# Create empty arrays for each type of data to be stored
-$clsidInfo = @()
-$namedFolders = @()
-$taskLinks = @()
-
-if (-not $SkipMSSettings) {
-    Process-MSSettings
 }
 
 # If statement to check if CLSID is skipped by argument
