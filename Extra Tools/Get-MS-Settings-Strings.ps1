@@ -27,33 +27,12 @@ function Get-DllMsSettings {
         return @()
     }
 
+    $content = [System.IO.File]::ReadAllText($DllPath, [System.Text.Encoding]::Unicode)
     $results = New-Object System.Collections.Generic.HashSet[string]
-    $reader = [System.IO.File]::OpenRead($DllPath)
-    $bufferSize = 10MB
-    $buffer = New-Object byte[] $bufferSize
-    $stringBuilder = New-Object System.Text.StringBuilder
 
-    try {
-        while ($true) {
-            $read = $reader.Read($buffer, 0, $bufferSize)
-            if ($read -eq 0) { break }
-
-            $content = [System.Text.Encoding]::Unicode.GetString($buffer, 0, $read)
-            [void]$stringBuilder.Append($content)
-
-            while ($stringBuilder.ToString() -match '(ms-settings:[a-z-]+)') {
-                $match = $Matches[1]
-                [void]$results.Add($match)
-                [void]$stringBuilder.Remove(0, $stringBuilder.ToString().IndexOf($match) + $match.Length)
-            }
-
-            if ($stringBuilder.Length -gt 100) {
-                [void]$stringBuilder.Remove(0, $stringBuilder.Length - 100)
-            }
-        }
-    }
-    finally {
-        $reader.Close()
+    $matches = [regex]::Matches($content, 'ms-settings:[a-z-]+')
+    foreach ($match in $matches) {
+        [void]$results.Add($match.Value)
     }
 
     Write-Host "Unique Matches Found: $($results.Count)"
