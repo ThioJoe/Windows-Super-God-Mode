@@ -107,16 +107,18 @@ if ($Output) {
 $CLSIDshortcutsOutputFolder = Join-Path $mainShortcutsFolder "CLSID Shell Folder Shortcuts"
 $namedShortcutsOutputFolder = Join-Path $mainShortcutsFolder "Named Shell Folder Shortcuts"
 $taskLinksOutputFolder = Join-Path $mainShortcutsFolder "All Task Links"
-$msSettingsOutputFolder = Join-Path $mainShortcutsFolder "MS Settings Shortcuts"
+$msSettingsOutputFolder = Join-Path $mainShortcutsFolder "System Settings"
+$statisticsOutputFolder = Join-Path $mainShortcutsFolder "Script Result Statistics"
 
 # Set filenames for various output files (CSV and optional XML)
-$clsidCsvPath = Join-Path $mainShortcutsFolder "CLSID_Shell_Folders.csv"
-$namedFoldersCsvPath = Join-Path $mainShortcutsFolder "Named_Shell_Folders.csv"
-$taskLinksCsvPath = Join-Path $mainShortcutsFolder "Task_Links.csv"
-$msSettingsCsvPath = Join-Path $mainShortcutsFolder "MS_Settings.csv"
-$xmlContentFilePath = Join-Path $mainShortcutsFolder "Shell32_XML_Content.xml"
-$resolvedXmlContentFilePath = Join-Path $mainShortcutsFolder "Shell32_XML_Content_Resolved.xml"
-$resolvedSettingsXmlContentFilePath = Join-Path $mainShortcutsFolder "Settings_XML_Content_Resolved.xml"
+$clsidCsvPath = Join-Path $statisticsOutputFolder "CLSID_Shell_Folders.csv"
+$namedFoldersCsvPath = Join-Path $statisticsOutputFolder "Named_Shell_Folders.csv"
+$taskLinksCsvPath = Join-Path $statisticsOutputFolder "Task_Links.csv"
+$msSettingsCsvPath = Join-Path $statisticsOutputFolder "MS_Settings.csv"
+$xmlContentFilePath = Join-Path $statisticsOutputFolder "Shell32_XML_Content.xml"
+$resolvedXmlContentFilePath = Join-Path $statisticsOutputFolder "Shell32_XML_Content_Resolved.xml"
+$resolvedSettingsXmlContentFilePath = Join-Path $statisticsOutputFolder "Settings_XML_Content_Resolved.xml"
+$msSettingsListFilePath = Join-Path $statisticsOutputFolder "MS_Settings_List.txt"
 
 # Other constants:
 $msSettingsXmlPath = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings_{D6E2A6C6-627C-44F2-8A5C-4959AC0C2B2D}.xml"
@@ -156,22 +158,8 @@ if ($DeletePreviousOutputFolder) {
             if (Test-Path $taskLinksOutputFolder){
                 Remove-Item -Path $taskLinksOutputFolder -Recurse -Force
             }
-            # Remove CSV files
-            if (Test-Path $clsidCsvPath){
-                Remove-Item -Path $clsidCsvPath -Force
-            }
-            if (Test-Path $namedFoldersCsvPath){
-                Remove-Item -Path $namedFoldersCsvPath -Force
-            }
-            if (Test-Path $taskLinksCsvPath){
-                Remove-Item -Path $taskLinksCsvPath -Force
-            }
-            # Remove XML files
-            if (Test-Path $xmlContentFilePath){
-                Remove-Item -Path $xmlContentFilePath -Force
-            }
-            if (Test-Path $resolvedXmlContentFilePath){
-                Remove-Item -Path $resolvedXmlContentFilePath -Force
+            if (Test-Path $statisticsOutputFolder) {
+                Remove-Item -Path $statisticsOutputFolder -Recurse -Force
             }
             if (Test-Path $msSettingsOutputFolder){
                 Remove-Item -Path $msSettingsOutputFolder -Recurse -Force
@@ -260,7 +248,11 @@ if (-not $SkipTaskLinks) {
     New-FolderWithIcon -FolderPath $taskLinksOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "137"
 }
 if (-not $SkipMSSettings) {
-    New-FolderWithIcon -FolderPath $msSettingsOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "137"
+    New-FolderWithIcon -FolderPath $msSettingsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "114"
+}
+# If -SaveCSV or -SaveXML switches are used, create the statistics folder and set to default folder icon
+if ($SaveCSV -or $SaveXML) {
+    New-FolderWithIcon -FolderPath $statisticsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "3"
 }
 
 
@@ -337,7 +329,7 @@ if (-not ([System.Management.Automation.PSTypeName]'Win32').Type) {
 # This function retrieves a localized (meaning in the user's language) string from a DLL based on a reference string given in the registry
 # `StringReference` is a reference in the format "@<dllPath>,-<resourceId>".
 function Get-LocalizedString {
-    param ( 
+    param (
         [string]$StringReference,
         [string]$CustomLanguageFolder
     )
@@ -352,7 +344,7 @@ function Get-LocalizedString {
                 $resolvedStrings += $resolved -split ';' | ForEach-Object { $_.Trim() }
             }
         }
-        return ($resolvedStrings | Select-Object -Unique) -join '; '
+        return ($resolvedStrings | Select-Object -Unique) -join ';'
     }
     # Check if the string is an ms-resource reference
     elseif ($StringReference -match '@\{.+\?ms-resource://.+}') {
@@ -1240,16 +1232,16 @@ function Create-MSSettingsCsvFile {
         [array]$settingsData
     )
 
-    $csvContent = "Full Setting Name,Page ID,Description`n"
+    $csvContent = "Full Setting Name,Page ID,Description, ms-settings Names`n"
 
     foreach ($item in $settingsData) {
         $name = $item.Name -replace '"', '""'
         $pageId = $item.PageID -replace '"', '""'
         $description = $item.Description -replace '"', '""'
-        $policyIds = ($item.PolicyIds -join ';') -replace '"', '""'
+        $policyIds = ($item.PolicyIds -join ' | ') -replace '"', '""'
         #$glyph = $item.Glyph -replace '"', '""'
 
-        $csvContent += "`"$name`",`"$pageId`",`"$description`"`n"
+        $csvContent += "`"$name`",`"$pageId`",`"$description`",`"$policyIds`"`n"
     }
 
     $csvContent | Out-File -FilePath $outputPath -Encoding utf8
@@ -1340,8 +1332,8 @@ function Get-AllSettings-Data {
                 $content.SettingInformation.HighKeywords = $settingInfo.HighKeywords
             }
 
-            # Only add to settingsData if it has a PageID (which should catch all SettingsPage* items)
-            if ($settingInfo.PageID -like "SettingsPage*") {
+            # Only add to settingsData if it has a policy ID, which is what the ms-settings shortcuts use
+            if ($settingInfo.PolicyIds) {
                 $settingsData += $settingInfo
             }
         }
@@ -1376,13 +1368,16 @@ function Create-MSSettings-Shortcut {
         $shortcut.TargetPath = "ms-settings:$policyId"
 
         # Use a default icon if no glyph is provided
-        if ($glyph) {
-            # TODO: Convert glyph to an icon. This might require additional processing.
-            # For now, we'll use a default icon
-            $shortcut.IconLocation = "%SystemRoot%\System32\shell32.dll,0"
-        } else {
-            $shortcut.IconLocation = "%SystemRoot%\System32\shell32.dll,0"
-        }
+        # if ($glyph) {
+        #     # TODO: Convert glyph to an icon. This might require additional processing.
+        #     # For now, we'll use a default icon
+        #     $shortcut.IconLocation = "%SystemRoot%\System32\shell32.dll,0"
+        # } else {
+        #     $shortcut.IconLocation = "%SystemRoot%\System32\shell32.dll,0"
+        # }
+
+        # Use a default icon of settings gear for each ms-settings shortcut
+        $shortcut.IconLocation = "%SystemRoot%\System32\shell32.dll,-16826"
 
         $shortcut.Save()
         [System.Runtime.Interopservices.Marshal]::ReleaseComObject($shell) | Out-Null
@@ -1415,17 +1410,25 @@ if (-not $SkipMSSettings) {
         return
     }
 
-    Write-Host "`n----- Processing $($settingsData.Count) MS Settings -----"
+    Write-Host "`n----- Processing MS Settings -----"
+
+    # Create a hashtable to store unique policyIDs
+    $uniqueMsSettings = @()
 
     foreach ($setting in $settingsData) {
         foreach ($policyId in $setting.PolicyIds) {
-            # Use Description for the shortcut name, fallback to Filename if Description is empty
-            $shortcutName = if ($setting.Description) { $setting.Description } else { $setting.Name }
+            # Skip if we've already processed this policyId
+            if ($uniqueMsSettings -contains $policyId) {
+                continue
+            }
 
-            # Append PolicyId for uniqueness
-            $shortcutName = "$shortcutName ($policyId)"
+            # Add to list of unique policyIds
+            $uniqueMsSettings += $policyId
 
-            # Sanitize the shortcut name
+            # Use policyId as the shortcut name
+            $shortcutName = $policyId
+
+            # Sanitize the shortcut name (although policyId should already be safe)
             $sanitizedName = $shortcutName -replace '[\\/:*?"<>|]', '_'
 
             $shortcutPath = Join-Path $msSettingsOutputFolder "$sanitizedName.lnk"
@@ -1438,6 +1441,15 @@ if (-not $SkipMSSettings) {
                 Write-Host "Failed to create shortcut: $shortcutName"
             }
         }
+    }
+
+    # If -SaveXML, also create txt list with all policyIds within $uniqueMsSettings made into ms-settings: links
+    if ($SaveXML) {
+        # Make the list alphabetica
+        $uniqueMsSettings = $uniqueMsSettings | Sort-Object
+        $msSettingsLinks = $uniqueMsSettings | ForEach-Object { "ms-settings:$_" }
+        $msSettingsLinks | Out-File -FilePath $msSettingsListFilePath -Encoding utf8
+        #Write-Verbose "MS Settings links saved to: $msSettingsListFilePath"
     }
 }
 
@@ -1634,38 +1646,48 @@ if ($SaveCSV) {
 
 # Output a message indicating that the script execution is complete and the CSV files have been created.
 Write-Host "`n-----------------------------------------------"
-Write-Host "         Script execution complete" -ForeGroundColor Yellow
+Write-Host "        Super God Mode Script Complete" -ForeGroundColor Yellow
 Write-Host "-----------------------------------------------`n"
 
 # Display total counts
-$totalCount = $clsidInfo.Count + $namedFolders.Count + $taskLinks.Count
+$totalCount = $clsidInfo.Count + $namedFolders.Count + $taskLinks.Count + $uniqueMsSettings.Count
 
 # Output the total counts of each, and color the numbers to stand out. Done by writing the text and then the number separately with -NoNewLine. If it was skipped, also add that but not colored.
 Write-Host "Total Shortcuts Created: " -NoNewline
 Write-Host $totalCount -ForegroundColor Green
 
-Write-Host "  > CLSID Links:    " -NoNewline
+Write-Host "  > CLSID Links:     " -NoNewline
 Write-Host $clsidInfo.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipCLSID) { "   (Skipped)" }) # If skipped, add the skipped text, otherwise still write empty string because we used -NoNewline previously
 
-Write-Host "  > Named Folders:  " -NoNewline
+Write-Host "  > Named Folders:   " -NoNewline
 Write-Host $namedFolders.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipNamedFolders) { "   (Skipped)" })
 
-Write-Host "  > Task Links:     " -NoNewline
+Write-Host "  > Task Links:      " -NoNewline
 Write-Host $taskLinks.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipTaskLinks) { "   (Skipped)" })
 
-Write-Host "  > MS Settings:    " -NoNewline
-Write-Host $settingsData.Count -ForegroundColor Cyan -NoNewline
+Write-Host "  > Settings Links:  " -NoNewline
+Write-Host $uniqueMsSettings.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipMSSettings) { "   (Skipped)" })
 
 Write-Host "`n-----------------------------------------------`n"
 
 # If SaveXML switch was used, also output the paths to the saved XML files
-if ($SaveXML -and (-not $SkipTaskLinks)) {
-    Write-Host "XML files have been saved at:`n  > $xmlContentFilePath`n  > $resolvedXmlContentFilePath`n"
+if ($SaveXML -and (-not $SkipTaskLinks -or -not $SkipMSSettings)) {
+    Write-Host "XML & txt files have been saved at:"
+    if (-not $SkipTaskLinks) {
+        Write-Host "  > $xmlContentFilePath"
+        Write-Host "  > $resolvedXmlContentFilePath"
+    }
+    if (-not $SkipMSSettings) {
+        Write-Host "  > $resolvedSettingsXmlContentFilePath"
+        Write-Host "  > $msSettingsListFilePath"
+    }
+    Write-Host "`n"
 }
+
 # As long as any of the CSV files were created, output the paths to them - check by seeing if strings are empty
 if ($CLSIDDisplayPath -or $namedFolderDisplayPath -or $taskLinksDisplayPath){
     $csvPrintString = "CSV files have been created at:" + "$CLSIDDisplayPath" + "$namedFolderDisplayPath" + "$taskLinksDisplayPath" + "$msSettingsDisplayPath" + "`n"
