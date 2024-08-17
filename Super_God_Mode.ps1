@@ -121,6 +121,9 @@ $clsidCsvPath = Join-Path $statisticsOutputFolder "CLSID_Shell_Folders.csv"
 $namedFoldersCsvPath = Join-Path $statisticsOutputFolder "Named_Shell_Folders.csv"
 $taskLinksCsvPath = Join-Path $statisticsOutputFolder "Task_Links.csv"
 $msSettingsCsvPath = Join-Path $statisticsOutputFolder "MS_Settings.csv"
+$deepLinksCsvPath = Join-Path $statisticsOutputFolder "Deep_Links.csv"
+
+# XML content file paths
 $xmlContentFilePath = Join-Path $statisticsOutputFolder "Shell32_XML_Content.xml"
 $resolvedXmlContentFilePath = Join-Path $statisticsOutputFolder "Shell32_XML_Content_Resolved.xml"
 $resolvedSettingsXmlContentFilePath = Join-Path $statisticsOutputFolder "Settings_XML_Content_Resolved.xml"
@@ -1312,7 +1315,7 @@ function Get-AllSettings-Data {
     )
 
     if (-not (Test-Path $xmlFilePath)) {
-        Write-Error "MS Settings XML file not found: $xmlFilePath"
+        Write-Error "All Systems XML file not found: $xmlFilePath"
         return $null
     }
 
@@ -1428,7 +1431,7 @@ function Create-MSSettings-Shortcut {
     }
 }
 
-function Create-Deep-Link-Shortcut { 
+function Create-Deep-Link-Shortcut {
     param (
         [object]$settingArray
     )
@@ -1517,12 +1520,39 @@ function Create-Deep-Link-Shortcut {
 
         $shortcut.Save()
         [System.Runtime.Interopservices.Marshal]::ReleaseComObject($shell) | Out-Null
-        return $true
-    }
-    catch {
+
+        #Add info about the full command and icon path to the settings array and return it updated
+        $settingArray.FullCommand = $fullCommand
+        $settingArray.ShortcutPath = $shortcutPath
+        return $settingArray
+    } catch {
         Write-Host "Error creating shortcut for $name`: $($_.Exception.Message)"
         return $false
     }
+}
+
+function Create-Deep-Link-CSVFile {
+    param (
+        [string]$outputPath,
+        [array]$deepLinksDataArray
+    )
+
+    $csvContent = "Description,Deep Link,Full Command,IconPath`n"
+
+    foreach ($item in $deepLinksDataArray) {
+        $description = $item.Description -replace '"', '""'
+        $deepLink = $item.DeepLink -replace '"', '""'
+        $fullCommand = $item.FullCommand -replace '"', '""'
+        $iconPath = if ($item.IconPath) {
+            "`"$($item.IconPath -replace '"', '""')`""  # Escape double quotes in the icon path.
+        } else {
+            "None"
+        }
+
+        $csvContent += "`"$description`",`"$deepLink`",`"$fullCommand`",$iconPath`n"
+    }
+
+    $csvContent | Out-File -FilePath $outputPath -Encoding utf8
 }
 
 # ---------------------------------------------- ----------------------------------------------------------------
@@ -1577,15 +1607,20 @@ if (-not $SkipDeepLinks) {
 
     Write-Host "`n----- Processing Deep Links -----"
 
+    # Create array object to hold returned shortcut data
+    $deepLinksProcessedData = @()
+
     foreach ($setting in $settingsData) {
         # Check if it has a DeepLink
         if ($setting.DeepLink) {
-            $success = Create-Deep-Link-Shortcut -settingArray $setting
+            $result = Create-Deep-Link-Shortcut -settingArray $setting
 
-            if ($success) {
-                Write-Host "Created MS Settings Shortcut: $fullShortcutName"
+            if ($result) {
+                Write-Host "Created Deep Link Shortcut: $($setting.Description)"
+                # Add the updated setting object to the processed data array. Will also now contain FullCommand and ShortcutPath
+                $deepLinksProcessedData += $result
             } else {
-                Write-Host "Failed to create shortcut: $fullShortcutName"
+                Write-Host "Failed to create Deep Link shortcut: $($setting.Description)"
             }
         }
     }
@@ -1603,40 +1638,40 @@ if (-not $SkipCLSID) {
 
     # Loop through each relevant CLSID that was found and process it to create shortcuts.
     foreach ($folder in $shellFolders) {
-    $clsid = $folder.PSChildName  # Extract the CLSID.
-    Write-Verbose "Processing CLSID: $clsid"
+        $clsid = $folder.PSChildName  # Extract the CLSID.
+        Write-Verbose "Processing CLSID: $clsid"
 
-    # Retrieve the name of the shell folder using the Get-FolderName function and the source of the name within the registry
-    $resultArray = Get-FolderName -clsid $clsid -CustomLanguageFolder $CustomLanguageFolderPath
-    $name = $resultArray[0]
-    $nameSource = $resultArray[1]
+        # Retrieve the name of the shell folder using the Get-FolderName function and the source of the name within the registry
+        $resultArray = Get-FolderName -clsid $clsid -CustomLanguageFolder $CustomLanguageFolderPath
+        $name = $resultArray[0]
+        $nameSource = $resultArray[1]
 
-    # Sanitize the folder name to make it a valid filename.
-    $sanitizedName = $name -replace '[\\/:*?"<>|]', '_'
-    $shortcutPath = Join-Path $CLSIDshortcutsOutputFolder "$sanitizedName.lnk"
+        # Sanitize the folder name to make it a valid filename.
+        $sanitizedName = $name -replace '[\\/:*?"<>|]', '_'
+        $shortcutPath = Join-Path $CLSIDshortcutsOutputFolder "$sanitizedName.lnk"
 
-    Write-Verbose "Attempting to create shortcut: $shortcutPath"
-    $success = Create-Shortcut -clsid $clsid -name $name -shortcutPath $shortcutPath
+        Write-Verbose "Attempting to create shortcut: $shortcutPath"
+        $success = Create-Shortcut -clsid $clsid -name $name -shortcutPath $shortcutPath
 
-    if ($success) {
-        Write-Host "Created CLSID Shortcut For: $name"
+        if ($success) {
+            Write-Host "Created CLSID Shortcut For: $name"
+        }
+        else {
+            Write-Host "Failed to create shortcut for $name"
+        }
+
+        # Check for sub-items (pages) related to the current CLSID (e.g., control panel items).
+        $appName = (Get-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\CLSID\$clsid" -ErrorAction SilentlyContinue)."System.ApplicationName"
+
+        # Store the CLSID information for later use (e.g., in CSV file generation).
+        $iconPath = (Get-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\CLSID\$clsid\DefaultIcon" -ErrorAction SilentlyContinue).'(default)'
+        $clsidInfo += [PSCustomObject]@{
+            CLSID = $clsid
+            Name = $name
+            NameSource = $nameSource
+            IconPath = $iconPath
+        }
     }
-    else {
-        Write-Host "Failed to create shortcut for $name"
-    }
-
-    # Check for sub-items (pages) related to the current CLSID (e.g., control panel items).
-    $appName = (Get-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\CLSID\$clsid" -ErrorAction SilentlyContinue)."System.ApplicationName"
-
-    # Store the CLSID information for later use (e.g., in CSV file generation).
-    $iconPath = (Get-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\CLSID\$clsid\DefaultIcon" -ErrorAction SilentlyContinue).'(default)'
-    $clsidInfo += [PSCustomObject]@{
-        CLSID = $clsid
-        Name = $name
-        NameSource = $nameSource
-        IconPath = $iconPath
-    }
-}
 
 }
 
@@ -1759,6 +1794,7 @@ $CLSIDDisplayPath = ""
 $namedFolderDisplayPath = ""
 $taskLinksDisplayPath = ""
 $msSettingsDisplayPath = ""
+$deepLinksDisplayPath = ""
 
 if ($SaveCSV) {
     if (-not $SkipCLSID) {
@@ -1779,6 +1815,10 @@ if ($SaveCSV) {
         Create-MSSettingsCsvFile -outputPath $msSettingsCsvPath -msSettingsList $msSettingsList
         $msSettingsDisplayPath = "`n  > " + $msSettingsCsvPath
     }
+    if (-not $SkipDeepLinks) {
+        Create-Deep-Link-CSVFile -outputPath $deepLinksCsvPath -deepLinksDataArray $deepLinksProcessedData
+        $deepLinksDisplayPath = "`n  > " + $deepLinksCsvPath
+    }
 }
 
 
@@ -1788,7 +1828,7 @@ Write-Host "        Super God Mode Script Complete" -ForeGroundColor Yellow
 Write-Host "-----------------------------------------------`n"
 
 # Display total counts
-$totalCount = $clsidInfo.Count + $namedFolders.Count + $taskLinks.Count + $msSettingsList.Count
+$totalCount = $clsidInfo.Count + $namedFolders.Count + $taskLinks.Count + $msSettingsList.Count + $deepLinksProcessedData.Count
 
 # Output the total counts of each, and color the numbers to stand out. Done by writing the text and then the number separately with -NoNewLine. If it was skipped, also add that but not colored.
 Write-Host "Total Shortcuts Created: " -NoNewline
@@ -1810,6 +1850,10 @@ Write-Host "  > Settings Links:  " -NoNewline
 Write-Host $msSettingsList.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipMSSettings) { "   (Skipped)" })
 
+Write-Host "  > Deep Links:      " -NoNewline
+Write-Host $deepLinksProcessedData.Count -ForegroundColor Cyan -NoNewline
+Write-Host $(if ($SkipDeepLinks) { "   (Skipped)" })
+
 Write-Host "`n-----------------------------------------------`n"
 
 # If SaveXML switch was used, also output the paths to the saved XML files
@@ -1819,15 +1863,14 @@ if ($SaveXML -and -not $SkipTaskLinks) {
         Write-Host "  > $xmlContentFilePath"
         Write-Host "  > $resolvedXmlContentFilePath"
     }
-    # if (-not $SkipMSSettings) {
-    #     Write-Host "  > $resolvedSettingsXmlContentFilePath"
-    #     Write-Host "  > $msSettingsListFilePath"
-    # }
+    if (-not $SkipDeepLinks) {
+        Write-Host "  > $resolvedSettingsXmlContentFilePath"
+    }
     Write-Host "`n"
 }
 
 # As long as any of the CSV files were created, output the paths to them - check by seeing if strings are empty
-if ($CLSIDDisplayPath -or $namedFolderDisplayPath -or $taskLinksDisplayPath){
-    $csvPrintString = "CSV files have been created at:" + "$CLSIDDisplayPath" + "$namedFolderDisplayPath" + "$taskLinksDisplayPath" + "$msSettingsDisplayPath" + "`n"
+if ($CLSIDDisplayPath -or $namedFolderDisplayPath -or $taskLinksDisplayPath -or $msSettingsDisplayPath -or $deepLinksDisplayPath) {
+    $csvPrintString = "CSV files have been created at:" + "$CLSIDDisplayPath" + "$namedFolderDisplayPath" + "$taskLinksDisplayPath" + "$msSettingsDisplayPath" + "$deepLinksDisplayPath" + "`n"
     Write-Host $csvPrintString
 }
