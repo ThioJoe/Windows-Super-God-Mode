@@ -1796,8 +1796,23 @@ function Create-Protocol-Shortcut{
         $shortcut.TargetPath = $protocol + "://"
         #$shortcut.Arguments = $protocol
         if ($iconPath) {
-            $shortcut.IconLocation = $iconPath
+            Write-Verbose "Setting custom icon: $iconPath"
+            # If it starts with @{ then it's a resource and needs to be resolved
+            if ($iconPath -match '^@{') {
+                try {
+                    $resolvedIconPath = Get-LocalizedString -StringReference $iconPath
+                    Write-Verbose "Resolved icon path: $resolvedIconPath"
+                    $shortcut.IconLocation = $resolvedIconPath
+                } catch {
+                    Write-Verbose "Failed to resolve icon path: $iconPath"
+                    Write-Verbose "Using default icon"
+                    $shortcut.IconLocation = $iconPath
+                }
+            }
+        } else {
+            Write-Verbose "No iconPath provided, using default"
         }
+
         $shortcut.Save()
         [System.Runtime.Interopservices.Marshal]::ReleaseComObject($shell) | Out-Null
         return $true
