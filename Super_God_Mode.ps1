@@ -53,6 +53,18 @@
 #     Switch (Takes no values)
 #     Skip creating shortcuts for task links (sub-pages within shell folders and control panel menus)
 #
+# -SkipMSSettings
+#     Switch (Takes no values)
+#     Skip creating shortcuts for ms-settings: links (system settings pages)
+#
+# -SkipDeepLinks
+#     Switch (Takes no values)
+#     Skip creating shortcuts for deep links (links to specific settings pages within system settings)
+#
+# -SkipURLProtocols
+#     Switch (Takes no values)
+#     Skip creating shortcuts for URL protocols (e.g., mailto:, ms-settings:, etc.)
+#
 # -CustomDLLPath
 #     String (Optional)
 #     Specify a custom DLL file path to load the shell32.dll content from. If not provided, the default shell32.dll will be used.
@@ -116,7 +128,7 @@ $namedShortcutsOutputFolder = Join-Path $mainShortcutsFolder "Named Shell Folder
 $taskLinksOutputFolder = Join-Path $mainShortcutsFolder "All Task Links"
 $msSettingsOutputFolder = Join-Path $mainShortcutsFolder "System Settings"
 $deepLinksOutputFolder = Join-Path $mainShortcutsFolder "Deep Links"
-$URIProtocolLinksOutputFolder = Join-Path $mainShortcutsFolder "URL Protocols"
+$URLProtocolLinksOutputFolder = Join-Path $mainShortcutsFolder "URL Protocols"
 $statisticsOutputFolder = Join-Path $mainShortcutsFolder "_Script Result Statistics"
 
 # Set filenames for various output files (CSV and optional XML)
@@ -125,7 +137,7 @@ $namedFoldersCsvPath = Join-Path $statisticsOutputFolder "Named_Shell_Folders.cs
 $taskLinksCsvPath = Join-Path $statisticsOutputFolder "Task_Links.csv"
 $msSettingsCsvPath = Join-Path $statisticsOutputFolder "MS_Settings.csv"
 $deepLinksCsvPath = Join-Path $statisticsOutputFolder "Deep_Links.csv"
-$URIProtocolLinksCsvPath = Join-Path $statisticsOutputFolder "URL_Protocols.csv"
+$URLProtocolLinksCsvPath = Join-Path $statisticsOutputFolder "URL_Protocols.csv"
 
 # XML content file paths
 $xmlContentFilePath = Join-Path $statisticsOutputFolder "Shell32_XML_Content.xml"
@@ -195,8 +207,8 @@ if ($DeletePreviousOutputFolder) {
             if (Test-Path $deepLinksOutputFolder){
                 Remove-Item -Path $deepLinksOutputFolder -Recurse -Force
             }
-            if (Test-Path $URIProtocolLinksOutputFolder){
-                Remove-Item -Path $URIProtocolLinksOutputFolder -Recurse -Force
+            if (Test-Path $URLProtocolLinksOutputFolder){
+                Remove-Item -Path $URLProtocolLinksOutputFolder -Recurse -Force
             }
         }
     } catch {
@@ -296,6 +308,9 @@ if (-not $SkipMSSettings) {
 }
 if (-not $SkipDeepLinks) {
     New-FolderWithIcon -FolderPath $deepLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "114"
+}
+if (-not $SkipURLProtocols) {
+    New-FolderWithIcon -FolderPath $URLProtocolLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "114"
 }
 
 # If -SaveCSV or -SaveXML switches are used, create the statistics folder and set to default folder icon
@@ -1597,7 +1612,7 @@ function Get-And-Process-URL-Protocols {
         Where-Object {
             $_.GetValue('(Default)') -match '^URL:' -or $null -ne $_.GetValue('URL Protocol')
         } | Select-Object -ExpandProperty PSChildName
-    
+
     # Next want to get as much information about the protocol as possible
     # Get protocol name from (Default) value of URL:WhateverName in HKCR data entry if it exists
     foreach ($protocol in $urlProtocols) {
@@ -1734,6 +1749,65 @@ function Get-And-Process-URL-Protocols {
     return $filteredUrlProtocolData
 }
 
+function Create-URL-Protocols-CSVFile {
+    param (
+        [string]$outputPath,
+        [array]$urlProtocolsData
+    )
+
+    $csvContent = "Protocol,Name,Command,IconPath,PackageName,PackageAppName,PackageAppDescription,ClassID,IsMicrosoft`n"
+
+    foreach ($item in $urlProtocolsData) {
+        $protocol = $item.Protocol -replace '"', '""'
+        # Add :// to end of protocol to make it a valid URL
+        $protocol += "://"
+
+        $name = $item.Name -replace '"', '""'
+        $command = $item.Command -replace '"', '""'
+        $iconPath = if ($item.IconPath) {
+            "`"$($item.IconPath -replace '"', '""')`""  # Escape double quotes in the icon path.
+        } else {
+            "None"
+        }
+        $packageName = $item.PackageName -replace '"', '""'
+        $packageAppName = $item.PackageAppName -replace '"', '""'
+        $packageAppDescription = $item.PackageAppDescription -replace '"', '""'
+        $classID = $item.ClassID -replace '"', '""'
+        $isMicrosoft = $item.IsMicrosoft
+
+        $csvContent += "`"$protocol`",`"$name`",`"$command`",$iconPath,`"$packageName`",`"$packageAppName`",`"$packageAppDescription`",`"$classID`",$isMicrosoft`n"
+    }
+
+    $csvContent | Out-File -FilePath $outputPath -Encoding utf8
+}
+
+function Create-Protocol-Shortcut{
+    param (
+        [string]$protocol,
+        [string]$name,
+        [string]$command,
+        [string]$iconPath,
+        [string]$shortcutPath
+    )
+    Write-Verbose "Creating shortcut for $protocol"
+    try {
+        $shell = New-Object -ComObject WScript.Shell
+        $shortcut = $shell.CreateShortcut($shortcutPath)
+        $shortcut.TargetPath = $protocol + "://"
+        #$shortcut.Arguments = $protocol
+        if ($iconPath) {
+            $shortcut.IconLocation = $iconPath
+        }
+        $shortcut.Save()
+        [System.Runtime.Interopservices.Marshal]::ReleaseComObject($shell) | Out-Null
+        return $true
+    }
+    catch {
+        Write-Host "Error creating shortcut for $name`: $($_.Exception.Message)"
+        return $false
+    }
+}
+
 # ---------------------------------------------- ----------------------------------------------------------------
 # ----------------------------------------------    Main Script    ----------------------------------------------
 # ---------------------------------------------- ----------------------------------------------------------------
@@ -1745,12 +1819,21 @@ $taskLinks = @()
 $settingsData = @()
 $msSettingsList = @()
 $deepLinkData = @()
+$deepLinksProcessedData = @()
 $URLProtocolsData = @()
 
 if (-not $SkipURLProtocols){
     Write-Host "`n----- Processing URL Protocols -----"
     $URLProtocolsData = Get-And-Process-URL-Protocols
-    Write-Host "Found $($URLProtocolsData.Count) URL Protocols"
+    #Write-Host "Found $($URLProtocolsData.Count) URL Protocols"
+    foreach ($protocol in $URLProtocolsData) {
+        $success = Create-Protocol-Shortcut -protocol $protocol.Protocol -name $protocol.Name -command $protocol.Command -iconPath $protocol.IconPath -shortcutPath (Join-Path $URLProtocolLinksOutputFolder "$($protocol.Protocol).lnk")
+        if ($success) {
+            Write-Host "Created URL Protocol Shortcut: $($protocol.Name)"
+        } else {
+            Write-Host "Failed to create URL Protocol shortcut: $($protocol.Name)"
+        }
+    }
 }
 
 if (-not $SkipMSSettings) {
@@ -1794,9 +1877,6 @@ if (-not $SkipDeepLinks -and $allSettingsXmlPath) {
     }
 
     Write-Host "`n----- Processing Deep Links -----"
-
-    # Create array object to hold returned shortcut data
-    $deepLinksProcessedData = @()
 
     foreach ($deepLink in $deepLinkData) {
         # Check if it has a DeepLink
@@ -1983,6 +2063,7 @@ $namedFolderDisplayPath = ""
 $taskLinksDisplayPath = ""
 $msSettingsDisplayPath = ""
 $deepLinksDisplayPath = ""
+$urlProtocolsDisplayPath = ""
 
 if ($SaveCSV) {
     if (-not $SkipCLSID) {
@@ -2007,6 +2088,10 @@ if ($SaveCSV) {
         Create-Deep-Link-CSVFile -outputPath $deepLinksCsvPath -deepLinksDataArray $deepLinksProcessedData
         $deepLinksDisplayPath = "`n  > " + $deepLinksCsvPath
     }
+    if (-not $SkipURLProtocols) {
+        Create-URL-Protocols-CSVFile -outputPath $URLProtocolLinksCsvPath -urlProtocolsData $URLProtocolsData
+        $urlProtocolsDisplayPath = "`n  > " + $URLProtocolLinksCsvPath
+    }
 }
 
 
@@ -2016,7 +2101,7 @@ Write-Host "        Super God Mode Script Complete" -ForeGroundColor Yellow
 Write-Host "-----------------------------------------------`n"
 
 # Display total counts
-$totalCount = $clsidInfo.Count + $namedFolders.Count + $taskLinks.Count + $msSettingsList.Count + $deepLinksProcessedData.Count
+$totalCount = $clsidInfo.Count + $namedFolders.Count + $taskLinks.Count + $msSettingsList.Count + $deepLinksProcessedData.Count + $URLProtocolsData.Count
 
 # Output the total counts of each, and color the numbers to stand out. Done by writing the text and then the number separately with -NoNewLine. If it was skipped, also add that but not colored.
 Write-Host "Total Shortcuts Created: " -NoNewline
@@ -2042,6 +2127,10 @@ Write-Host "  > Deep Links:      " -NoNewline
 Write-Host $deepLinksProcessedData.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipDeepLinks) { "   (Skipped)" })
 
+Write-Host "  > URL Protocols:   " -NoNewline
+Write-Host $URLProtocolsData.Count -ForegroundColor Cyan -NoNewline
+Write-Host $(if ($SkipURLProtocols) { "   (Skipped)" })
+
 Write-Host "`n-----------------------------------------------`n"
 
 # If SaveXML switch was used, also output the paths to the saved XML files
@@ -2059,6 +2148,6 @@ if ($SaveXML -and -not $SkipTaskLinks) {
 
 # As long as any of the CSV files were created, output the paths to them - check by seeing if strings are empty
 if ($CLSIDDisplayPath -or $namedFolderDisplayPath -or $taskLinksDisplayPath -or $msSettingsDisplayPath -or $deepLinksDisplayPath) {
-    $csvPrintString = "CSV files have been created at:" + "$CLSIDDisplayPath" + "$namedFolderDisplayPath" + "$taskLinksDisplayPath" + "$msSettingsDisplayPath" + "$deepLinksDisplayPath" + "`n"
+    $csvPrintString = "CSV files have been created at:" + "$CLSIDDisplayPath" + "$namedFolderDisplayPath" + "$taskLinksDisplayPath" + "$msSettingsDisplayPath" + "$deepLinksDisplayPath" + "$urlProtocolsDisplayPath" + "`n"
     Write-Host $csvPrintString
 }
