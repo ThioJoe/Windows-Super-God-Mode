@@ -388,9 +388,6 @@ if (-not ([System.Management.Automation.PSTypeName]'Win32').Type) {
 "@
 }
 
-# DEBUG
-$global:FailedChecksCount = 0
-
 # Function: Get-LocalizedString
 # This function retrieves a localized (meaning in the user's language) string from a DLL based on a reference string given in the registry
 # `StringReference` is a reference in the format "@<dllPath>,-<resourceId>".
@@ -527,7 +524,7 @@ function Get-MsResource {
 
         # Extract package name and resource URI
         $packageFullName = ($ResourcePath -split '\?')[0].Trim('@{}')
-        $resourceUri = ($ResourcePath -split '\?')[1]
+        $resourceUri = ($ResourcePath -split '\?')[1].Trim('@{}')
         Write-Verbose "      > Extracted package full name: $packageFullName"
         Write-Verbose "      > Extracted resource URI: $resourceUri"
 
@@ -551,7 +548,7 @@ function Get-MsResource {
             $priPath = Join-Path $packagePath "resources.pri"
             Write-Verbose "      + Attempting to use resources.pri at: $priPath"
             if (Test-Path $priPath) {
-                $newResourcePath = "@{" + $priPath + "?" + $resourceUri
+                $newResourcePath = "@{" + $priPath + "?" + $resourceUri + "}"
                 Write-Verbose "      > New resource path: $newResourcePath"
                 Write-Verbose "      + Attempting to call SHLoadIndirectString with new resource path"
                 $result = [Win32]::SHLoadIndirectString($newResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
@@ -574,9 +571,8 @@ function Get-MsResource {
         if ($resourceUri -match '^/resources/') {
             Write-Verbose "         + Attempting to retrieve resource without /resources/ folder"
             $resourceUriWithoutResources = $resourceUri -replace '/resources/', '/'
-            $newResourcePath = "@{" + $priPath + "?" + $resourceUriWithoutResources
+            $newResourcePath = "@{" + $priPath + "?" + $resourceUriWithoutResources + "}"
             Write-Verbose "         > New resource path without /resources/: $newResourcePath"
-            Write-Verbose "         + Attempting to call SHLoadIndirectString without /resources/"
             $result = [Win32]::SHLoadIndirectString($newResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
             Write-Verbose "         > SHLoadIndirectString result without /resources/: $result"
             if ($result -eq 0) {
@@ -588,8 +584,30 @@ function Get-MsResource {
             Write-Verbose "         + Failed to retrieve without /resources/ folder. Error code: $result"
         }
 
+        # If still failed, try removing parts of the package name in the resource path one at a time
+        if ($package -and (Test-Path $priPath)) {
+            # Split the package name into parts
+            $packageParts = $packageName.Split('.')
+            for ($i = 1; $i -lt $packageParts.Count; $i++) {
+                $truncatedPackageName = $packageParts[$i..($packageParts.Count - 1)] -join '.'
+                Write-Verbose "            + Attempting to retrieve resource with truncated package name: $truncatedPackageName"
+                $truncatedPackageResourceUri = $resourceUri -replace [regex]::Escape($packageName), $truncatedPackageName
+                $newResourcePath = "@{" + $priPath + "?" + $truncatedPackageResourceUri + "}"
+                Write-Verbose "            > Iteration $i`: $newResourcePath"
+                # Execute check
+                $result = [Win32]::SHLoadIndirectString($newResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
+                Write-Verbose "            > SHLoadIndirectString result: $result"
+                if ($result -eq 0) {
+                    $resolvedString = $stringBuilder.ToString()
+                    Write-Verbose "            > Success: Resolved string: $resolvedString"
+                    return $resolvedString
+                }
+            }
+        } else {
+            Write-Verbose "         > Not trying truncated package because reference is not a package, or resources .pri is not found."
+        }
+
         Write-Error "   > All attempts to retrieve resource failed for ms-resource: $ResourcePath. Error code: $result"
-        $global:FailedChecksCount++
         return $null
     }
 }
@@ -2391,5 +2409,3 @@ if ($CLSIDDisplayPath -or $namedFolderDisplayPath -or $taskLinksDisplayPath -or 
     $csvPrintString = "CSV files have been created at:" + "$CLSIDDisplayPath" + "$namedFolderDisplayPath" + "$taskLinksDisplayPath" + "$msSettingsDisplayPath" + "$deepLinksDisplayPath" + "$urlProtocolsDisplayPath" + "`n"
     Write-Host $csvPrintString
 }
-
-Write-Verbose "String Fail Count: $global:FailedChecksCount"
