@@ -129,9 +129,23 @@ $resolvedXmlContentFilePath = Join-Path $statisticsOutputFolder "Shell32_XML_Con
 $resolvedSettingsXmlContentFilePath = Join-Path $statisticsOutputFolder "Settings_XML_Content_Resolved.xml"
 #$msSettingsListFilePath = Join-Path $statisticsOutputFolder "MS_Settings_List.txt"
 
-# Other constants:
-$allSettingsXmlPath = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings_{D6E2A6C6-627C-44F2-8A5C-4959AC0C2B2D}.xml"
+# Other constants / known paths.
+# Available AllSystemSettings XML files may differ depending on Windows 11 or Windows 10, so will try them in order:
+$allSettingsXmlPath1 = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings_{D6E2A6C6-627C-44F2-8A5C-4959AC0C2B2D}.xml"
+$allSettingsXmlPath2 = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings_{FDB289F3-FCFC-4702-8015-18926E996EC1}.xml"
+$allSettingsXmlPath3 = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings_{253E530E-387D-4BC2-959D-E6F86122E5F2}.xml"
 $systemSettingsDllPath = "C:\Windows\ImmersiveControlPanel\SystemSettings.dll"
+
+# Check which AllSystemSettings XML file to use
+if (Test-Path $allSettingsXmlPath1) {
+    $allSettingsXmlPath = $allSettingsXmlPath1
+} elseif (Test-Path $allSettingsXmlPath2) {
+    $allSettingsXmlPath = $allSettingsXmlPath2
+} elseif (Test-Path $allSettingsXmlPath3) {
+    $allSettingsXmlPath = $allSettingsXmlPath3
+} else {
+    Write-Warning "No AllSystemSettings XML file found. Deep Link shortcuts will not be created."
+}
 
 # Creates the main directory if it does not exist; `-Force` ensures it is created without errors if it already exists. It won't overwrite any files within even if the folder already exists
 try {
@@ -1575,6 +1589,8 @@ $clsidInfo = @()
 $namedFolders = @()
 $taskLinks = @()
 $settingsData = @()
+$msSettingsList = @()
+$deepLinkData = @()
 
 if (-not $SkipMSSettings) {
     $msSettingsList = Get-MS-SettingsFrom-SystemSettingsDLL -DllPath $SystemSettingsDllPath
@@ -1607,11 +1623,11 @@ if (-not $SkipMSSettings) {
     }
 }
 
-if (-not $SkipDeepLinks) {
+if (-not $SkipDeepLinks -and $allSettingsXmlPath) {
     # Process other settings data
-    $settingsData = Get-AllSettings-Data -xmlFilePath $allSettingsXmlPath -SaveXML:$SaveXML
+    $deepLinkData = Get-AllSettings-Data -xmlFilePath $allSettingsXmlPath -SaveXML:$SaveXML
 
-    if ($null -eq $settingsData) {
+    if ($null -eq $deepLinkData) {
         Write-Host "No MS Settings data found or error occurred while parsing."
         return
     }
@@ -1621,17 +1637,17 @@ if (-not $SkipDeepLinks) {
     # Create array object to hold returned shortcut data
     $deepLinksProcessedData = @()
 
-    foreach ($setting in $settingsData) {
+    foreach ($deepLink in $deepLinkData) {
         # Check if it has a DeepLink
-        if ($setting.DeepLink) {
-            $result = Create-Deep-Link-Shortcut -settingArray $setting
+        if ($deepLink.DeepLink) {
+            $result = Create-Deep-Link-Shortcut -settingArray $deepLink
 
             if ($result) {
-                Write-Host "Created Deep Link Shortcut: $($setting.Description)"
-                # Add the updated setting object to the processed data array. Will also now contain FullCommand and ShortcutPath
+                Write-Host "Created Deep Link Shortcut: $($deepLink.Description)"
+                # Add the updated deepLink object to the processed data array. Will also now contain FullCommand and ShortcutPath
                 $deepLinksProcessedData += $result
             } else {
-                Write-Host "Failed to create Deep Link shortcut: $($setting.Description)"
+                Write-Host "Failed to create Deep Link shortcut: $($deepLink.Description)"
             }
         }
     }
