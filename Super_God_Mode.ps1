@@ -86,12 +86,14 @@ param(
     [switch]$DeletePreviousOutputFolder,
     [string]$CustomDLLPath,
     [string]$CustomLanguageFolderPath,
+    [string]$CustomSystemSettingsXMLPath,
     [string]$Output,
     [switch]$SkipCLSID,
     [switch]$SkipNamedFolders,
     [switch]$SkipTaskLinks,
     [switch]$SkipMSSettings,
     [switch]$SkipDeepLinks,
+    [switch]$SkipURLProtocols,
     [switch]$UseAlternativeCategoryNames
 )
 
@@ -114,6 +116,7 @@ $namedShortcutsOutputFolder = Join-Path $mainShortcutsFolder "Named Shell Folder
 $taskLinksOutputFolder = Join-Path $mainShortcutsFolder "All Task Links"
 $msSettingsOutputFolder = Join-Path $mainShortcutsFolder "System Settings"
 $deepLinksOutputFolder = Join-Path $mainShortcutsFolder "Deep Links"
+$URIProtocolLinksOutputFolder = Join-Path $mainShortcutsFolder "URL Protocols"
 $statisticsOutputFolder = Join-Path $mainShortcutsFolder "_Script Result Statistics"
 
 # Set filenames for various output files (CSV and optional XML)
@@ -122,6 +125,7 @@ $namedFoldersCsvPath = Join-Path $statisticsOutputFolder "Named_Shell_Folders.cs
 $taskLinksCsvPath = Join-Path $statisticsOutputFolder "Task_Links.csv"
 $msSettingsCsvPath = Join-Path $statisticsOutputFolder "MS_Settings.csv"
 $deepLinksCsvPath = Join-Path $statisticsOutputFolder "Deep_Links.csv"
+$URIProtocolLinksCsvPath = Join-Path $statisticsOutputFolder "URL_Protocols.csv"
 
 # XML content file paths
 $xmlContentFilePath = Join-Path $statisticsOutputFolder "Shell32_XML_Content.xml"
@@ -190,6 +194,9 @@ if ($DeletePreviousOutputFolder) {
             }
             if (Test-Path $deepLinksOutputFolder){
                 Remove-Item -Path $deepLinksOutputFolder -Recurse -Force
+            }
+            if (Test-Path $URIProtocolLinksOutputFolder){
+                Remove-Item -Path $URIProtocolLinksOutputFolder -Recurse -Force
             }
         }
     } catch {
@@ -1580,6 +1587,153 @@ function Create-Deep-Link-CSVFile {
     $csvContent | Out-File -FilePath $outputPath -Encoding utf8
 }
 
+function Get-And-Process-URL-Protocols {
+    # Create object to store data. Will want to store multiple properties for each URL protocol
+    $urlProtocols = @()
+    $urlProtocolData = @()
+
+    #Look in Registry at HKEY_CLASSES_ROOT - URL protocols can be identified by the key's (Default) value starting with "URL:", or by the existence of an entry named "URL Protocol"
+    $urlProtocols += Get-ChildItem -Path 'Registry::HKEY_CLASSES_ROOT' -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.GetValue('(Default)') -match '^URL:' -or $null -ne $_.GetValue('URL Protocol')
+        } | Select-Object -ExpandProperty PSChildName
+    
+    # Next want to get as much information about the protocol as possible
+    # Get protocol name from (Default) value of URL:WhateverName in HKCR data entry if it exists
+    foreach ($protocol in $urlProtocols) {
+        $protocolName = (Get-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\$protocol" -ErrorAction SilentlyContinue).'(Default)'
+        # If the protocol name is in the format "URL:WhateverName", extract the "WhateverName" part
+        if ($protocolName -match '^URL:(.+)$') {
+            $protocolName = $Matches[1]
+        }
+
+        # Get the URL protocol command from the shell\open\command subkey
+        $command = (Get-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\$protocol\shell\open\command" -ErrorAction SilentlyContinue).'(Default)'
+        # Get the URL protocol icon from the DefaultIcon subkey
+        $iconPath = (Get-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\$protocol\DefaultIcon" -ErrorAction SilentlyContinue).'(Default)'
+
+        # Determine if the protocol is built or from Microsoft.
+        $isMicrosoft = $false
+
+        # First check if starts with "ms-" or "microsoft"
+        if ($protocol -match '^ms-|^microsoft', 'IgnoreCase') {
+            $isMicrosoft = $true
+        }
+
+        # Create a new object to store the URL protocol data
+        $urlProtocol = [PSCustomObject]@{
+            Protocol = $protocol
+            Name = $protocolName
+            Command = $command
+            IconPath = $iconPath
+            PackageName = ""
+            PackageAppName = ""
+            PackageAppDescription = ""
+            ClassID = ""
+            PackageAppKeyName = ""
+            IsMicrosoft = $isMicrosoft
+        }
+
+        # Add the URL protocol data object to the array
+        $urlProtocolData += $urlProtocol
+    }
+
+    # Gather protocol info from other locations to add to the data
+    # For installed package Protocols, look in HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages
+    # Search app subkeys for Capabilities > URLAssociations. Where entry besides (Default) will be named as the protocol, and will have value of the app class id
+    $packageProtocolData = $null
+    $packagesRegPath = 'Registry::HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages'
+    # Get subkeys of the Package key but only where the URLAssociations key exists at Package/WhateverPackage/AppName/Capabilities/URLAssociations and the key has a value besides (Default)
+    Get-ChildItem -Path $packagesRegPath -ErrorAction SilentlyContinue | ForEach-Object {
+        $packagePath = $_.PSPath
+        $packageName = $_.PSChildName
+        # Get subkeys of the package
+        foreach ($app in Get-ChildItem -Path $packagePath -ErrorAction SilentlyContinue) {
+            $packageAppKeyName = $app.PSChildName
+            $capabilitiesPath = Join-Path $app.PSPath "Capabilities"
+            $urlAssociationsPath = Join-Path $capabilitiesPath "URLAssociations"
+
+
+            if (Test-Path $urlAssociationsPath) {
+                $urlAssociations = Get-ItemProperty -Path $urlAssociationsPath -ErrorAction SilentlyContinue
+
+                # Get the properties but exclude the built in PSObject properties, leaving only the subkeys that are the protocol names
+                $urlAssociations.PSObject.Properties | Where-Object { $_.Name -notin @("PSPath", "PSParentPath", "PSChildName", "PSDrive", "PSProvider") } | ForEach-Object {
+                    $protocol = $_.Name
+                    $appClassId = $_.Value
+
+                    # Get the ApplicationName and ApplicationDescription values from Capabilities key value
+                    $packageLocalizedAppName = Get-ItemProperty -Path $capabilitiesPath -Name "ApplicationName" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty ApplicationName
+                    $packageLocalizedAppDescription = Get-ItemProperty -Path $capabilitiesPath -Name "ApplicationDescription" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty ApplicationDescription
+
+                    # If the values start with @{ they are a resource and need to be resolved. If they fail just set them blank
+                    if ($packageLocalizedAppName -match '^@{') {
+                        try{
+                            $packageLocalizedAppName = Get-LocalizedString -StringReference $packageLocalizedAppName
+                        } catch {
+                            $packageLocalizedAppName = ""
+                        }
+                    }
+                    if ($packageLocalizedAppDescription -match '^@{') {
+                        try {
+                            $packageLocalizedAppDescription = Get-LocalizedString -StringReference $packageLocalizedAppDescription
+                        } catch {
+                            $packageLocalizedAppDescription = ""
+                        }
+                    }
+
+                    # Check if the protocol is already in the list, if so merge the data, otherwise create a new object to add to $urlProtocolData
+                    if ($urlProtocolData.Protocol -contains $protocol) {
+                        # Find the existing object and update the PackageName and ClassID properties
+                        $existingProtocol = $urlProtocolData | Where-Object { $_.Protocol -eq $protocol }
+                        $existingProtocol.PackageName = $packageName
+                        $existingProtocol.PackageAppName = $packageLocalizedAppName
+                        $existingProtocol.PackageAppDescription = $packageLocalizedAppDescription
+                        $existingProtocol.ClassID = $appClassId
+                        $existingProtocol.PackageAppKeyName = $packageAppKeyName
+
+                         # If the package name starts with Microsoft* or Windows then it's a Microsoft package, update the IsMicrosoft property
+                        if ($packageName -match '^Microsoft|^Windows') {
+                            $existingProtocol.IsMicrosoft = $true
+                        }
+                    } else {
+                        # Determine if microsoft by checking protocol name
+                        $isMicrosoft = $false
+                        if ($protocol -match '^ms-|^microsoft', 'IgnoreCase') {
+                            $isMicrosoft = $true
+                        }
+                        # If the package name starts with Microsoft* or Windows then it's a Microsoft package
+                        if ($packageName -match '^Microsoft|^Windows') {
+                            $isMicrosoft = $true
+                        }
+
+                        # Create a new object to store the URL protocol data
+                        $packageProtocolData = [PSCustomObject]@{
+                            Protocol = $protocol
+                            Name = $packageLocalizedAppName
+                            Command = ""
+                            IconPath = ""
+                            PackageName = $packageName
+                            PackageAppKeyName = $packageAppKeyName
+                            PackageAppName = $packageLocalizedAppName
+                            PackageAppDescription = $packageLocalizedAppDescription
+                            ClassID = $appClassId
+                            IsMicrosoft = $isMicrosoft
+                        }
+                        $urlProtocolData += $packageProtocolData
+                    }
+                }
+            }
+        }
+
+    }
+    # Now have all data in $urlProtocolData array, but we want to filter it
+    # Will only include protocols that are marked as Microsoft or are associated with a package
+    $filteredUrlProtocolData = $urlProtocolData | Where-Object { $_.IsMicrosoft -or $_.PackageName }
+
+    return $filteredUrlProtocolData
+}
+
 # ---------------------------------------------- ----------------------------------------------------------------
 # ----------------------------------------------    Main Script    ----------------------------------------------
 # ---------------------------------------------- ----------------------------------------------------------------
@@ -1591,6 +1745,13 @@ $taskLinks = @()
 $settingsData = @()
 $msSettingsList = @()
 $deepLinkData = @()
+$URLProtocolsData = @()
+
+if (-not $SkipURLProtocols){
+    Write-Host "`n----- Processing URL Protocols -----"
+    $URLProtocolsData = Get-And-Process-URL-Protocols
+    Write-Host "Found $($URLProtocolsData.Count) URL Protocols"
+}
 
 if (-not $SkipMSSettings) {
     $msSettingsList = Get-MS-SettingsFrom-SystemSettingsDLL -DllPath $SystemSettingsDllPath
