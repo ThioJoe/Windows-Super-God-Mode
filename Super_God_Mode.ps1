@@ -447,11 +447,10 @@ function Get-MsResource {
     param (
         [string]$ResourcePath
     )
-    Write-Verbose "Attempting to retrieve resource: $ResourcePath"
+    Write-Verbose "Retrieving resource: $ResourcePath"
     $stringBuilder = New-Object System.Text.StringBuilder 1024
     $result = [Win32]::SHLoadIndirectString($ResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
     if ($result -eq 0) {
-        Write-Verbose "Successfully retrieved resource on first attempt"
         return $stringBuilder.ToString()
     } else {
         Write-Verbose "Initial attempt failed with error code: $result. Trying alternative methods..."
@@ -1608,6 +1607,7 @@ function Get-And-Process-URL-Protocols {
     $urlProtocolData = @()
 
     #Look in Registry at HKEY_CLASSES_ROOT - URL protocols can be identified by the key's (Default) value starting with "URL:", or by the existence of an entry named "URL Protocol"
+    Write-Verbose "Gathering URL Protocol data from the registry"
     $urlProtocols += Get-ChildItem -Path 'Registry::HKEY_CLASSES_ROOT' -ErrorAction SilentlyContinue |
         Where-Object {
             $_.GetValue('(Default)') -match '^URL:' -or $null -ne $_.GetValue('URL Protocol')
@@ -1616,6 +1616,7 @@ function Get-And-Process-URL-Protocols {
     # Next want to get as much information about the protocol as possible
     # Get protocol name from (Default) value of URL:WhateverName in HKCR data entry if it exists
     foreach ($protocol in $urlProtocols) {
+        Write-Verbose "Processing URL Protocol: $protocol"
         $protocolName = (Get-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\$protocol" -ErrorAction SilentlyContinue).'(Default)'
         # If the protocol name is in the format "URL:WhateverName", extract the "WhateverName" part
         if ($protocolName -match '^URL:(.+)$') {
@@ -1641,19 +1642,20 @@ function Get-And-Process-URL-Protocols {
             Name = $protocolName
             Command = $command
             IconPath = $iconPath
+            IsMicrosoft = $isMicrosoft
+            # Create empty properties for package data later
             PackageName = ""
             PackageAppName = ""
             PackageAppDescription = ""
             ClassID = ""
             PackageAppKeyName = ""
-            IsMicrosoft = $isMicrosoft
         }
 
         # Add the URL protocol data object to the array
         $urlProtocolData += $urlProtocol
     }
 
-    # Gather protocol info from other locations to add to the data
+    # Gather protocol info from other registry locations to add to the data
     # For installed package Protocols, look in HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages
     # Search app subkeys for Capabilities > URLAssociations. Where entry besides (Default) will be named as the protocol, and will have value of the app class id
     $packageProtocolData = $null
