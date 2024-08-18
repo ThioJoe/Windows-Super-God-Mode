@@ -397,7 +397,14 @@ function Get-LocalizedString {
         [string]$CustomLanguageFolder,
         [string]$AppxManifestPath
     )
-
+    if ($AppxManifestPath) {
+        $manifestParentFolder = Split-Path $AppxManifestPath | Split-Path -Leaf
+        Write-Verbose "--------------------------------------------------------------------------------------"
+        Write-Verbose "Retrieving Resource: $StringReference  | Package: $manifestParentFolder"
+    } else {
+        Write-Verbose "Retrieving Resource: $StringReference"
+    }
+    
     # Check if it's the special case with multiple concatenated references
     if ($StringReference -match '^\@\@') {
         $references = $StringReference -split '@' | Where-Object { $_ -ne '' }
@@ -531,16 +538,18 @@ function Get-MsResource {
             Write-Verbose "Package not found"
         }
 
-        # If still failed, try without the /resources/ folder
-        $resourceUriWithoutResources = $resourceUri -replace '/resources/', '/'
-        $newResourcePath = "@{" + $priPath + "?" + $resourceUriWithoutResources
-        Write-Verbose "Attempting without /resources/ folder. New path: $newResourcePath"
-        $result = [Win32]::SHLoadIndirectString($newResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
-        if ($result -eq 0) {
-            Write-Verbose "Successfully retrieved resource without /resources/ folder"
-            return $stringBuilder.ToString()
+        # If still failed, try without the /resources/ folder, if it's present
+        if ($resourceUri -match '^/resources/') {
+            $resourceUriWithoutResources = $resourceUri -replace '/resources/', '/'
+            $newResourcePath = "@{" + $priPath + "?" + $resourceUriWithoutResources
+            Write-Verbose "Attempting without /resources/ folder. New path: $newResourcePath"
+            $result = [Win32]::SHLoadIndirectString($newResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
+            if ($result -eq 0) {
+                Write-Verbose "Successfully retrieved resource without /resources/ folder"
+                return $stringBuilder.ToString()
+            }
+            Write-Verbose "Failed to retrieve without /resources/ folder. Error code: $result"
         }
-        Write-Verbose "Failed to retrieve without /resources/ folder. Error code: $result"
 
         Write-Error "Failed to retrieve ms-resource: $ResourcePath. Error code: $result"
         return $null
