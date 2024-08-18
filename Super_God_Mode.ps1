@@ -394,7 +394,8 @@ if (-not ([System.Management.Automation.PSTypeName]'Win32').Type) {
 function Get-LocalizedString {
     param (
         [string]$StringReference,
-        [string]$CustomLanguageFolder
+        [string]$CustomLanguageFolder,
+        [string]$AppxManifestPath
     )
 
     # Check if it's the special case with multiple concatenated references
@@ -402,14 +403,18 @@ function Get-LocalizedString {
         $references = $StringReference -split '@' | Where-Object { $_ -ne '' }
         $resolvedStrings = @()
         foreach ($ref in $references) {
-            $resolved = Get-LocalizedString "@$ref" $CustomLanguageFolder
+            $resolved = Get-LocalizedString -StringReference "@$ref" -CustomLanguageFolder $CustomLanguageFolder -AppxManifestPath $AppxManifestPath
             if ($resolved) {
                 $resolvedStrings += $resolved -split ';' | ForEach-Object { $_.Trim() }
             }
         }
         return ($resolvedStrings | Select-Object -Unique) -join ';'
     }
-    # Check if the string is an ms-resource reference
+    # Check if the string is a short ms-resource reference
+    elseif ($StringReference -match '^ms-resource:') {
+        return Get-FullMsResource -ShortReference $StringReference -AppxManifestPath $AppxManifestPath
+    }
+    # Check if the string is a full ms-resource reference
     elseif ($StringReference -match '@\{.+\?ms-resource://.+}') {
         return Get-MsResource $StringReference
     }
@@ -418,7 +423,17 @@ function Get-LocalizedString {
         $dllPath = [Environment]::ExpandEnvironmentVariables($Matches[1])
         $resourceId = [uint32]$Matches[2]
 
-        # Custom language folder logic...
+        # If custom language folder is specified, check if there is a corresponding MUI file for the DLL within that folder.
+        $muiNameToCheck = "$dllPath.mui"
+        if ($CustomLanguageFolder){
+            if (Test-Path (Join-Path $CustomLanguageFolder $muiNameToCheck)) {
+                Write-Verbose "Found MUI file to use for for $dllPath in custom language folder."
+                $dllPath = Join-Path $CustomLanguageFolder $muiNameToCheck
+            }
+            else {
+                Write-Verbose "No MUI file found for $dllPath in custom language folder. Using default system language."
+            }
+        }
 
         $hModule = [Win32]::LoadLibrary($dllPath)
         if ($hModule -eq [IntPtr]::Zero) {
@@ -441,6 +456,28 @@ function Get-LocalizedString {
         Write-Error "Invalid string reference format: $StringReference"
         return $null
     }
+}
+
+function Get-FullMsResource {
+    param (
+        [string]$ShortReference,
+        [string]$AppxManifestPath
+    )
+
+    # Load the AppxManifest.xml file
+    $manifest = [xml](Get-Content $AppxManifestPath)
+
+    # Extract the package name from the manifest
+    $packageName = $manifest.Package.Identity.Name
+
+    # Get the resource name from the short reference. The part after "ms-resource:". There may or may not be slashes
+    $resourceName = $ShortReference -replace '^ms-resource:', ''
+
+    # Construct the full ms-resource reference. We need to add a backtick toescape the question mark or else it thinks it's part of the $packagename variable for some reason
+    $fullReference = "@{$packageName`?ms-resource://$packageName/Resources/$resourceName}"
+
+    # Use the existing Get-MsResource function to resolve the full reference
+    return Get-MsResource $fullReference
 }
 
 function Get-MsResource {
@@ -1602,12 +1639,16 @@ function Create-Deep-Link-CSVFile {
 }
 
 function Get-AppDetails-From-AppxManifest {
+    param(
+        [string]$CustomLanguageFolder
+    )
+
     $urlProtocolData = @()
     foreach ($appx in Get-AppxPackage) {
         $location = $appx.InstallLocation
-        $manifest = "$location\AppxManifest.xml"
-        if ($null -ne $location  -and (Test-Path $manifest -PathType Leaf)) {
-            [xml]$xml = Get-Content $manifest
+        $manifestPath = "$location\AppxManifest.xml"
+        if ($null -ne $location  -and (Test-Path $manifestPath -PathType Leaf)) {
+            [xml]$xml = Get-Content $manifestPath
             $ns = New-Object Xml.XmlNamespaceManager $xml.NameTable
             $ns.AddNamespace("main", "http://schemas.microsoft.com/appx/manifest/foundation/windows10")
             $ns.AddNamespace("uap", "http://schemas.microsoft.com/appx/manifest/uap/windows10")
@@ -1633,8 +1674,22 @@ function Get-AppDetails-From-AppxManifest {
                     $description = ""
                 }
 
+                # Get other values
                 $executable = $appElement.GetAttribute("Executable")
                 $command = if ($executable) { Join-Path $location $executable } else { "" }
+                $PackageName = $appx.Name
+
+                # See if it is necessary to get localized string for the various values if it starts with "ms-resource:"
+                if ($displayName -match '^ms-resource:') {
+                    $displayName = Get-LocalizedString -StringReference $displayName -AppxManifestPath $manifestPath -CustomLanguageFolder $CustomLanguageFolder
+                }
+                if ($description -match '^ms-resource:') {
+                    $description = Get-LocalizedString -StringReference $description -AppxManifestPath $manifestPath -CustomLanguageFolder $CustomLanguageFolder
+                }
+                if ($PackageName -match '^ms-resource:') {
+                    $PackageName = Get-LocalizedString -StringReference $PackageName -AppxManifestPath $manifestPath -CustomLanguageFolder $CustomLanguageFolder
+                }
+
 
                 $isMicrosoft = $appx.Publisher -match "^CN=Microsoft Corporation," -or $protocol -match "^ms-|^microsoft"
 
@@ -1643,7 +1698,7 @@ function Get-AppDetails-From-AppxManifest {
                     Name = $displayName
                     Command = $command
                     IconPath = ""  # AppxManifest doesn't typically include icon paths
-                    PackageName = $appx.Name
+                    PackageName = $PackageName
                     PackageAppKeyName = $appId
                     PackageAppName = $displayName
                     PackageAppDescription = $description
@@ -1676,6 +1731,9 @@ function Make-DeepCopy {
 
 
 function Get-And-Process-URL-Protocols {
+    param(
+        [string]$CustomLanguageFolder
+    )
     # Create object to store data. Will want to store multiple properties for each URL protocol
     $urlProtocols = @()
     $urlProtocolData = @()
@@ -1860,7 +1918,7 @@ function Get-And-Process-URL-Protocols {
     }
 
     # Alternative package data
-    $altTestData = Get-AppDetails-From-AppxManifest
+    $altTestData = Get-AppDetails-From-AppxManifest -CustomLanguageFolder $CustomLanguageFolder
 
     # Now have all data in $urlProtocolData array, but we want to filter it
     # Will only include protocols that are marked as Microsoft or are associated with a package
