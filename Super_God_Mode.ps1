@@ -1437,6 +1437,14 @@ function Create-Deep-Link-Shortcut {
     )
     $rawTarget = $settingArray.DeepLink
 
+    # If there's a description, use that as the name
+    if ($settingArray.Description) {
+        $name = $settingArray.Description
+    } else {
+        # Sanitize the name and use that
+        $name = $rawTarget
+    }
+
     # Determine type of link/command. First check if it matches application ID format like "Microsoft.Recovery"
     if ($rawTarget -match '^Microsoft\.[a-zA-Z]+$') {
         $shortcutType = "app"
@@ -1466,6 +1474,13 @@ function Create-Deep-Link-Shortcut {
             $target = $fullCommand
             $targetArgs = ""
         }
+    # If it's just letters and numbers and the <Filename> property starts with "Defender_" then it is a Windows Defender setting whcih is apparently a special case in this file
+    } elseif ($rawTarget -match '^[a-zA-Z0-9]+$' -and $settingArray.Name -match '^Defender_') {
+        $shortcutType = "windowsdefender"
+        $fullCommand = "windowsdefender://$rawTarget"
+        $target = "windowsdefender://$rawTarget"
+        # Prepend "Windows Defender" to the name
+        $name = "Windows Defender - $name"
     # If it's just letters deal with it later, do nothing
     } elseif ($rawTarget -match '^[a-zA-Z]+$') {
         $shortcutType = "unknown"
@@ -1480,17 +1495,9 @@ function Create-Deep-Link-Shortcut {
             $target = $rawTarget
         }
     }
-    # If there's a description, use that as the name
-    if ($settingArray.Description) {
-        $name = $settingArray.Description
-    } else {
-        # Sanitize the name and use that
-        $name = $rawTarget
-    }
 
     # Sanitize the name to make it a valid filename
     $sanitizedName = $name -replace '[\\/:*?"<>|]', '_'
-
     $shortcutPath = Join-Path $deepLinksOutputFolder "$sanitizedName.lnk"
     try {
         $shell = New-Object -ComObject WScript.Shell
@@ -1508,6 +1515,10 @@ function Create-Deep-Link-Shortcut {
             $shortcut.Arguments = $targetArgs
         } elseif ($shortcutType -eq "assumedPath") {
             $shortcut.TargetPath = $target
+        } elseif ($shortcutType -eq "windowsdefender") {
+            $shortcut.TargetPath = $target
+        } else {
+            $shortcut.TargetPath = $rawTarget
         }
 
         # If there's an icon property try using that
