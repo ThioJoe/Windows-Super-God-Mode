@@ -388,6 +388,9 @@ if (-not ([System.Management.Automation.PSTypeName]'Win32').Type) {
 "@
 }
 
+# DEBUG
+$global:FailedChecksCount = 0
+
 # Function: Get-LocalizedString
 # This function retrieves a localized (meaning in the user's language) string from a DLL based on a reference string given in the registry
 # `StringReference` is a reference in the format "@<dllPath>,-<resourceId>".
@@ -471,17 +474,31 @@ function Get-FullMsResource {
         [string]$AppxManifestPath
     )
 
+    Write-Verbose "Constructing Full Reference for Short Reference: $ShortReference"
+    Write-Verbose "   | AppxManifestPath: $AppxManifestPath"
+
     # Load the AppxManifest.xml file
     $manifest = [xml](Get-Content $AppxManifestPath)
 
     # Extract the package name from the manifest
     $packageName = $manifest.Package.Identity.Name
+    Write-Verbose "   | Package Name: $packageName"
 
     # Get the resource name from the short reference. The part after "ms-resource:". There may or may not be slashes
     $resourceName = $ShortReference -replace '^ms-resource:', ''
+    Write-Verbose "   | Resource Name: $resourceName"
 
-    # Construct the full ms-resource reference. We need to add a backtick toescape the question mark or else it thinks it's part of the $packagename variable for some reason
-    $fullReference = "@{$packageName`?ms-resource://$packageName/Resources/$resourceName}"
+    # Check if the resource name already contains "/Resources/" at beginning or middle, and construct the full reference accordingly
+    if ($resourceName -match '^Resources/') {
+        $fullReference = "@{$packageName`?ms-resource://$packageName/$resourceName}"
+    } elseif ($resourceName -match '/Resources/') {
+        $fullReference = "@{$packageName`?ms-resource://$packageName/$resourceName}"
+    } else {
+        # If it doesn't, add "/Resources/" as before
+        $fullReference = "@{$packageName`?ms-resource://$packageName/Resources/$resourceName}"
+    }
+
+    Write-Verbose "   > Constructed Full Reference: $fullReference"
 
     # Use the existing Get-MsResource function to resolve the full reference
     return Get-MsResource $fullReference
@@ -491,67 +508,85 @@ function Get-MsResource {
     param (
         [string]$ResourcePath
     )
-    Write-Verbose "Retrieving resource: $ResourcePath"
+    Write-Verbose "Processing ResourcePath: $ResourcePath"
+
     $stringBuilder = New-Object System.Text.StringBuilder 1024
+
     $result = [Win32]::SHLoadIndirectString($ResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
+    Write-Verbose "   > SHLoadIndirectString result: $result"
+
     if ($result -eq 0) {
-        return $stringBuilder.ToString()
+        $resolvedString = $stringBuilder.ToString()
+        Write-Verbose "   > Resolved string: $resolvedString"
+        return $resolvedString
     } else {
-        Write-Verbose "Initial attempt failed with error code: $result. Trying alternative methods..."
+        Write-Verbose "   + SHLoadIndirectString failed. Attempting alternative methods..."
 
         # Extract package name and resource URI
         $packageFullName = ($ResourcePath -split '\?')[0].Trim('@{}')
         $resourceUri = ($ResourcePath -split '\?')[1]
-        Write-Verbose "Extracted package full name: $packageFullName"
-        Write-Verbose "Extracted resource URI: $resourceUri"
+        Write-Verbose "      > Extracted package full name: $packageFullName"
+        Write-Verbose "      > Extracted resource URI: $resourceUri"
 
         # Extract package name without version and architecture
         $packageName = ($packageFullName -split '_')[0]
-        Write-Verbose "Extracted package name: $packageName"
+        Write-Verbose "      > Extracted package name: $packageName"
 
         # Find the package installation path
+        Write-Verbose "      + Searching for package using Get-AppxPackage"
         $package = Get-AppxPackage | Where-Object { $_.Name -eq $packageName }
         if (-not $package) {
-            # If exact match fails, try matching by package family name
+            Write-Verbose "      + Exact package match not found. Trying to match by package family name."
             $packageFamilyName = ($packageFullName -split '_')[-1]
             $package = Get-AppxPackage | Where-Object { $_.PackageFamilyName -eq "${packageName}_$packageFamilyName" }
         }
 
         if ($package) {
+            Write-Verbose "      + Package found: $($package.Name)"
             $packagePath = $package.InstallLocation
-            Write-Verbose "Package installation path: $packagePath"
+            Write-Verbose "      > Package installation path: $packagePath"
             $priPath = Join-Path $packagePath "resources.pri"
-            Write-Verbose "Attempting to use resources.pri at: $priPath"
+            Write-Verbose "      + Attempting to use resources.pri at: $priPath"
             if (Test-Path $priPath) {
                 $newResourcePath = "@{" + $priPath + "?" + $resourceUri
-                Write-Verbose "New resource path: $newResourcePath"
+                Write-Verbose "      > New resource path: $newResourcePath"
+                Write-Verbose "      + Attempting to call SHLoadIndirectString with new resource path"
                 $result = [Win32]::SHLoadIndirectString($newResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
+                Write-Verbose "      > SHLoadIndirectString result with new path: $result"
                 if ($result -eq 0) {
-                    Write-Verbose "Successfully retrieved resource using resources.pri"
-                    return $stringBuilder.ToString()
+                    Write-Verbose "      + Successfully retrieved resource using resources.pri"
+                    $resolvedString = $stringBuilder.ToString()
+                    Write-Verbose "      > Resolved string: $resolvedString"
+                    return $resolvedString
                 }
-                Write-Error "Failed to retrieve using resources.pri. Error code: $result"
+                Write-Verbose "      > Failed to retrieve using resources.pri. Error code: $result"
             } else {
-                Write-Verbose "resources.pri not found at expected location"
+                Write-Verbose "      > resources.pri not found at expected location"
             }
         } else {
-            Write-Verbose "Package not found"
+            Write-Verbose "      + Package not found"
         }
 
         # If still failed, try without the /resources/ folder, if it's present
         if ($resourceUri -match '^/resources/') {
+            Write-Verbose "         + Attempting to retrieve resource without /resources/ folder"
             $resourceUriWithoutResources = $resourceUri -replace '/resources/', '/'
             $newResourcePath = "@{" + $priPath + "?" + $resourceUriWithoutResources
-            Write-Verbose "Attempting without /resources/ folder. New path: $newResourcePath"
+            Write-Verbose "         > New resource path without /resources/: $newResourcePath"
+            Write-Verbose "         + Attempting to call SHLoadIndirectString without /resources/"
             $result = [Win32]::SHLoadIndirectString($newResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
+            Write-Verbose "         > SHLoadIndirectString result without /resources/: $result"
             if ($result -eq 0) {
-                Write-Verbose "Successfully retrieved resource without /resources/ folder"
-                return $stringBuilder.ToString()
+                Write-Verbose "         + Successfully retrieved resource without /resources/ folder"
+                $resolvedString = $stringBuilder.ToString()
+                Write-Verbose "         > Resolved string: $resolvedString"
+                return $resolvedString
             }
-            Write-Verbose "Failed to retrieve without /resources/ folder. Error code: $result"
+            Write-Verbose "         + Failed to retrieve without /resources/ folder. Error code: $result"
         }
 
-        Write-Error "Failed to retrieve ms-resource: $ResourcePath. Error code: $result"
+        Write-Error "   > All attempts to retrieve resource failed for ms-resource: $ResourcePath. Error code: $result"
+        $global:FailedChecksCount++
         return $null
     }
 }
@@ -2353,3 +2388,5 @@ if ($CLSIDDisplayPath -or $namedFolderDisplayPath -or $taskLinksDisplayPath -or 
     $csvPrintString = "CSV files have been created at:" + "$CLSIDDisplayPath" + "$namedFolderDisplayPath" + "$taskLinksDisplayPath" + "$msSettingsDisplayPath" + "$deepLinksDisplayPath" + "$urlProtocolsDisplayPath" + "`n"
     Write-Host $csvPrintString
 }
+
+Write-Verbose "String Fail Count: $global:FailedChecksCount"
