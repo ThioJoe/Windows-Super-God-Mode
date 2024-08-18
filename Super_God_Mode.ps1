@@ -485,11 +485,14 @@ function Get-FullMsResource {
     Write-Verbose "   | Package Name: $packageName"
 
     # Get the resource name from the short reference. The part after "ms-resource:". There may or may not be slashes
-    $resourceName = $ShortReference -replace '^ms-resource:', ''
+    $resourceName = $ShortReference -replace '^ms-resource:/*', ''
     Write-Verbose "   | Resource Name: $resourceName"
 
+    # If the resource name already contains the package name, just use it as is
+    if ($resourceName -match "^$packageName/") {
+        $fullReference = "@{$packageName`?ms-resource://$resourceName}"
     # Check if the resource name already contains "/Resources/" at beginning or middle, and construct the full reference accordingly
-    if ($resourceName -match '^Resources/') {
+    } elseif ($resourceName -match '^Resources/') {
         $fullReference = "@{$packageName`?ms-resource://$packageName/$resourceName}"
     } elseif ($resourceName -match '/Resources/') {
         $fullReference = "@{$packageName`?ms-resource://$packageName/$resourceName}"
