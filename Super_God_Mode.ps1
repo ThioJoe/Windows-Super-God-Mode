@@ -1601,6 +1601,80 @@ function Create-Deep-Link-CSVFile {
     $csvContent | Out-File -FilePath $outputPath -Encoding utf8
 }
 
+function Get-AppDetails-From-AppxManifest {
+    $urlProtocolData = @()
+    foreach ($appx in Get-AppxPackage) {
+        $location = $appx.InstallLocation
+        $manifest = "$location\AppxManifest.xml"
+        if ($null -ne $location  -and (Test-Path $manifest -PathType Leaf)) {
+            [xml]$xml = Get-Content $manifest
+            $ns = New-Object Xml.XmlNamespaceManager $xml.NameTable
+            $ns.AddNamespace("main", "http://schemas.microsoft.com/appx/manifest/foundation/windows10")
+            $ns.AddNamespace("uap", "http://schemas.microsoft.com/appx/manifest/uap/windows10")
+
+            $protocolElements = $xml.SelectNodes("//uap:Extension[@Category = 'windows.protocol']/uap:Protocol", $ns)
+
+            foreach ($protocolElement in $protocolElements) {
+                $protocol = $protocolElement.GetAttribute("Name")
+                $appElement = $protocolElement.SelectSingleNode("ancestor::main:Application", $ns)
+                $appId = $appElement.GetAttribute("Id")
+
+                $displayNameElement = $appElement.SelectSingleNode(".//uap:VisualElements/@DisplayName", $ns)
+                if ($displayNameElement) {
+                    $displayName = $displayNameElement.Value
+                } else {
+                    $displayName = ""
+                }
+
+                $descriptionElement = $appElement.SelectSingleNode(".//uap:VisualElements/@Description", $ns)
+                if ($descriptionElement) {
+                    $description = $descriptionElement.Value
+                } else {
+                    $description = ""
+                }
+
+                $executable = $appElement.GetAttribute("Executable")
+                $command = if ($executable) { Join-Path $location $executable } else { "" }
+
+                $isMicrosoft = $appx.Publisher -match "^CN=Microsoft Corporation," -or $protocol -match "^ms-|^microsoft"
+
+                $protocolData = [PSCustomObject]@{
+                    Protocol = $protocol
+                    Name = $displayName
+                    Command = $command
+                    IconPath = ""  # AppxManifest doesn't typically include icon paths
+                    PackageName = $appx.Name
+                    PackageAppKeyName = $appId
+                    PackageAppName = $displayName
+                    PackageAppDescription = $description
+                    ClassID = ""  # AppxManifest doesn't include ClassID
+                    IsMicrosoft = $isMicrosoft
+                }
+
+                $urlProtocolData += $protocolData
+            }
+        }
+    }
+    # Sort by protocol
+    $urlProtocolData = $urlProtocolData | Sort-Object -Property Protocol
+
+    return $urlProtocolData
+}
+
+# Deep copy function using serialization and deserialization
+function Make-DeepCopy {
+    param (
+        [Parameter(Mandatory=$true)]
+        $object
+    )
+    # Serialize the object to an XML string
+    $serializedData = [System.Management.Automation.PSSerializer]::Serialize($object)
+    # Deserialize the XML string back to a new object (deep copy)
+    $deepCopiedObject = [System.Management.Automation.PSSerializer]::Deserialize($serializedData)
+    return $deepCopiedObject
+}
+
+
 function Get-And-Process-URL-Protocols {
     # Create object to store data. Will want to store multiple properties for each URL protocol
     $urlProtocols = @()
@@ -1632,7 +1706,7 @@ function Get-And-Process-URL-Protocols {
         return $data
     }
 
-    Get-ChildItem -Path 'Registry::HKEY_CLASSES_ROOT' -ErrorAction SilentlyContinue | 
+    Get-ChildItem -Path 'Registry::HKEY_CLASSES_ROOT' -ErrorAction SilentlyContinue |
         Where-Object {
             $_.GetValue('(Default)') -match '^URL:' -or $null -ne $_.GetValue('URL Protocol')
         } | ForEach-Object {
@@ -1652,8 +1726,8 @@ function Get-And-Process-URL-Protocols {
 
             # Get the URL protocol command from the shell\open\command subkey
             $command = $null
-            if ($protocolData.SubKeys.ContainsKey('shell') -and 
-                $protocolData.SubKeys['shell'].SubKeys.ContainsKey('open') -and 
+            if ($protocolData.SubKeys.ContainsKey('shell') -and
+                $protocolData.SubKeys['shell'].SubKeys.ContainsKey('open') -and
                 $protocolData.SubKeys['shell'].SubKeys['open'].SubKeys.ContainsKey('command')) {
                 $command = $protocolData.SubKeys['shell'].SubKeys['open'].SubKeys['command']['(Default)']
             }
@@ -1673,13 +1747,13 @@ function Get-And-Process-URL-Protocols {
                 Name = $protocolName
                 Command = $command
                 IconPath = $iconPath
-                IsMicrosoft = $isMicrosoft
                 # Create empty properties for package data later
                 PackageName = ""
+                PackageAppKeyName = ""
                 PackageAppName = ""
                 PackageAppDescription = ""
                 ClassID = ""
-                PackageAppKeyName = ""
+                IsMicrosoft = $isMicrosoft
             }
 
             # Add the URL protocol data object to the array
@@ -1784,6 +1858,10 @@ function Get-And-Process-URL-Protocols {
         }
 
     }
+
+    # Alternative package data
+    $altTestData = Get-AppDetails-From-AppxManifest
+
     # Now have all data in $urlProtocolData array, but we want to filter it
     # Will only include protocols that are marked as Microsoft or are associated with a package
     $filteredUrlProtocolData = $urlProtocolData | Where-Object { $_.IsMicrosoft -or $_.PackageName }
