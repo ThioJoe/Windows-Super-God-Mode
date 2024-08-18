@@ -1606,66 +1606,105 @@ function Get-And-Process-URL-Protocols {
     $urlProtocols = @()
     $urlProtocolData = @()
 
-    #Look in Registry at HKEY_CLASSES_ROOT - URL protocols can be identified by the key's (Default) value starting with "URL:", or by the existence of an entry named "URL Protocol"
     Write-Verbose "Gathering URL Protocol data from the registry"
-    $urlProtocols += Get-ChildItem -Path 'Registry::HKEY_CLASSES_ROOT' -ErrorAction SilentlyContinue |
+    $urlProtocols = @{}
+
+    # Function store registry data structure for each protocol in an object so we don't need to make a bunch of registry calls later
+    function Get-RegistryKeyData {
+        param (
+            [Microsoft.Win32.RegistryKey]$Key
+        )
+        $data = @{
+            '(Default)' = $Key.GetValue('')
+            Values = @{}
+            SubKeys = @{}
+        }
+        foreach ($valueName in $Key.GetValueNames()) {
+            if ($valueName -ne '') {
+                $data.Values[$valueName] = $Key.GetValue($valueName)
+            }
+        }
+        foreach ($subKeyName in $Key.GetSubKeyNames()) {
+            $subKey = $Key.OpenSubKey($subKeyName)
+            $data.SubKeys[$subKeyName] = Get-RegistryKeyData -Key $subKey
+            $subKey.Close()
+        }
+        return $data
+    }
+
+    Get-ChildItem -Path 'Registry::HKEY_CLASSES_ROOT' -ErrorAction SilentlyContinue | 
         Where-Object {
             $_.GetValue('(Default)') -match '^URL:' -or $null -ne $_.GetValue('URL Protocol')
-        } | Select-Object -ExpandProperty PSChildName
-
-    # Next want to get as much information about the protocol as possible
-    # Get protocol name from (Default) value of URL:WhateverName in HKCR data entry if it exists
-    foreach ($protocol in $urlProtocols) {
-        Write-Verbose "Processing URL Protocol: $protocol"
-        $protocolName = (Get-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\$protocol" -ErrorAction SilentlyContinue).'(Default)'
-        # If the protocol name is in the format "URL:WhateverName", extract the "WhateverName" part
-        if ($protocolName -match '^URL:(.+)$') {
-            $protocolName = $Matches[1]
+        } | ForEach-Object {
+            $urlProtocols[$_.PSChildName] = Get-RegistryKeyData -Key $_.OpenSubKey('')
         }
 
-        # Get the URL protocol command from the shell\open\command subkey
-        $command = (Get-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\$protocol\shell\open\command" -ErrorAction SilentlyContinue).'(Default)'
-        # Get the URL protocol icon from the DefaultIcon subkey
-        $iconPath = (Get-ItemProperty -Path "Registry::HKEY_CLASSES_ROOT\$protocol\DefaultIcon" -ErrorAction SilentlyContinue).'(Default)'
+        foreach ($protocol in $urlProtocols.Keys) {
+            Write-Verbose "Processing URL Protocol: $protocol"
 
-        # Determine if the protocol is built or from Microsoft.
-        $isMicrosoft = $false
+            $protocolData = $urlProtocols[$protocol]
+            $protocolName = $protocolData['(Default)']
 
-        # First check if starts with "ms-" or "microsoft"
-        if ($protocol -match '^ms-|^microsoft', 'IgnoreCase') {
-            $isMicrosoft = $true
+            # If the protocol name is in the format "URL:WhateverName", extract the "WhateverName" part
+            if ($protocolName -match '^URL:(.+)$') {
+                $protocolName = $Matches[1]
+            }
+
+            # Get the URL protocol command from the shell\open\command subkey
+            $command = $null
+            if ($protocolData.SubKeys.ContainsKey('shell') -and 
+                $protocolData.SubKeys['shell'].SubKeys.ContainsKey('open') -and 
+                $protocolData.SubKeys['shell'].SubKeys['open'].SubKeys.ContainsKey('command')) {
+                $command = $protocolData.SubKeys['shell'].SubKeys['open'].SubKeys['command']['(Default)']
+            }
+
+            # Get the URL protocol icon from the DefaultIcon subkey
+            $iconPath = $null
+            if ($protocolData.SubKeys.ContainsKey('DefaultIcon')) {
+                $iconPath = $protocolData.SubKeys['DefaultIcon']['(Default)']
+            }
+
+            # Determine if the protocol is built or from Microsoft.
+            $isMicrosoft = $protocol -match '^ms-|^microsoft'
+
+            # Create a new object to store the URL protocol data
+            $urlProtocol = [PSCustomObject]@{
+                Protocol = $protocol
+                Name = $protocolName
+                Command = $command
+                IconPath = $iconPath
+                IsMicrosoft = $isMicrosoft
+                # Create empty properties for package data later
+                PackageName = ""
+                PackageAppName = ""
+                PackageAppDescription = ""
+                ClassID = ""
+                PackageAppKeyName = ""
+            }
+
+            # Add the URL protocol data object to the array
+            $urlProtocolData += $urlProtocol
         }
 
-        # Create a new object to store the URL protocol data
-        $urlProtocol = [PSCustomObject]@{
-            Protocol = $protocol
-            Name = $protocolName
-            Command = $command
-            IconPath = $iconPath
-            IsMicrosoft = $isMicrosoft
-            # Create empty properties for package data later
-            PackageName = ""
-            PackageAppName = ""
-            PackageAppDescription = ""
-            ClassID = ""
-            PackageAppKeyName = ""
-        }
-
-        # Add the URL protocol data object to the array
-        $urlProtocolData += $urlProtocol
-    }
+    #Sort the array by protocol name
+    $urlProtocolData = $urlProtocolData | Sort-Object -Property Protocol
 
     # Gather protocol info from other registry locations to add to the data
     # For installed package Protocols, look in HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages
     # Search app subkeys for Capabilities > URLAssociations. Where entry besides (Default) will be named as the protocol, and will have value of the app class id
-    $packageProtocolData = $null
+
+    # For debugging
+    #$originalProtocolData = Make-DeepCopy $urlProtocolData
+    #$regPackageDataOnlyArray = @() # Stores only data from packages, mostly for debugging
+
     $packagesRegPath = 'Registry::HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages'
     # Get subkeys of the Package key but only where the URLAssociations key exists at Package/WhateverPackage/AppName/Capabilities/URLAssociations and the key has a value besides (Default)
     Get-ChildItem -Path $packagesRegPath -ErrorAction SilentlyContinue | ForEach-Object {
         $packagePath = $_.PSPath
         $packageName = $_.PSChildName
+        $packageApps = Get-ChildItem -Path $packagePath
         # Get subkeys of the package
-        foreach ($app in Get-ChildItem -Path $packagePath -ErrorAction SilentlyContinue) {
+        foreach ($app in $packageApps) {
             $packageAppKeyName = $app.PSChildName
             $capabilitiesPath = Join-Path $app.PSPath "Capabilities"
             $urlAssociationsPath = Join-Path $capabilitiesPath "URLAssociations"
@@ -1723,7 +1762,7 @@ function Get-And-Process-URL-Protocols {
                         if ($packageName -match '^Microsoft|^Windows') {
                             $isMicrosoft = $true
                         }
-
+                        $packageProtocolData = $null
                         # Create a new object to store the URL protocol data
                         $packageProtocolData = [PSCustomObject]@{
                             Protocol = $protocol
@@ -1737,6 +1776,7 @@ function Get-And-Process-URL-Protocols {
                             ClassID = $appClassId
                             IsMicrosoft = $isMicrosoft
                         }
+                        #$regPackageDataOnlyArray += $packageProtocolData # For debugging
                         $urlProtocolData += $packageProtocolData
                     }
                 }
