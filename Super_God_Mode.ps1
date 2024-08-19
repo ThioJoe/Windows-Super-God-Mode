@@ -1739,7 +1739,7 @@ function Get-AppDetails-From-Registry {
                 # Get the properties but exclude the built in PSObject properties, leaving only the subkeys that are the protocol names
                 $urlAssociations.PSObject.Properties | Where-Object { $_.Name -notin @("PSPath", "PSParentPath", "PSChildName", "PSDrive", "PSProvider") } | ForEach-Object {
                     $protocol = $_.Name
-                    $appClassId = $_.Value
+                    #$appClassId = $_.Value
 
                     # Get the ApplicationName and ApplicationDescription values from Capabilities key value
                     $packageLocalizedAppName = Get-ItemProperty -Path $capabilitiesPath -Name "ApplicationName" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty ApplicationName
@@ -1780,7 +1780,7 @@ function Get-AppDetails-From-Registry {
                         $existingProtocol.PackageFullName = $packageFullName
                         $existingProtocol.PackageAppName = $packageLocalizedAppName
                         $existingProtocol.PackageAppDescription = $packageLocalizedAppDescription
-                        $existingProtocol.ClassID = $appClassId
+                        #$existingProtocol.ClassID = $appClassId # Not needed at the moment
                         $existingProtocol.PackageAppKeyName = $packageAppKeyName
 
                          # If the package name starts with Microsoft* or Windows then it's a Microsoft package, update the IsMicrosoft property
@@ -1809,7 +1809,7 @@ function Get-AppDetails-From-Registry {
                             PackageAppKeyName = $packageAppKeyName
                             PackageAppName = $packageLocalizedAppName
                             PackageAppDescription = $packageLocalizedAppDescription
-                            ClassID = $appClassId
+                            #ClassID = $appClassId
                             IsMicrosoft = $isMicrosoft
                         }
                         #$regPackageDataOnlyArray += $packageProtocolData # For debugging
@@ -1847,7 +1847,8 @@ function Get-AppDetails-From-AppxManifest {
 
             # Build the XPath query dynamically
             $xpathQuery = ($uapNamespaces | ForEach-Object { 
-                "//$_`:Extension[@Category = 'windows.protocol']/$_`:Protocol"
+                "//$_`:Extension[@Category = 'windows.protocol']/$_`:Protocol | " +
+                "//uap:Extension[@Category = 'windows.protocol']/$_`:Protocol"
             }) -join ' | '
 
             $protocolElements = $xml.SelectNodes($xpathQuery, $ns)
@@ -1888,7 +1889,8 @@ function Get-AppDetails-From-AppxManifest {
                 }
 
 
-                $isMicrosoft = $appx.Publisher -match "^CN=Microsoft Corporation," -or $protocol -match "^ms-|^microsoft"
+                #$isMicrosoft = $appx.Publisher -match "^CN=Microsoft Corporation," -or $protocol -match "^ms-|^microsoft" -or $appx.PublisherId -eq "8wekyb3d8bbwe" -or $appx.PublisherId -eq "cw5n1h2txyewy"
+                $isMicrosoft = ($appx.PublisherId -eq "8wekyb3d8bbwe") -or ($appx.PublisherId -eq "cw5n1h2txyewy")
 
                 $protocolData = [PSCustomObject]@{
                     Protocol = $protocol
@@ -1900,8 +1902,9 @@ function Get-AppDetails-From-AppxManifest {
                     PackageAppKeyName = $appId
                     PackageAppName = $displayName
                     PackageAppDescription = $description
-                    ClassID = ""  # AppxManifest doesn't include ClassID
+                    #ClassID = ""  # AppxManifest doesn't include ClassID
                     IsMicrosoft = $isMicrosoft
+                    #ManifestPath = $manifestPath
                 }
 
                 $urlProtocolData += $protocolData
@@ -2009,7 +2012,7 @@ function Get-And-Process-URL-Protocols {
                 PackageAppKeyName = ""
                 PackageAppName = ""
                 PackageAppDescription = ""
-                ClassID = ""
+                #ClassID = ""
                 IsMicrosoft = $isMicrosoft
             }
 
@@ -2054,9 +2057,9 @@ function Get-And-Process-URL-Protocols {
             if (-not $protocol.Command) {
                 $protocol.Command = $appxData.Command
             }
-            if (-not $protocol.ClassID) {
-                $protocol.ClassID = $appxData.ClassID
-            }
+            # if (-not $protocol.ClassID) {
+            #     $protocol.ClassID = $appxData.ClassID
+            # }
             if (-not $protocol.IsMicrosoft) {
                 $protocol.IsMicrosoft = $appxData.IsMicrosoft
             }
@@ -2074,7 +2077,7 @@ function Get-And-Process-URL-Protocols {
             $protocol.PackageAppName = $appxData.PackageAppName
             $protocol.PackageAppDescription = $appxData.PackageAppDescription
             $protocol.Command = $appxData.Command
-            $protocol.ClassID = $appxData.ClassID
+            #$protocol.ClassID = $appxData.ClassID
             $protocol.IsMicrosoft = $appxData.IsMicrosoft
         }
     }
@@ -2093,7 +2096,7 @@ function Create-URL-Protocols-CSVFile {
         [array]$urlProtocolsData
     )
 
-    $csvContent = "Protocol,Name,Command,IconPath,PackageName,PackageAppName,PackageAppDescription,ClassID,IsMicrosoft`n"
+    $csvContent = "Protocol,Name,Command,IconPath,PackageName,PackageAppName,PackageAppDescription,IsMicrosoft`n"
 
     foreach ($item in $urlProtocolsData) {
         $protocol = $item.Protocol -replace '"', '""'
@@ -2110,10 +2113,10 @@ function Create-URL-Protocols-CSVFile {
         $packageName = $item.PackageName -replace '"', '""'
         $packageAppName = $item.PackageAppName -replace '"', '""'
         $packageAppDescription = $item.PackageAppDescription -replace '"', '""'
-        $classID = $item.ClassID -replace '"', '""'
+        #$classID = $item.ClassID -replace '"', '""'
         $isMicrosoft = $item.IsMicrosoft
 
-        $csvContent += "`"$protocol`",`"$name`",`"$command`",$iconPath,`"$packageName`",`"$packageAppName`",`"$packageAppDescription`",`"$classID`",$isMicrosoft`n"
+        $csvContent += "`"$protocol`",`"$name`",`"$command`",$iconPath,`"$packageName`",`"$packageAppName`",`"$packageAppDescription`",$isMicrosoft`n"
     }
 
     $csvContent | Out-File -FilePath $outputPath -Encoding utf8
