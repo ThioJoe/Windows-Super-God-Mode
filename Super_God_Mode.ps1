@@ -22,79 +22,79 @@
 # ---------------------------------   Alternative Options Arguments   ----------------------------------
 #
 # -DontGroupTasks
-#     Switch (Takes no values)
+#     • Switch (Takes no values)
 #     Prevent grouping task shortcuts, meaning the application name won't be prepended to the task name in the shortcut file
 #
 # -UseAlternativeCategoryNames
-#     Switch (Takes no values)
+#     • Switch (Takes no values)
 #     Looks up alternative category names for task links to prepend to the task names
 #
 # -AllURLProtocols
-#     Switch (Takes no values)
+#     • Switch (Takes no values)
 #     Include third party URL protocols from installed software in the URL Protocols section. By default, only protocols detected to be from Microsoft or system protocols are included.
 #
 # -CollectExtraURLProtocolInfo
-#     Switch (Takes no values)
+#     • Switch (Takes no values)
 #     Collects extra information about URL protocols that goes into the CSV spreadsheet. Optional because it is not used in the shortcuts and takes slightly longer.
 #
 # ------------------------------------------  Control Output  ------------------------------------------
 #
 # -Output
-#     String Type
+#     • String Type
 #     Specify a custom output folder path (relative or absolute) to save the generated shortcuts. If not provided, a folder named "Shell Folder Shortcuts" will be created in the script's directory.
 #
 # -KeepPreviousOutputFolders
-#     Switch (Takes no values)
+#     • Switch (Takes no values)
 #     Doesn't delete existing output folders before running the script. Any existing shortcuts will still be overwritten if being created again.
 #
 # -------------------------------  Arguments to Limit Shortcut Creation  -------------------------------
 #
 # -NoStatistics
-#     Switch (Takes no values)
+#     • Switch (Takes no values)
 #     Skip creating the statistics folder and files containing CSV data about the shell folders and tasks and XML files with other collected data
 #
 # -SkipCLSID
-#     Switch (Takes no values)
+#     • Switch (Takes no values)
 #     Skip creating shortcuts for shell folders based on CLSIDs
 #
 # -SkipNamedFolders
-#     Switch (Takes no values)
+#     • Switch (Takes no values)
 #     Skip creating shortcuts for named special folders
 #
 # -SkipTaskLinks
-#     Switch (Takes no values)
+#     • Switch (Takes no values)
 #     Skip creating shortcuts for task links (sub-pages within shell folders and control panel menus)
 #
 # -SkipMSSettings
-#     Switch (Takes no values)
+#     • Switch (Takes no values)
 #     Skip creating shortcuts for ms-settings: links (system settings pages)
 #
 # -SkipDeepLinks
-#     Switch (Takes no values)
+#     • Switch (Takes no values)
 #     Skip creating shortcuts for deep links (direct links to various settings menus across Windows)
 #
 # -SkipURLProtocols
-#     Switch (Takes no values)
+#     • Switch (Takes no values)
 #     Skip creating shortcuts for URL protocols (e.g., mailto:, ms-settings:, etc.)
 #
 # --------------------------------------------  Debugging  ---------------------------------------------
 #
 # -Verbose
-#     Switch (Takes no values)
+#     • Switch (Takes no values)
 #     Enable verbose output for more detailed information during script execution
 #
 # -Debug
-#     Switch (Takes no values)
+#     • Switch (Takes no values)
 #     Enable debug output for maximum information during script execution. This will also enable verbose output.
 #
 # ----------------------------------------  Advanced Arguments  ----------------------------------------
 #
 # -NoGUI
-#     Switch (Takes no values)
+#     • Switch (Takes no values)
 #     Skip the GUI dialog when running the script. If no other arguments are provided, the script will run with default settings. If other arguments are provided, they will be used without the GUI.
 #
 # -CustomDLLPath
-#     String Type
+#     • String Type
 #     Specify a custom DLL file path to load the shell32.dll content from. If not provided, the default shell32.dll will be used.
 #     NOTE: Because of how Windows works behind the scenes, DLLs reference resources in corresponding .mui and .mun files.
 #        The XML data (resource ID 21) that is required in this script is actually located in shell32.dll.mun, which is located at "C:\Windows\SystemResources\shell32.dll.mun"
@@ -103,14 +103,19 @@
 #        See: https://stackoverflow.com/questions/68389730/windows-dll-function-behaviour-is-different-if-dll-is-moved-to-different-locatio
 #
 # -CustomLanguageFolderPath
-#     String Type
+#     • String Type
 #     Specify a path to a folder containing language-specific MUI files to use for localized string references, and it will prefer any mui files from there if available instead of the system default.
 #     For example, to use your own language file for shell32.dll, you could specify a path to a folder containing a file named "shell32.dll.mui" in the desired language, and any other such files.
 #     For another example, if you have multiple language packs installed on your system, you could specify the entire language directory in system32 such as "C:\Windows\System32\en-US" to use English strings, or "C:\Windows\System32\de-DE" for German strings.
 #
 # -CustomSystemSettingsDLLPath
-#     String Type
+#     • String Type
 #     Specify a custom path to the SystemSettings.dll file to load the system settings (ms-settings: links) content from. If not provided, the default SystemSettings.dll will be used.
+#
+# -CustomAllSystemSettingsXMLPath
+#     • String Type
+#     Specify a custom path to the AllSystemSettings XML file to load deep links from. If not provided, the default AllSystemSettings XML file will be used.
+#     The default path is "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings\ and versions may vary depending on Windows 11 or Windows 10.
 #
 # ------------------------------------------------------------------------------------------------------
 #
@@ -124,7 +129,8 @@ param(
     [switch]$KeepPreviousOutputFolders,
     [string]$CustomDLLPath,
     [string]$CustomLanguageFolderPath,
-    [string]$CustomSystemSettingsXMLPath,
+    [string]$CustomSystemSettingsDLLPath,
+    [string]$CustomAllSystemSettingsXMLPath,
     [string]$Output,
     [switch]$SkipCLSID,
     [switch]$SkipNamedFolders,
@@ -602,7 +608,14 @@ $permanentURIProtocols = @(
 )
 
 # Check which AllSystemSettings XML file to use
-if (Test-Path $allSettingsXmlPath1) {
+if ($CustomAllSystemSettingsXMLPath) {
+    if (-not (Test-Path $CustomAllSystemSettingsXMLPath)) {
+        Write-Error "The specified AllSystemSettings XML path does not exist: $CustomAllSystemSettingsXMLPath"
+        return
+    } else {
+        $allSettingsXmlPath = $CustomAllSystemSettingsXMLPath
+    }
+} elseif (Test-Path $allSettingsXmlPath1) {
     $allSettingsXmlPath = $allSettingsXmlPath1
 } elseif (Test-Path $allSettingsXmlPath2) {
     $allSettingsXmlPath = $allSettingsXmlPath2
