@@ -86,6 +86,10 @@
 #
 # ----------------------------------------  Advanced Arguments  ----------------------------------------
 #
+# -NoGUI
+#     Switch (Takes no values)
+#     Skip the GUI dialog when running the script. If no other arguments are provided, the script will run with default settings. If other arguments are provided, they will be used without the GUI.
+#
 # -CustomDLLPath
 #     String Type
 #     Specify a custom DLL file path to load the shell32.dll content from. If not provided, the default shell32.dll will be used.
@@ -128,7 +132,8 @@ param(
     [switch]$SkipURLProtocols,
     [switch]$AllURLProtocols,
     [switch]$UseAlternativeCategoryNames,
-    [switch]$CollectExtraURLProtocolInfo
+    [switch]$CollectExtraURLProtocolInfo,
+    [switch]$NoGUI
 )
 
 function Show-SuperGodModeDialog {
@@ -166,7 +171,7 @@ function Show-SuperGodModeDialog {
             <Border Background="#007ACC" Grid.Row="0">
                 <StackPanel>
                     <TextBlock Text="&quot;Super God Mode&quot; Script" FontSize="24" Foreground="White" HorizontalAlignment="Center" Margin="0,10,0,0"/>
-                    <TextBlock Text="Shortcut Creator" FontSize="16" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock Text="For Windows" FontSize="16" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,10"/>
                 </StackPanel>
             </Border>
 
@@ -207,7 +212,7 @@ function Show-SuperGodModeDialog {
 
                         <GroupBox Header="Control Output" Margin="0,10">
                             <StackPanel Margin="5">
-                                <CheckBox x:Name="chkKeepPreviousOutputFolders" Content="Keep Previous Output Folders" Margin="0,5,0,0">
+                                <CheckBox x:Name="chkKeepPreviousOutputFolders" Content="Don't Auto-Delete Existing Output Folders" Margin="0,5,0,0">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.KeepPreviousOutputFolders)" />
                                     </CheckBox.ToolTip>
@@ -277,7 +282,7 @@ function Show-SuperGodModeDialog {
                         </GroupBox>
 
                         <TextBlock Text="ALL settings are optional - Leave them alone to use defaults" FontWeight="Bold" Foreground="Red" HorizontalAlignment="Center" Margin="0,10,0,10"/>
-                        <Button x:Name="btnOK" Content="  Run Script  " Width="75" HorizontalAlignment="Center" Margin="0,10,0,10"/>
+                        <Button x:Name="btnOK" Content="Run Script" Width="Auto" Height="Auto" FontSize="14" HorizontalAlignment="Center" Margin="0,10,0,10" Padding="10,5"/>
                     </StackPanel>
                 </Grid>
             </ScrollViewer>
@@ -369,8 +374,8 @@ function Show-SuperGodModeDialog {
     }
 }
 
-# Usage example:
-if ($MyInvocation.BoundParameters.Count -eq 0) {
+# Start the GUI dialog if no parameters are provided
+if ($MyInvocation.BoundParameters.Count -eq 0 -and -not $NoGUI) {
     $params = Show-SuperGodModeDialog
     if ($null -eq $params) {
         exit
@@ -2531,62 +2536,7 @@ $deepLinkData = @()
 $deepLinksProcessedData = @()
 $URLProtocolsData = @()
 
-if (-not $SkipURLProtocols){
-    Write-Host "`n----- Processing URL Protocols -----"
-    if ($AllURLProtocols){
-        $OnlyMicrosoftApps = $false
-    } else {
-        $OnlyMicrosoftApps = $true
-    }
 
-    $URLProtocolsData = Get-And-Process-URL-Protocols -CustomLanguageFolder $CustomLanguageFolderPath -OnlyMicrosoftApps:$OnlyMicrosoftApps -permanentProtocolsIgnore $permanentURIProtocols -GetExtraData:$CollectExtraURLProtocolInfo
-    #Write-Host "Found $($URLProtocolsData.Count) URL Protocols"
-    foreach ($protocol in $URLProtocolsData) {
-        # Check whether to use original icon path or derived icon
-        $iconPath = if ($protocol.DerivedIcon) {
-            $protocol.DerivedIcon
-        } else {
-            $protocol.IconPath
-        }
-        $success = Create-Protocol-Shortcut -protocol $protocol.Protocol -name $protocol.Name -command $protocol.Command -iconPath $iconPath -shortcutPath (Join-Path $URLProtocolLinksOutputFolder "$($protocol.Protocol).lnk")
-        if ($success) {
-            Write-Host "Created URL Protocol Shortcut: $($protocol.Name)"
-        } else {
-            Write-Host "Failed to create URL Protocol shortcut: $($protocol.Name)"
-        }
-    }
-}
-
-if (-not $SkipMSSettings) {
-    $msSettingsList = Get-MS-SettingsFrom-SystemSettingsDLL -DllPath $SystemSettingsDllPath
-
-    if ($null -eq $settingsData) {
-        Write-Host "No MS Settings data found or error occurred while parsing."
-        return
-    }
-
-    Write-Host "`n----- Processing MS Settings -----"
-
-    foreach ($setting in $msSettingsList) {
-        # Get the short name from the second part of the ms-settings: link
-        $settingName = $setting.Split(':')[1]
-        # Use policyId as the shortcut name
-        $fullShortcutName = $setting
-
-        # Sanitize the shortcut name (although policyId should already be safe)
-        $sanitizedName = $settingName -replace '[\\/:*?"<>|]', '_'
-
-        $shortcutPath = Join-Path $msSettingsOutputFolder "$sanitizedName.lnk"
-
-        $success = Create-MSSettings-Shortcut -fullName $fullShortcutName -shortcutPath $shortcutPath
-
-        if ($success) {
-            Write-Host "Created MS Settings Shortcut: $fullShortcutName"
-        } else {
-            Write-Host "Failed to create shortcut: $fullShortcutName"
-        }
-    }
-}
 
 if (-not $SkipDeepLinks -and $allSettingsXmlPath) {
     # Process other settings data
@@ -2773,6 +2723,63 @@ if (-not $SkipTaskLinks) {
             Write-Host "Created task link shortcut for $uniqueName"
         } else {
             Write-Host "Failed to create task link shortcut for $uniqueName"
+        }
+    }
+}
+
+if (-not $SkipMSSettings) {
+    $msSettingsList = Get-MS-SettingsFrom-SystemSettingsDLL -DllPath $SystemSettingsDllPath
+
+    if ($null -eq $settingsData) {
+        Write-Host "No MS Settings data found or error occurred while parsing."
+        return
+    }
+
+    Write-Host "`n----- Processing MS Settings -----"
+
+    foreach ($setting in $msSettingsList) {
+        # Get the short name from the second part of the ms-settings: link
+        $settingName = $setting.Split(':')[1]
+        # Use policyId as the shortcut name
+        $fullShortcutName = $setting
+
+        # Sanitize the shortcut name (although policyId should already be safe)
+        $sanitizedName = $settingName -replace '[\\/:*?"<>|]', '_'
+
+        $shortcutPath = Join-Path $msSettingsOutputFolder "$sanitizedName.lnk"
+
+        $success = Create-MSSettings-Shortcut -fullName $fullShortcutName -shortcutPath $shortcutPath
+
+        if ($success) {
+            Write-Host "Created MS Settings Shortcut: $fullShortcutName"
+        } else {
+            Write-Host "Failed to create shortcut: $fullShortcutName"
+        }
+    }
+}
+
+if (-not $SkipURLProtocols){
+    Write-Host "`n----- Processing URL Protocols -----"
+    if ($AllURLProtocols){
+        $OnlyMicrosoftApps = $false
+    } else {
+        $OnlyMicrosoftApps = $true
+    }
+
+    $URLProtocolsData = Get-And-Process-URL-Protocols -CustomLanguageFolder $CustomLanguageFolderPath -OnlyMicrosoftApps:$OnlyMicrosoftApps -permanentProtocolsIgnore $permanentURIProtocols -GetExtraData:$CollectExtraURLProtocolInfo
+    #Write-Host "Found $($URLProtocolsData.Count) URL Protocols"
+    foreach ($protocol in $URLProtocolsData) {
+        # Check whether to use original icon path or derived icon
+        $iconPath = if ($protocol.DerivedIcon) {
+            $protocol.DerivedIcon
+        } else {
+            $protocol.IconPath
+        }
+        $success = Create-Protocol-Shortcut -protocol $protocol.Protocol -name $protocol.Name -command $protocol.Command -iconPath $iconPath -shortcutPath (Join-Path $URLProtocolLinksOutputFolder "$($protocol.Protocol).lnk")
+        if ($success) {
+            Write-Host "Created URL Protocol Shortcut: $($protocol.Name)"
+        } else {
+            Write-Host "Failed to create URL Protocol shortcut: $($protocol.Name)"
         }
     }
 }
