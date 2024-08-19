@@ -1,5 +1,8 @@
 # Get All Shell Folder Shortcuts Script (Aka "Super God Mode")
 #
+# Author: ThioJoe
+# GitHub Repo: https://github.com/ThioJoe/Windows-Super-God-Mode
+#
 # This PowerShell script is designed to find and create shortcuts for all special shell folders in Windows.
 # These folders can be identified through their unique Class Identifiers (CLSIDs) or by their names.
 # The script also generates CSV files listing these folders and associated tasks/links.
@@ -137,6 +140,8 @@ param(
     [switch]$Debug
 )
 
+$VERSION = "1.0.0"
+
 # If -Debug or -Verbose is used, set $DebugPreference and $VerbosePreference to Continue, otherwise set to SilentlyContinue.
 # This way it will show messages without stopping if -Debug is used and not otherwise
 if ($Verbose) {
@@ -157,12 +162,12 @@ function Show-SuperGodModeDialog {
     # Define tooltips here for easy editing
     $tooltips = @{
         # Use &#x0a; for line breaks in the tooltip text
-        DontGroupTasks = "Prevent grouping task shortcuts, meaning the application name won't be prepended to the task name in the shortcut file"
+        DontGroupTasks = "Prevent grouping task shortcuts, meaning the application name won't be &#x0a;prepended to the task name in the shortcut file"
         UseAlternativeCategoryNames = "Looks up alternative category names for task links to prepend to the task names"
         AllURLProtocols = "When creating shortcuts to URL protocols like 'ms-settings://', include third party &#x0a;URL protocols from installed software, not just Microsoft or system protocols"
         CollectExtraURLProtocolInfo = "Collects extra information about URL protocols that goes into the CSV spreadsheet. &#x0a;Optional because it is not used in the shortcuts and takes slightly longer."
-        KeepPreviousOutputFolders = "Doesn't delete existing output folders before running the script. It will still overwrite any existing shortcuts if being created again."
-        NoStatistics = "Skip creating the statistics folder and files containing CSV data about the shell folders and tasks and XML files with other collected data"
+        KeepPreviousOutputFolders = "Doesn't delete existing output folders before running the script. &#x0a;It will still overwrite any existing shortcuts if being created again."
+        NoStatistics = "Skip creating the statistics folder and files containing CSV data about the shell folders &#x0a;and tasks and XML files with other collected data"
         SkipCLSID = "Skip creating shortcuts for shell folders based on CLSIDs"
         SkipNamedFolders = "Skip creating shortcuts for named special folders"
         SkipTaskLinks = "Skip creating shortcuts for task links (sub-pages within shell folders and control panel menus)"
@@ -178,7 +183,30 @@ function Show-SuperGodModeDialog {
     <Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Super God Mode Options" Height="800" Width="550">
+        Title="Super God Mode Options" Height="675" Width="800">
+        <Window.Resources>
+            <Style x:Key="SubtleButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#0095ff"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Window.Resources>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -186,23 +214,34 @@ function Show-SuperGodModeDialog {
             </Grid.RowDefinitions>
 
             <Border Background="#007ACC" Grid.Row="0">
-                <StackPanel>
-                    <TextBlock Text="&quot;Super God Mode&quot; Script" FontSize="24" Foreground="White" HorizontalAlignment="Center" Margin="0,10,0,0"/>
-                    <TextBlock Text="For Windows" FontSize="16" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                </StackPanel>
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Text="&quot;Super God Mode&quot; Script" FontSize="24" Foreground="White" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                        <TextBlock Text="For Windows" FontSize="16" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    </StackPanel>
+                    <Button x:Name="btnAbout" Content="About" Style="{StaticResource SubtleButtonStyle}" 
+                            HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,10,0"/>
+                </Grid>
             </Border>
 
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="Hover over settings for details" FontStyle="Italic" HorizontalAlignment="Right" Margin="0,0,0,10" Grid.Row="0"/>
 
-                    <StackPanel Grid.Row="1">
-                        <GroupBox Header="Alternative Options" Margin="0,10">
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <GroupBox Header="Alternative Options" Margin="0,10,5,10" Grid.Column="0">
                             <StackPanel Margin="5">
                                 <CheckBox x:Name="chkDontGroupTasks" Content="Don't Group Tasks" Margin="0,5,0,0">
                                     <CheckBox.ToolTip>
@@ -227,27 +266,7 @@ function Show-SuperGodModeDialog {
                             </StackPanel>
                         </GroupBox>
 
-                        <GroupBox Header="Control Output" Margin="0,10">
-                            <StackPanel Margin="5">
-                                <CheckBox x:Name="chkKeepPreviousOutputFolders" Content="Don't Auto-Delete Existing Output Folders" Margin="0,5,0,0">
-                                    <CheckBox.ToolTip>
-                                        <ToolTip Content="$($tooltips.KeepPreviousOutputFolders)" />
-                                    </CheckBox.ToolTip>
-                                </CheckBox>
-                                <TextBlock Text="Output Directory:" Margin="0,10,0,5"/>
-                                <DockPanel LastChildFill="True" Margin="0,0,0,5">
-                                    <Button x:Name="btnBrowse" Content="Browse" DockPanel.Dock="Right" Margin="5,0,0,0" Padding="5,0"/>
-                                    <TextBox x:Name="txtOutputPath" IsReadOnly="True"/>
-                                </DockPanel>
-                                <TextBlock Text="Output Folder Name:" Margin="0,5,0,5"/>
-                                <TextBox x:Name="txtOutputFolderName" Margin="0,0,0,5"/>
-                                <Separator Margin="0,10,0,10"/>
-                                <TextBlock Text="Final Output Path:" Margin="0,5,0,5" FontWeight="Bold"/>
-                                <TextBlock x:Name="txtCurrentPath" Text="" Margin="0,0,0,10" TextWrapping="Wrap" FontWeight="Bold"/>
-                            </StackPanel>
-                        </GroupBox>
-
-                        <GroupBox Header="Limit Shortcut Creation" Margin="0,10">
+                        <GroupBox Header="Limit Shortcut Creation" Margin="5,10,0,10" Grid.Column="1">
                             <Grid Margin="5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -297,12 +316,36 @@ function Show-SuperGodModeDialog {
                                 </CheckBox>
                             </Grid>
                         </GroupBox>
+                    </Grid>
 
+                    <GroupBox Header="Control Output" Margin="0,10" Grid.Row="2">
+                        <StackPanel Margin="5">
+                            <CheckBox x:Name="chkKeepPreviousOutputFolders" Content="Don't Auto-Delete Existing Output Folders" Margin="0,5,0,0">
+                                <CheckBox.ToolTip>
+                                    <ToolTip Content="$($tooltips.KeepPreviousOutputFolders)" />
+                                </CheckBox.ToolTip>
+                            </CheckBox>
+                            <TextBlock Text="Output Directory:" Margin="0,10,0,5" />
+                            <DockPanel LastChildFill="True" Margin="0,0,0,5">
+                                <Button x:Name="btnBrowse" Content="Browse" DockPanel.Dock="Right" Margin="5,0,0,0" Padding="10,5" FontSize="14" MinWidth="100"/>
+                                <TextBox x:Name="txtOutputPath" IsReadOnly="True" Padding="5,0,0,0" VerticalContentAlignment="Center" FontSize="14" Height="30"/>
+                            </DockPanel>
+                            <TextBlock Text="Output Folder Name:" Margin="0,5,0,5"/>
+                            <TextBox x:Name="txtOutputFolderName" Margin="0,0,0,5" Padding="5,0,0,0" VerticalContentAlignment="Center" FontSize="14" Height="30"/>
+                            <Separator Margin="0,10,0,10"/>
+                            <TextBlock Text="Final Output Path:" Margin="0,5,0,5" FontWeight="Bold"/>
+                            <TextBlock x:Name="txtCurrentPath" Text="" Margin="0,0,0,10" TextWrapping="Wrap" FontWeight="Bold"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <StackPanel Grid.Row="3">
                         <TextBlock Text="ALL settings are optional - Leave them alone to use defaults" FontWeight="Bold" Foreground="Red" HorizontalAlignment="Center" Margin="0,10,0,10"/>
                         <Button x:Name="btnOK" Content="Run Script" Width="Auto" Height="Auto" FontSize="14" HorizontalAlignment="Center" Margin="0,10,0,10" Padding="10,5"/>
                     </StackPanel>
                 </Grid>
             </ScrollViewer>
+
+            <TextBlock x:Name="txtVersion" Text="Version: $VERSION" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,5" FontSize="12" Foreground="Gray"/>
         </Grid>
     </Window>
 "@
@@ -352,6 +395,24 @@ function Show-SuperGodModeDialog {
 
     $txtOutputPath.Add_TextChanged({ UpdateCurrentPath })
     $txtOutputFolderName.Add_TextChanged({ UpdateCurrentPath })
+
+    # After loading the XAML and before showing the window
+    $btnAbout = $window.FindName("btnAbout")
+    $btnAbout.Add_Click({
+        [System.Windows.MessageBox]::Show("
+    `"Super God Mode`" Script For Windows
+
+    Version: $VERSION
+    Author: ThioJoe
+
+    Source Code:
+    https://github.com/ThioJoe/Windows-Super-God-Mode
+    ",
+            "About Super God Mode Script",
+            [System.Windows.MessageBoxButton]::OK,
+            [System.Windows.MessageBoxImage]::Information
+        )
+    })
 
     function UpdateCurrentPath {
         $outputPath = $txtOutputPath.Text
