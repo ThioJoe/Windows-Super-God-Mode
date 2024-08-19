@@ -12,11 +12,11 @@
 #        .\Super_God_Mode.ps1
 # 4. Wait for it to finish, then check the "Shell Folder Shortcuts" folder for the generated shortcuts.
 
-# ******************************************************************************************************
-# ************************************ ARGUMENTS (ALL ARE OPTIONAL) ************************************
-# ******************************************************************************************************
+# ======================================================================================================
+# ===================================  ARGUMENTS (ALL ARE OPTIONAL)  ===================================
+# ======================================================================================================
 #
-# -----------------------------------------  Common Arguments  -----------------------------------------
+# ---------------------------------   Alternative Options Arguments   ----------------------------------
 #
 # -DontGroupTasks
 #     Switch (Takes no values)
@@ -68,7 +68,7 @@
 #
 # -SkipDeepLinks
 #     Switch (Takes no values)
-#     Skip creating shortcuts for deep links (links to specific settings pages within system settings)
+#     Skip creating shortcuts for deep links (direct links to various settings menus across Windows)
 #
 # -SkipURLProtocols
 #     Switch (Takes no values)
@@ -130,6 +130,266 @@ param(
     [switch]$UseAlternativeCategoryNames,
     [switch]$CollectExtraURLProtocolInfo
 )
+
+function Show-SuperGodModeDialog {
+    # Define tooltips here for easy editing
+    $tooltips = @{
+        # Use &#x0a; for line breaks in the tooltip text
+        DontGroupTasks = "Prevent grouping task shortcuts, meaning the application name won't be prepended to the task name in the shortcut file"
+        UseAlternativeCategoryNames = "Looks up alternative category names for task links to prepend to the task names"
+        AllURLProtocols = "When creating shortcuts to URL protocols like 'ms-settings://', include third party &#x0a;URL protocols from installed software, not just Microsoft or system protocols"
+        CollectExtraURLProtocolInfo = "Collects extra information about URL protocols that goes into the CSV spreadsheet. &#x0a;Optional because it is not used in the shortcuts and takes slightly longer."
+        KeepPreviousOutputFolders = "Doesn't delete existing output folders before running the script. It will still overwrite any existing shortcuts if being created again."
+        NoStatistics = "Skip creating the statistics folder and files containing CSV data about the shell folders and tasks and XML files with other collected data"
+        SkipCLSID = "Skip creating shortcuts for shell folders based on CLSIDs"
+        SkipNamedFolders = "Skip creating shortcuts for named special folders"
+        SkipTaskLinks = "Skip creating shortcuts for task links (sub-pages within shell folders and control panel menus)"
+        SkipMSSettings = "Skip creating shortcuts for ms-settings: links (system settings pages)"
+        SkipDeepLinks = "Skip creating shortcuts for deep links (direct links to various settings menus across Windows)"
+        SkipURLProtocols = "Skip creating shortcuts for URL protocols (e.g., ms-settings:, etc.)"
+    }
+
+    Add-Type -AssemblyName PresentationFramework
+    Add-Type -AssemblyName System.Windows.Forms
+
+    [xml]$xaml = @"
+    <Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Super God Mode Options" Height="800" Width="550">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Background="#007ACC" Grid.Row="0">
+                <StackPanel>
+                    <TextBlock Text="&quot;Super God Mode&quot; Script" FontSize="24" Foreground="White" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                    <TextBlock Text="Shortcut Creator" FontSize="16" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                </StackPanel>
+            </Border>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Hover over settings for details" FontStyle="Italic" HorizontalAlignment="Right" Margin="0,0,0,10" Grid.Row="0"/>
+
+                    <StackPanel Grid.Row="1">
+                        <GroupBox Header="Alternative Options" Margin="0,10">
+                            <StackPanel Margin="5">
+                                <CheckBox x:Name="chkDontGroupTasks" Content="Don't Group Tasks" Margin="0,5,0,0">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.DontGroupTasks)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
+                                <CheckBox x:Name="chkUseAlternativeCategoryNames" Content="Use Alternative Category Names" Margin="0,5,0,0">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.UseAlternativeCategoryNames)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
+                                <CheckBox x:Name="chkAllURLProtocols" Content="Include thirt-party app URL Protocols" Margin="0,5,0,0">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.AllURLProtocols)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
+                                <CheckBox x:Name="chkCollectExtraURLProtocolInfo" Content="Collect Extra URL Protocol Info" Margin="0,5,0,0">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.CollectExtraURLProtocolInfo)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox Header="Control Output" Margin="0,10">
+                            <StackPanel Margin="5">
+                                <CheckBox x:Name="chkKeepPreviousOutputFolders" Content="Keep Previous Output Folders" Margin="0,5,0,0">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.KeepPreviousOutputFolders)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
+                                <TextBlock Text="Output Directory:" Margin="0,10,0,5"/>
+                                <DockPanel LastChildFill="True" Margin="0,0,0,5">
+                                    <Button x:Name="btnBrowse" Content="Browse" DockPanel.Dock="Right" Margin="5,0,0,0" Padding="5,0"/>
+                                    <TextBox x:Name="txtOutputPath" IsReadOnly="True"/>
+                                </DockPanel>
+                                <TextBlock Text="Output Folder Name:" Margin="0,5,0,5"/>
+                                <TextBox x:Name="txtOutputFolderName" Margin="0,0,0,5"/>
+                                <Separator Margin="0,10,0,10"/>
+                                <TextBlock Text="Final Output Path:" Margin="0,5,0,5" FontWeight="Bold"/>
+                                <TextBlock x:Name="txtCurrentPath" Text="" Margin="0,0,0,10" TextWrapping="Wrap" FontWeight="Bold"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox Header="Limit Shortcut Creation" Margin="0,10">
+                            <Grid Margin="5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <CheckBox x:Name="chkNoStatistics" Content="Skip Statistics" Margin="0,5,5,5" Grid.Column="0" Grid.Row="0">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.NoStatistics)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
+                                <CheckBox x:Name="chkSkipCLSID" Content="Skip CLSID" Margin="5,5,0,5" Grid.Column="1" Grid.Row="0">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.SkipCLSID)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
+                                <CheckBox x:Name="chkSkipNamedFolders" Content="Skip Named Folders" Margin="0,5,5,5" Grid.Column="0" Grid.Row="1">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.SkipNamedFolders)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
+                                <CheckBox x:Name="chkSkipTaskLinks" Content="Skip Task Links" Margin="5,5,0,5" Grid.Column="1" Grid.Row="1">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.SkipTaskLinks)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
+                                <CheckBox x:Name="chkSkipMSSettings" Content="Skip MS Settings" Margin="0,5,5,5" Grid.Column="0" Grid.Row="2">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.SkipMSSettings)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
+                                <CheckBox x:Name="chkSkipDeepLinks" Content="Skip Deep Links" Margin="5,5,0,5" Grid.Column="1" Grid.Row="2">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.SkipDeepLinks)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
+                                <CheckBox x:Name="chkSkipURLProtocols" Content="Skip URL Protocols" Margin="0,5,5,5" Grid.Column="0" Grid.Row="3">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.SkipURLProtocols)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
+                            </Grid>
+                        </GroupBox>
+
+                        <TextBlock Text="ALL settings are optional - Leave them alone to use defaults" FontWeight="Bold" Foreground="Red" HorizontalAlignment="Center" Margin="0,10,0,10"/>
+                        <Button x:Name="btnOK" Content="  Run Script  " Width="75" HorizontalAlignment="Center" Margin="0,10,0,10"/>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+    </Window>
+"@
+
+    $reader = New-Object System.Xml.XmlNodeReader $xaml
+    $window = [Windows.Markup.XamlReader]::Load($reader)
+
+    $chkDontGroupTasks = $window.FindName("chkDontGroupTasks")
+    $chkUseAlternativeCategoryNames = $window.FindName("chkUseAlternativeCategoryNames")
+    $chkAllURLProtocols = $window.FindName("chkAllURLProtocols")
+    $chkCollectExtraURLProtocolInfo = $window.FindName("chkCollectExtraURLProtocolInfo")
+    $chkKeepPreviousOutputFolders = $window.FindName("chkKeepPreviousOutputFolders")
+    $chkNoStatistics = $window.FindName("chkNoStatistics")
+    $chkSkipCLSID = $window.FindName("chkSkipCLSID")
+    $chkSkipNamedFolders = $window.FindName("chkSkipNamedFolders")
+    $chkSkipTaskLinks = $window.FindName("chkSkipTaskLinks")
+    $chkSkipMSSettings = $window.FindName("chkSkipMSSettings")
+    $chkSkipDeepLinks = $window.FindName("chkSkipDeepLinks")
+    $chkSkipURLProtocols = $window.FindName("chkSkipURLProtocols")
+    $txtOutputPath = $window.FindName("txtOutputPath")
+    $txtCurrentPath = $window.FindName("txtCurrentPath")
+    $txtOutputFolderName = $window.FindName("txtOutputFolderName")
+    $btnBrowse = $window.FindName("btnBrowse")
+    $btnOK = $window.FindName("btnOK")
+
+    # Set default values
+    $defaultOutputPath = $PSScriptRoot
+    $defaultOutputFolderName = "Shell Folder Shortcuts"
+    $txtOutputPath.Text = $defaultOutputPath
+    $txtOutputFolderName.Text = $defaultOutputFolderName
+    $txtCurrentPath.Text = [System.IO.Path]::Combine($defaultOutputPath, $defaultOutputFolderName)
+
+    $btnBrowse.Add_Click({
+        $folderBrowser = New-Object System.Windows.Forms.OpenFileDialog
+        $folderBrowser.ValidateNames = $false
+        $folderBrowser.CheckFileExists = $false
+        $folderBrowser.CheckPathExists = $true
+        $folderBrowser.FileName = "Folder Selection"
+        $folderBrowser.Title = "Select Output Directory"
+        $folderBrowser.InitialDirectory = $txtOutputPath.Text
+        if ($folderBrowser.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+            $selectedPath = Split-Path $folderBrowser.FileName
+            $txtOutputPath.Text = $selectedPath
+            UpdateCurrentPath
+        }
+    })
+
+    $txtOutputPath.Add_TextChanged({ UpdateCurrentPath })
+    $txtOutputFolderName.Add_TextChanged({ UpdateCurrentPath })
+
+    function UpdateCurrentPath {
+        $outputPath = $txtOutputPath.Text
+        $folderName = $txtOutputFolderName.Text
+        if ([string]::IsNullOrWhiteSpace($folderName)) {
+            $folderName = $defaultOutputFolderName
+        }
+        $txtCurrentPath.Text = [System.IO.Path]::Combine($outputPath, $folderName)
+    }
+
+    $btnOK.Add_Click({
+        $window.DialogResult = $true
+        $window.Close()
+    })
+
+    $result = $window.ShowDialog()
+
+    if (-not $result) {
+        return $null
+    }
+
+    # Return script parameters based on GUI selections
+    return @{
+        DontGroupTasks = $chkDontGroupTasks.IsChecked
+        UseAlternativeCategoryNames = $chkUseAlternativeCategoryNames.IsChecked
+        AllURLProtocols = $chkAllURLProtocols.IsChecked
+        CollectExtraURLProtocolInfo = $chkCollectExtraURLProtocolInfo.IsChecked
+        KeepPreviousOutputFolders = $chkKeepPreviousOutputFolders.IsChecked
+        NoStatistics = $chkNoStatistics.IsChecked
+        SkipCLSID = $chkSkipCLSID.IsChecked
+        SkipNamedFolders = $chkSkipNamedFolders.IsChecked
+        SkipTaskLinks = $chkSkipTaskLinks.IsChecked
+        SkipMSSettings = $chkSkipMSSettings.IsChecked
+        SkipDeepLinks = $chkSkipDeepLinks.IsChecked
+        SkipURLProtocols = $chkSkipURLProtocols.IsChecked
+        Output = $txtCurrentPath.Text
+    }
+}
+
+# Usage example:
+if ($MyInvocation.BoundParameters.Count -eq 0) {
+    $params = Show-SuperGodModeDialog
+    if ($null -eq $params) {
+        exit
+    }
+    # Use $params here to set your script variables
+    $DontGroupTasks = $params.DontGroupTasks
+    $UseAlternativeCategoryNames = $params.UseAlternativeCategoryNames
+    $AllURLProtocols = $params.AllURLProtocols
+    $CollectExtraURLProtocolInfo = $params.CollectExtraURLProtocolInfo
+    $KeepPreviousOutputFolders = $params.KeepPreviousOutputFolders
+    $NoStatistics = $params.NoStatistics
+    $SkipCLSID = $params.SkipCLSID
+    $SkipNamedFolders = $params.SkipNamedFolders
+    $SkipTaskLinks = $params.SkipTaskLinks
+    $SkipMSSettings = $params.SkipMSSettings
+    $SkipDeepLinks = $params.SkipDeepLinks
+    $SkipURLProtocols = $params.SkipURLProtocols
+    $Output = $params.Output
+}
 
 # If -Debug is used, set $DebugPreference to Continue, otherwise set it to SilentlyContinue. This way it will show messages without stopping if -Debug is used and not otherwise
 if ($PSBoundParameters['Debug']) {
@@ -2612,5 +2872,3 @@ if ($CLSIDDisplayPath -or $namedFolderDisplayPath -or $taskLinksDisplayPath -or 
     $csvPrintString = "CSV files have been created at:" + "$CLSIDDisplayPath" + "$namedFolderDisplayPath" + "$taskLinksDisplayPath" + "$msSettingsDisplayPath" + "$deepLinksDisplayPath" + "$urlProtocolsDisplayPath" + "`n"
     Write-Host $csvPrintString
 }
-
-Write-Debug "This is a test and should only print in debug!"
