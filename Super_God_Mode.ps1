@@ -2066,47 +2066,8 @@ function Get-And-Process-URL-Protocols {
     #Sort the array by protocol name
     $urlProtocolDataOriginal = $urlProtocolDataOriginal | Sort-Object -Property Protocol
 
-    # $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-    # # Get package data for each protocol from the registry
-    # $protocolRegistryData = Get-AppDetails-From-Registry -urlProtocolData $urlProtocolDataOriginal
-    # Write-Host "Time taken to get registry data: $($stopwatch.Elapsed.TotalSeconds) seconds"
-
-    #$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $protocolAppxData = Get-AppDetails-From-AppxManifest -CustomLanguageFolder $CustomLanguageFolder -OnlyMicrosoftApps:$OnlyMicrosoftApps -GetExtraData:$GetExtraData
-    #Write-Host "Time taken to get appx data: $($stopwatch.Elapsed.TotalSeconds) seconds"
     Write-host "Appx Data Count: $($protocolAppxData.Count)"
-
-    # Merge $protocolAppxData into $urlProtocolDataOriginal where the protocol matches - Fill in property only if it is missing
-    # $urlProtocolDataPlusAppx = Make-DeepCopy $urlProtocolDataOriginal
-    # foreach ($protocol in $urlProtocolDataPlusAppx) {
-    #     $appxData = $protocolAppxData | Where-Object { $_.Protocol -eq $protocol.Protocol }
-    #     if ($appxData) {
-    #         if (-not $protocol.PackageName) {
-    #             $protocol.PackageName = $appxData.PackageName
-    #         }
-    #         if (-not $protocol.PackageFullName) {
-    #             $protocol.PackageFullName = $appxData.PackageFullName
-    #         }
-    #         if (-not $protocol.PackageAppKeyName) {
-    #             $protocol.PackageAppKeyName = $appxData.PackageAppKeyName
-    #         }
-    #         if (-not $protocol.PackageAppName) {
-    #             $protocol.PackageAppName = $appxData.PackageAppName
-    #         }
-    #         if (-not $protocol.PackageAppDescription) {
-    #             $protocol.PackageAppDescription = $appxData.PackageAppDescription
-    #         }
-    #         if (-not $protocol.Command) {
-    #             $protocol.Command = $appxData.Command
-    #         }
-    #         # if (-not $protocol.ClassID) {
-    #         #     $protocol.ClassID = $appxData.ClassID
-    #         # }
-    #         if (-not $protocol.IsMicrosoft) {
-    #             $protocol.IsMicrosoft = $appxData.IsMicrosoft
-    #         }
-    #     }
-    # }
 
     # This makes it so Appx details are preferred over original existing
     $urlProtocolDataPreferredAppx = Make-DeepCopy $urlProtocolDataOriginal
