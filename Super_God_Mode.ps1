@@ -107,7 +107,8 @@ param(
     [switch]$SkipDeepLinks,
     [switch]$SkipURLProtocols,
     [switch]$AllURLProtocols,
-    [switch]$UseAlternativeCategoryNames
+    [switch]$UseAlternativeCategoryNames,
+    [switch]$CollectExtraURLProtocolInfo
 )
 
 # If -Debug is used, set $DebugPreference to Continue, otherwise set it to SilentlyContinue. This way it will show messages without stopping if -Debug is used and not otherwise
@@ -1854,7 +1855,8 @@ function Get-AppDetails-From-Registry {
 function Get-AppDetails-From-AppxManifest {
     param(
         [string]$CustomLanguageFolder,
-        [switch]$OnlyMicrosoftApps
+        [switch]$OnlyMicrosoftApps,
+        [switch]$GetExtraData
     )
 
     $urlProtocolData = @()
@@ -1914,13 +1916,13 @@ function Get-AppDetails-From-AppxManifest {
                 $PackageName = $appx.Name
 
                 # See if it is necessary to get localized string for the various values if it starts with "ms-resource:"
-                if ($displayName -match '^ms-resource:') {
+                if ($displayName -match '^ms-resource:' -and $GetExtraData) {
                     $displayName = Get-LocalizedString -StringReference $displayName -AppxManifestPath $manifestPath -CustomLanguageFolder $CustomLanguageFolder
                 }
-                if ($description -match '^ms-resource:') {
+                if ($description -match '^ms-resource:' -and $GetExtraData) {
                     $description = Get-LocalizedString -StringReference $description -AppxManifestPath $manifestPath -CustomLanguageFolder $CustomLanguageFolder
                 }
-                if ($PackageName -match '^ms-resource:') {
+                if ($PackageName -match '^ms-resource:' -and $GetExtraData) {
                     $PackageName = Get-LocalizedString -StringReference $PackageName -AppxManifestPath $manifestPath -CustomLanguageFolder $CustomLanguageFolder
                 }
 
@@ -1968,7 +1970,8 @@ function Get-And-Process-URL-Protocols {
     param(
         [string]$CustomLanguageFolder,
         [switch]$OnlyMicrosoftApps,
-        [string[]]$permanentProtocolsIgnore
+        [string[]]$permanentProtocolsIgnore,
+        [switch]$GetExtraData
     )
     # Create object to store data. Will want to store multiple properties for each URL protocol
     $urlProtocols = @()
@@ -2064,9 +2067,10 @@ function Get-And-Process-URL-Protocols {
     # $protocolRegistryData = Get-AppDetails-From-Registry -urlProtocolData $urlProtocolDataOriginal
     # Write-Host "Time taken to get registry data: $($stopwatch.Elapsed.TotalSeconds) seconds"
 
-    # $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-    $protocolAppxData = Get-AppDetails-From-AppxManifest -CustomLanguageFolder $CustomLanguageFolder -OnlyMicrosoftApps $OnlyMicrosoftApps
-    # Write-Host "Time taken to get appx data: $($stopwatch.Elapsed.TotalSeconds) seconds"
+    #$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $protocolAppxData = Get-AppDetails-From-AppxManifest -CustomLanguageFolder $CustomLanguageFolder -OnlyMicrosoftApps:$OnlyMicrosoftApps -GetExtraData:$GetExtraData
+    #Write-Host "Time taken to get appx data: $($stopwatch.Elapsed.TotalSeconds) seconds"
+    Write-host "Appx Data Count: $($protocolAppxData.Count)"
 
     # Merge $protocolAppxData into $urlProtocolDataOriginal where the protocol matches - Fill in property only if it is missing
     # $urlProtocolDataPlusAppx = Make-DeepCopy $urlProtocolDataOriginal
@@ -2289,7 +2293,7 @@ if (-not $SkipURLProtocols){
         $OnlyMicrosoftApps = $true
     }
 
-    $URLProtocolsData = Get-And-Process-URL-Protocols -CustomLanguageFolder $CustomLanguageFolderPath -OnlyMicrosoftApps:$OnlyMicrosoftApps -permanentProtocolsIgnore $permanentURIProtocols
+    $URLProtocolsData = Get-And-Process-URL-Protocols -CustomLanguageFolder $CustomLanguageFolderPath -OnlyMicrosoftApps:$OnlyMicrosoftApps -permanentProtocolsIgnore $permanentURIProtocols -GetExtraData:$CollectExtraURLProtocolInfo
     #Write-Host "Found $($URLProtocolsData.Count) URL Protocols"
     foreach ($protocol in $URLProtocolsData) {
         # Check whether to use original icon path or derived icon

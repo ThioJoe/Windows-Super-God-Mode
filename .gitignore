@@ -401,3 +401,4 @@ FodyWeavers.xsd
 /Output
 /.Testing
 Extra Tools/SystemSettings-MS-Settings.txt
+*.bak
