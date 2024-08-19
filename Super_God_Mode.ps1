@@ -376,6 +376,7 @@ function Show-SuperGodModeDialog {
 
 # Start the GUI dialog if no parameters are provided
 if ($MyInvocation.BoundParameters.Count -eq 0 -and -not $NoGUI) {
+    Write-Host "`nUse the GUI window that just appeared to select any options and run the script.`n"
     $params = Show-SuperGodModeDialog
     if ($null -eq $params) {
         exit
@@ -395,6 +396,8 @@ if ($MyInvocation.BoundParameters.Count -eq 0 -and -not $NoGUI) {
     $SkipURLProtocols = $params.SkipURLProtocols
     $Output = $params.Output
 }
+
+Write-Host "Beginning script execution..." -ForegroundColor Green
 
 # If -Debug is used, set $DebugPreference to Continue, otherwise set it to SilentlyContinue. This way it will show messages without stopping if -Debug is used and not otherwise
 if ($PSBoundParameters['Debug']) {
