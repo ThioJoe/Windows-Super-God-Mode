@@ -185,9 +185,25 @@ function Show-SuperGodModeDialog {
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Super God Mode Options" Height="675" Width="800">
         <Window.Resources>
+            <Color x:Key="BackgroundColor">#1E1E1E</Color>
+            <Color x:Key="ForegroundColor">#CCCCCC</Color>
+            <Color x:Key="AccentColor">#0078D4</Color>
+            <Color x:Key="SecondaryBackgroundColor">#2D2D2D</Color>
+            <Color x:Key="BorderColor">#444444</Color>
+            <Color x:Key="WarningColor">#FF6B68</Color>
+            <Color x:Key="VersionColor">#888888</Color>
+
+            <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+            <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource ForegroundColor}"/>
+            <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+            <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="{StaticResource SecondaryBackgroundColor}"/>
+            <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+            <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
+            <SolidColorBrush x:Key="VersionBrush" Color="{StaticResource VersionColor}"/>
+
             <Style x:Key="SubtleButtonStyle" TargetType="Button">
                 <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="FontSize" Value="12"/>
                 <Setter Property="Cursor" Value="Hand"/>
@@ -202,18 +218,18 @@ function Show-SuperGodModeDialog {
                 </Setter>
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="#0095ff"/>
+                        <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
                     </Trigger>
                 </Style.Triggers>
             </Style>
         </Window.Resources>
-        <Grid>
+        <Grid Background="{StaticResource BackgroundBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Border Background="#007ACC" Grid.Row="0">
+            <Border Background="{StaticResource AccentBrush}" Grid.Row="0">
                 <Grid>
                     <StackPanel>
                         <TextBlock Text="&quot;Super God Mode&quot; Script" FontSize="24" Foreground="White" HorizontalAlignment="Center" Margin="0,10,0,0"/>
@@ -233,7 +249,7 @@ function Show-SuperGodModeDialog {
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="Hover over settings for details" FontStyle="Italic" HorizontalAlignment="Right" Margin="0,0,0,10" Grid.Row="0"/>
+                    <TextBlock Text="Hover over settings for details" FontStyle="Italic" HorizontalAlignment="Right" Margin="0,0,0,10" Grid.Row="0" Foreground="{StaticResource ForegroundBrush}"/>
 
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions>
@@ -241,24 +257,24 @@ function Show-SuperGodModeDialog {
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <GroupBox Header="Alternative Options" Margin="0,10,5,10" Grid.Column="0">
+                        <GroupBox Header="Alternative Options" Margin="0,10,5,10" Grid.Column="0" Foreground="{StaticResource ForegroundBrush}" BorderBrush="{StaticResource BorderBrush}">
                             <StackPanel Margin="5">
-                                <CheckBox x:Name="chkDontGroupTasks" Content="Don't Group Tasks" Margin="0,5,0,0">
+                                <CheckBox x:Name="chkDontGroupTasks" Content="Don't Group Tasks" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.DontGroupTasks)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkUseAlternativeCategoryNames" Content="Use Alternative Category Names" Margin="0,5,0,0">
+                                <CheckBox x:Name="chkUseAlternativeCategoryNames" Content="Use Alternative Category Names" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.UseAlternativeCategoryNames)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkAllURLProtocols" Content="Include thirt-party app URL Protocols" Margin="0,5,0,0">
+                                <CheckBox x:Name="chkAllURLProtocols" Content="Include third-party app URL Protocols" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.AllURLProtocols)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkCollectExtraURLProtocolInfo" Content="Collect Extra URL Protocol Info" Margin="0,5,0,0">
+                                <CheckBox x:Name="chkCollectExtraURLProtocolInfo" Content="Collect Extra URL Protocol Info" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.CollectExtraURLProtocolInfo)" />
                                     </CheckBox.ToolTip>
@@ -266,7 +282,7 @@ function Show-SuperGodModeDialog {
                             </StackPanel>
                         </GroupBox>
 
-                        <GroupBox Header="Limit Shortcut Creation" Margin="5,10,0,10" Grid.Column="1">
+                        <GroupBox Header="Limit Shortcut Creation" Margin="5,10,0,10" Grid.Column="1" Foreground="{StaticResource ForegroundBrush}" BorderBrush="{StaticResource BorderBrush}">
                             <Grid Margin="5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -279,37 +295,37 @@ function Show-SuperGodModeDialog {
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <CheckBox x:Name="chkNoStatistics" Content="Skip Statistics" Margin="0,5,5,5" Grid.Column="0" Grid.Row="0">
+                                <CheckBox x:Name="chkNoStatistics" Content="Skip Statistics" Margin="0,5,5,5" Grid.Column="0" Grid.Row="0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.NoStatistics)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkSkipCLSID" Content="Skip CLSID" Margin="5,5,0,5" Grid.Column="1" Grid.Row="0">
+                                <CheckBox x:Name="chkSkipCLSID" Content="Skip CLSID" Margin="5,5,0,5" Grid.Column="1" Grid.Row="0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.SkipCLSID)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkSkipNamedFolders" Content="Skip Named Folders" Margin="0,5,5,5" Grid.Column="0" Grid.Row="1">
+                                <CheckBox x:Name="chkSkipNamedFolders" Content="Skip Named Folders" Margin="0,5,5,5" Grid.Column="0" Grid.Row="1" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.SkipNamedFolders)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkSkipTaskLinks" Content="Skip Task Links" Margin="5,5,0,5" Grid.Column="1" Grid.Row="1">
+                                <CheckBox x:Name="chkSkipTaskLinks" Content="Skip Task Links" Margin="5,5,0,5" Grid.Column="1" Grid.Row="1" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.SkipTaskLinks)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkSkipMSSettings" Content="Skip MS Settings" Margin="0,5,5,5" Grid.Column="0" Grid.Row="2">
+                                <CheckBox x:Name="chkSkipMSSettings" Content="Skip MS Settings" Margin="0,5,5,5" Grid.Column="0" Grid.Row="2" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.SkipMSSettings)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkSkipDeepLinks" Content="Skip Deep Links" Margin="5,5,0,5" Grid.Column="1" Grid.Row="2">
+                                <CheckBox x:Name="chkSkipDeepLinks" Content="Skip Deep Links" Margin="5,5,0,5" Grid.Column="1" Grid.Row="2" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.SkipDeepLinks)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkSkipURLProtocols" Content="Skip URL Protocols" Margin="0,5,5,5" Grid.Column="0" Grid.Row="3">
+                                <CheckBox x:Name="chkSkipURLProtocols" Content="Skip URL Protocols" Margin="0,5,5,5" Grid.Column="0" Grid.Row="3" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.SkipURLProtocols)" />
                                     </CheckBox.ToolTip>
@@ -318,34 +334,34 @@ function Show-SuperGodModeDialog {
                         </GroupBox>
                     </Grid>
 
-                    <GroupBox Header="Control Output" Margin="0,10" Grid.Row="2">
+                    <GroupBox Header="Control Output" Margin="0,10" Grid.Row="2" Foreground="{StaticResource ForegroundBrush}" BorderBrush="{StaticResource BorderBrush}">
                         <StackPanel Margin="5">
-                            <CheckBox x:Name="chkKeepPreviousOutputFolders" Content="Don't Auto-Delete Existing Output Folders" Margin="0,5,0,0">
+                            <CheckBox x:Name="chkKeepPreviousOutputFolders" Content="Don't Auto-Delete Existing Output Folders" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
                                 <CheckBox.ToolTip>
                                     <ToolTip Content="$($tooltips.KeepPreviousOutputFolders)" />
                                 </CheckBox.ToolTip>
                             </CheckBox>
-                            <TextBlock Text="Output Directory:" Margin="0,10,0,5" />
+                            <TextBlock Text="Output Directory:" Margin="0,10,0,5" Foreground="{StaticResource ForegroundBrush}"/>
                             <DockPanel LastChildFill="True" Margin="0,0,0,5">
-                                <Button x:Name="btnBrowse" Content="Browse" DockPanel.Dock="Right" Margin="5,0,0,0" Padding="10,5" FontSize="14" MinWidth="100"/>
-                                <TextBox x:Name="txtOutputPath" IsReadOnly="True" Padding="5,0,0,0" VerticalContentAlignment="Center" FontSize="14" Height="30"/>
+                                <Button x:Name="btnBrowse" Content="Browse" DockPanel.Dock="Right" Margin="5,0,0,0" Padding="10,5" FontSize="14" MinWidth="100" Background="{StaticResource SecondaryBackgroundBrush}" Foreground="{StaticResource ForegroundBrush}"/>
+                                <TextBox x:Name="txtOutputPath" IsReadOnly="True" Padding="5,0,0,0" VerticalContentAlignment="Center" FontSize="14" Height="30" Background="{StaticResource SecondaryBackgroundBrush}" Foreground="{StaticResource ForegroundBrush}"/>
                             </DockPanel>
-                            <TextBlock Text="Output Folder Name:" Margin="0,5,0,5"/>
-                            <TextBox x:Name="txtOutputFolderName" Margin="0,0,0,5" Padding="5,0,0,0" VerticalContentAlignment="Center" FontSize="14" Height="30"/>
-                            <Separator Margin="0,10,0,10"/>
-                            <TextBlock Text="Final Output Path:" Margin="0,5,0,5" FontWeight="Bold"/>
-                            <TextBlock x:Name="txtCurrentPath" Text="" Margin="0,0,0,10" TextWrapping="Wrap" FontWeight="Bold"/>
+                            <TextBlock Text="Output Folder Name:" Margin="0,5,0,5" Foreground="{StaticResource ForegroundBrush}"/>
+                            <TextBox x:Name="txtOutputFolderName" Margin="0,0,0,5" Padding="5,0,0,0" VerticalContentAlignment="Center" FontSize="14" Height="30" Background="{StaticResource SecondaryBackgroundBrush}" Foreground="{StaticResource ForegroundBrush}"/>
+                            <Separator Margin="0,10,0,10" Background="{StaticResource BorderBrush}"/>
+                            <TextBlock Text="Final Output Path:" Margin="0,5,0,5" FontWeight="Bold" Foreground="{StaticResource ForegroundBrush}"/>
+                            <TextBlock x:Name="txtCurrentPath" Text="" Margin="0,0,0,10" TextWrapping="Wrap" FontWeight="Bold" Foreground="{StaticResource ForegroundBrush}"/>
                         </StackPanel>
                     </GroupBox>
 
                     <StackPanel Grid.Row="3">
-                        <TextBlock Text="ALL settings are optional - Leave them alone to use defaults" FontWeight="Bold" Foreground="Red" HorizontalAlignment="Center" Margin="0,10,0,10"/>
-                        <Button x:Name="btnOK" Content="Run Script" Width="Auto" Height="Auto" FontSize="14" HorizontalAlignment="Center" Margin="0,10,0,10" Padding="10,5"/>
+                        <TextBlock Text="ALL settings are optional - Leave them alone to use defaults" FontWeight="Bold" Foreground="{StaticResource WarningBrush}" HorizontalAlignment="Center" Margin="0,10,0,10"/>
+                        <Button x:Name="btnOK" Content="Run Script" Width="Auto" Height="Auto" FontSize="14" HorizontalAlignment="Center" Margin="0,10,0,10" Padding="10,5" Background="{StaticResource AccentBrush}" Foreground="White"/>
                     </StackPanel>
                 </Grid>
             </ScrollViewer>
 
-            <TextBlock x:Name="txtVersion" Text="Version: $VERSION" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,5" FontSize="12" Foreground="Gray"/>
+            <TextBlock x:Name="txtVersion" Text="Version: $VERSION" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,5" FontSize="12" Foreground="{StaticResource VersionBrush}"/>
         </Grid>
     </Window>
 "@
