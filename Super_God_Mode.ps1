@@ -404,7 +404,7 @@ function Get-LocalizedString {
     } else {
         Write-Verbose "Retrieving Resource: $StringReference"
     }
-    
+
     # Check if it's the special case with multiple concatenated references
     if ($StringReference -match '^\@\@') {
         $references = $StringReference -split '@' | Where-Object { $_ -ne '' }
@@ -811,6 +811,25 @@ function Create-Shortcut {
     }
 }
 
+function Check-File-For-Icon {
+    param (
+        [string]$filePath
+    )
+    try {
+        $hIcon = [IconExtractor]::ExtractIcon([IntPtr]::Zero, $filePath, 0)
+        if ($hIcon -ne [IntPtr]::Zero) {
+            Write-Verbose "Using embedded icon from $filePath"
+            $iconPath = $filePath + ",0"
+            [void][IconExtractor]::DestroyIcon($hIcon)
+            return $iconPath
+        } else {
+            Write-Verbose "No embedded icon found in $filePath"
+        }
+    } catch {
+        Write-Verbose "Failed to extract icon from $filePath`: $_"
+    }
+}
+
 function Get-TaskIcon {
     param (
         [string]$controlPanelName,
@@ -847,18 +866,7 @@ function Get-TaskIcon {
         # Check if it's an exe. Also don't use icons from a few specific executables like control.exe
         $ignoredExeFiles = @("control.exe", "rundll32.exe")
         if ($commandFileName -match '\.exe$' -and $ignoredExeFiles -notcontains $commandFileName) {
-            try {
-                $hIcon = [IconExtractor]::ExtractIcon([IntPtr]::Zero, $commandTarget, 0)
-                if ($hIcon -ne [IntPtr]::Zero) {
-                    Write-Verbose "Using embedded icon from $commandTarget"
-                    $iconPath = $commandTarget + ",0"
-                    [void][IconExtractor]::DestroyIcon($hIcon)
-                } else {
-                    Write-Verbose "No embedded icon found in $commandTarget"
-                }
-            } catch {
-                Write-Verbose "Failed to extract icon from $commandTarget`: $_"
-            }
+            $iconPath = Check-File-For-Icon -filePath $commandTarget
         }
         else {
             Write-Verbose "Command target is not an exe or is part of ignored exe list - Ignoring."
@@ -1825,11 +1833,19 @@ function Get-AppDetails-From-Registry {
 
 function Get-AppDetails-From-AppxManifest {
     param(
-        [string]$CustomLanguageFolder
+        [string]$CustomLanguageFolder,
+        [switch]$OnlyMicrosoftApps
     )
 
     $urlProtocolData = @()
     foreach ($appx in Get-AppxPackage) {
+        #$isMicrosoft = $appx.Publisher -match "^CN=Microsoft Corporation," -or $protocol -match "^ms-|^microsoft" -or $appx.PublisherId -eq "8wekyb3d8bbwe" -or $appx.PublisherId -eq "cw5n1h2txyewy"
+        $isMicrosoft = ($appx.PublisherId -eq "8wekyb3d8bbwe") -or ($appx.PublisherId -eq "cw5n1h2txyewy")
+
+        if ($OnlyMicrosoftApps -and -not $isMicrosoft) {
+            continue
+        }
+
         $location = $appx.InstallLocation
         $manifestPath = "$location\AppxManifest.xml"
         if ($null -ne $location  -and (Test-Path $manifestPath -PathType Leaf)) {
@@ -1888,15 +1904,12 @@ function Get-AppDetails-From-AppxManifest {
                     $PackageName = Get-LocalizedString -StringReference $PackageName -AppxManifestPath $manifestPath -CustomLanguageFolder $CustomLanguageFolder
                 }
 
-
-                #$isMicrosoft = $appx.Publisher -match "^CN=Microsoft Corporation," -or $protocol -match "^ms-|^microsoft" -or $appx.PublisherId -eq "8wekyb3d8bbwe" -or $appx.PublisherId -eq "cw5n1h2txyewy"
-                $isMicrosoft = ($appx.PublisherId -eq "8wekyb3d8bbwe") -or ($appx.PublisherId -eq "cw5n1h2txyewy")
-
                 $protocolData = [PSCustomObject]@{
                     Protocol = $protocol
                     Name = $displayName
                     Command = $command
                     IconPath = ""  # AppxManifest doesn't typically include icon paths
+                    DerivedIcon = ""
                     PackageName = $PackageName
                     PackageFullName = $appx.PackageFullName
                     PackageAppKeyName = $appId
@@ -1933,7 +1946,8 @@ function Make-DeepCopy {
 
 function Get-And-Process-URL-Protocols {
     param(
-        [string]$CustomLanguageFolder
+        [string]$CustomLanguageFolder,
+        [switch]$OnlyMicrosoftApps
     )
     # Create object to store data. Will want to store multiple properties for each URL protocol
     $urlProtocols = @()
@@ -2006,6 +2020,7 @@ function Get-And-Process-URL-Protocols {
                 Name = $protocolName
                 Command = $command
                 IconPath = $iconPath
+                DerivedIcon = ""
                 # Create empty properties for package data later
                 PackageName = ""
                 PackageFullName = ""
@@ -2023,48 +2038,46 @@ function Get-And-Process-URL-Protocols {
     #Sort the array by protocol name
     $urlProtocolDataOriginal = $urlProtocolDataOriginal | Sort-Object -Property Protocol
 
-    # Start timer to see how long function takes
-    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-    # Get package data for each protocol from the registry
-    $protocolRegistryData = Get-AppDetails-From-Registry -urlProtocolData $urlProtocolDataOriginal
-    Write-Host "Time taken to get registry data: $($stopwatch.Elapsed.TotalSeconds) seconds"
+    # $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    # # Get package data for each protocol from the registry
+    # $protocolRegistryData = Get-AppDetails-From-Registry -urlProtocolData $urlProtocolDataOriginal
+    # Write-Host "Time taken to get registry data: $($stopwatch.Elapsed.TotalSeconds) seconds"
 
-    # Alternative package data
-    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-    $protocolAppxData = Get-AppDetails-From-AppxManifest -CustomLanguageFolder $CustomLanguageFolder
-    Write-Host "Time taken to get appx data: $($stopwatch.Elapsed.TotalSeconds) seconds"
+    # $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $protocolAppxData = Get-AppDetails-From-AppxManifest -CustomLanguageFolder $CustomLanguageFolder -OnlyMicrosoftApps $OnlyMicrosoftApps
+    # Write-Host "Time taken to get appx data: $($stopwatch.Elapsed.TotalSeconds) seconds"
 
     # Merge $protocolAppxData into $urlProtocolDataOriginal where the protocol matches - Fill in property only if it is missing
-    $urlProtocolDataPlusAppx = Make-DeepCopy $urlProtocolDataOriginal
-    foreach ($protocol in $urlProtocolDataPlusAppx) {
-        $appxData = $protocolAppxData | Where-Object { $_.Protocol -eq $protocol.Protocol }
-        if ($appxData) {
-            if (-not $protocol.PackageName) {
-                $protocol.PackageName = $appxData.PackageName
-            }
-            if (-not $protocol.PackageFullName) {
-                $protocol.PackageFullName = $appxData.PackageFullName
-            }
-            if (-not $protocol.PackageAppKeyName) {
-                $protocol.PackageAppKeyName = $appxData.PackageAppKeyName
-            }
-            if (-not $protocol.PackageAppName) {
-                $protocol.PackageAppName = $appxData.PackageAppName
-            }
-            if (-not $protocol.PackageAppDescription) {
-                $protocol.PackageAppDescription = $appxData.PackageAppDescription
-            }
-            if (-not $protocol.Command) {
-                $protocol.Command = $appxData.Command
-            }
-            # if (-not $protocol.ClassID) {
-            #     $protocol.ClassID = $appxData.ClassID
-            # }
-            if (-not $protocol.IsMicrosoft) {
-                $protocol.IsMicrosoft = $appxData.IsMicrosoft
-            }
-        }
-    }
+    # $urlProtocolDataPlusAppx = Make-DeepCopy $urlProtocolDataOriginal
+    # foreach ($protocol in $urlProtocolDataPlusAppx) {
+    #     $appxData = $protocolAppxData | Where-Object { $_.Protocol -eq $protocol.Protocol }
+    #     if ($appxData) {
+    #         if (-not $protocol.PackageName) {
+    #             $protocol.PackageName = $appxData.PackageName
+    #         }
+    #         if (-not $protocol.PackageFullName) {
+    #             $protocol.PackageFullName = $appxData.PackageFullName
+    #         }
+    #         if (-not $protocol.PackageAppKeyName) {
+    #             $protocol.PackageAppKeyName = $appxData.PackageAppKeyName
+    #         }
+    #         if (-not $protocol.PackageAppName) {
+    #             $protocol.PackageAppName = $appxData.PackageAppName
+    #         }
+    #         if (-not $protocol.PackageAppDescription) {
+    #             $protocol.PackageAppDescription = $appxData.PackageAppDescription
+    #         }
+    #         if (-not $protocol.Command) {
+    #             $protocol.Command = $appxData.Command
+    #         }
+    #         # if (-not $protocol.ClassID) {
+    #         #     $protocol.ClassID = $appxData.ClassID
+    #         # }
+    #         if (-not $protocol.IsMicrosoft) {
+    #             $protocol.IsMicrosoft = $appxData.IsMicrosoft
+    #         }
+    #     }
+    # }
 
     # Version where appx details are preferred over original existing
     $urlProtocolDataPreferredAppx = Make-DeepCopy $urlProtocolDataOriginal
@@ -2079,13 +2092,58 @@ function Get-And-Process-URL-Protocols {
             $protocol.Command = $appxData.Command
             #$protocol.ClassID = $appxData.ClassID
             $protocol.IsMicrosoft = $appxData.IsMicrosoft
+            #$protocol.IconPath = $appxData.IconPath # Don't overwrite icon path, Appx doesn't contain icon paths
         }
     }
 
-    $urlProtocolData = $protocolRegistryData
+    # Which version to use
+    $urlProtocolData = $urlProtocolDataPreferredAppx
+
     # Now have all data in $urlProtocolData array, but we want to filter it
-    # Will only include protocols that are marked as Microsoft or are associated with a package
-    $filteredUrlProtocolData = $urlProtocolData | Where-Object { $_.IsMicrosoft -or $_.PackageName }
+    if ($OnlyMicrosoftApps) {
+        $filteredUrlProtocolData = $urlProtocolData | Where-Object { $_.IsMicrosoft }
+    # Will only include protocols that are marked as Microsoft or are associated with any package
+    } else {
+        $filteredUrlProtocolData = $urlProtocolData | Where-Object { $_.IsMicrosoft -or $_.PackageName }
+    }
+
+    # For remaining protocols, try to get icon from the command if it is a path to an executable
+    foreach ($protocol in $filteredUrlProtocolData) {
+        $iconSources = @()
+        # Some have multiple commands in an array so need to check each one
+        foreach ($command in $protocol.Command) {
+            # Check if it contains .exe or .cpl, but not rundll32.exe
+            if ($command -match '\.(exe|cpl)$' -and $command -notmatch 'rundll32\.exe') {
+                # Need to split on spaces and commas to separate possible arguments
+                $commandParts = $command -split '[\s,]'
+                # Check each part to see if it is a path to an executable or .cpl file, but not if it's rundll32.exe
+                foreach ($part in $commandParts) {
+                    if ($part -match '\.(exe|cpl)$' -and $part -notmatch 'rundll32\.exe') {
+                        $iconSources += $part
+                    }
+                }
+            }
+        }
+        # If there are any icon resources found, try each to see if they exist and check each for an icon
+        if ($iconSources) {
+            foreach ($iconTest in $iconSources) {
+                if (Test-Path $iconTest) {
+                    if (Check-File-For-Icon -FilePath $iconTest) {
+                        $protocol.DerivedIcon = $iconTest
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    # Remove references to png files in the icon path
+    foreach ($protocol in $filteredUrlProtocolData) {
+        # Need to use } because they would be resource references not pure paths
+        if ($protocol.IconPath -match '\.png}$') {
+            $protocol.IconPath = ""
+        }
+    }
 
     return $filteredUrlProtocolData
 }
@@ -2096,7 +2154,7 @@ function Create-URL-Protocols-CSVFile {
         [array]$urlProtocolsData
     )
 
-    $csvContent = "Protocol,Name,Command,IconPath,PackageName,PackageAppName,PackageAppDescription,IsMicrosoft`n"
+    $csvContent = "Protocol,Name,Command,Original Icon Path,Derived Icon,Package Name,Package AppName,Package AppD escription,IsMicrosoft`n"
 
     foreach ($item in $urlProtocolsData) {
         $protocol = $item.Protocol -replace '"', '""'
@@ -2110,13 +2168,18 @@ function Create-URL-Protocols-CSVFile {
         } else {
             "None"
         }
+        $derivedIcon = if ($item.DerivedIcon) {
+            "`"$($item.DerivedIcon -replace '"', '""')`""  # Escape double quotes in the icon path.
+        } else {
+            "None"
+        }
         $packageName = $item.PackageName -replace '"', '""'
         $packageAppName = $item.PackageAppName -replace '"', '""'
         $packageAppDescription = $item.PackageAppDescription -replace '"', '""'
         #$classID = $item.ClassID -replace '"', '""'
         $isMicrosoft = $item.IsMicrosoft
 
-        $csvContent += "`"$protocol`",`"$name`",`"$command`",$iconPath,`"$packageName`",`"$packageAppName`",`"$packageAppDescription`",$isMicrosoft`n"
+        $csvContent += "`"$protocol`",`"$name`",`"$command`",$iconPath,$derivedIcon,`"$packageName`",`"$packageAppName`",`"$packageAppDescription`",$isMicrosoft`n"
     }
 
     $csvContent | Out-File -FilePath $outputPath -Encoding utf8
@@ -2149,6 +2212,10 @@ function Create-Protocol-Shortcut{
                     Write-Verbose "Using default icon"
                     $shortcut.IconLocation = $iconPath
                 }
+            }
+            # If it's not a resource, just set it
+            else {
+                $shortcut.IconLocation = $iconPath
             }
         } else {
             Write-Verbose "No iconPath provided, using default"
@@ -2183,7 +2250,13 @@ if (-not $SkipURLProtocols){
     $URLProtocolsData = Get-And-Process-URL-Protocols
     #Write-Host "Found $($URLProtocolsData.Count) URL Protocols"
     foreach ($protocol in $URLProtocolsData) {
-        $success = Create-Protocol-Shortcut -protocol $protocol.Protocol -name $protocol.Name -command $protocol.Command -iconPath $protocol.IconPath -shortcutPath (Join-Path $URLProtocolLinksOutputFolder "$($protocol.Protocol).lnk")
+        # Check whether to use original icon path or derived icon
+        $iconPath = if ($protocol.DerivedIcon) {
+            $protocol.DerivedIcon
+        } else {
+            $protocol.IconPath
+        }
+        $success = Create-Protocol-Shortcut -protocol $protocol.Protocol -name $protocol.Name -command $protocol.Command -iconPath $iconPath -shortcutPath (Join-Path $URLProtocolLinksOutputFolder "$($protocol.Protocol).lnk")
         if ($success) {
             Write-Host "Created URL Protocol Shortcut: $($protocol.Name)"
         } else {
