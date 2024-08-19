@@ -115,7 +115,6 @@
 #       .\Super_God_Mode.ps1 -NoStatistics -CollectExtraURLProtocolInfo -Output "C:\Users\Username\Desktop\My Shortcuts"
 #
 # ------------------------------------------------------------------------------------------------------
-[CmdletBinding()]
 param(
     [switch]$DontGroupTasks,
     [switch]$NoStatistics,
@@ -133,9 +132,27 @@ param(
     [switch]$AllURLProtocols,
     [switch]$UseAlternativeCategoryNames,
     [switch]$CollectExtraURLProtocolInfo,
-    [switch]$NoGUI
+    [switch]$NoGUI,
+    [switch]$Verbose,
+    [switch]$Debug
 )
 
+# If -Debug or -Verbose is used, set $DebugPreference and $VerbosePreference to Continue, otherwise set to SilentlyContinue.
+# This way it will show messages without stopping if -Debug is used and not otherwise
+if ($Verbose) {
+    $VerbosePreference = 'Continue'
+} else { $VerbosePreference = 'SilentlyContinue' }
+
+if ($Debug) {
+    $DebugPreference = 'Continue'
+    $VerbosePreference = 'Continue' # If Debug is used, also enable Verbose
+} else { $DebugPreference = 'SilentlyContinue' }
+
+# ==============================================================================================================================
+# ==================================================  GUI FUNCTION  ============================================================
+# ==============================================================================================================================
+
+# Function to show a GUI dialog for selecting script options
 function Show-SuperGodModeDialog {
     # Define tooltips here for easy editing
     $tooltips = @{
@@ -379,6 +396,7 @@ if ($MyInvocation.BoundParameters.Count -eq 0 -and -not $NoGUI) {
     Write-Host "`nUse the GUI window that just appeared to select any options and run the script.`n"
     $params = Show-SuperGodModeDialog
     if ($null -eq $params) {
+        Write-host "Script GUI window appears to have been closed. Exiting script.`n" -ForegroundColor Yellow
         exit
     }
     # Use $params here to set your script variables
@@ -399,10 +417,9 @@ if ($MyInvocation.BoundParameters.Count -eq 0 -and -not $NoGUI) {
 
 Write-Host "Beginning script execution..." -ForegroundColor Green
 
-# If -Debug is used, set $DebugPreference to Continue, otherwise set it to SilentlyContinue. This way it will show messages without stopping if -Debug is used and not otherwise
-if ($PSBoundParameters['Debug']) {
-    $DebugPreference = "Continue"
-} else { $DebugPreference = "SilentlyContinue" }
+# ====================================================================================================================================
+# ==================================================  SCRIPT PREPARATION  ============================================================
+# ====================================================================================================================================
 
 # Set the output folder path for the generated shortcuts based on the provided argument or default location. Convert to full path if necessary
 if ($Output) {
@@ -646,6 +663,9 @@ if (-not $NoStatistics) {
     New-FolderWithIcon -FolderPath $statisticsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "3"
 }
 
+# ==================================================================================================================================
+# ==================================================  TYPE DEFINITIONS  ============================================================
+# ==================================================================================================================================
 
 # The following block adds necessary .NET types to PowerShell for later use.
 # The `Add-Type` cmdlet is used to add C# code that interacts with Windows API functions.
@@ -715,6 +735,10 @@ if (-not ([System.Management.Automation.PSTypeName]'Win32').Type) {
     }
 "@
 }
+
+# ======================================================================================================================================
+# ==================================================  FUNCTION DEFINITIONS  ============================================================
+# ======================================================================================================================================
 
 # Function: Get-LocalizedString
 # This function retrieves a localized (meaning in the user's language) string from a DLL based on a reference string given in the registry
@@ -2593,10 +2617,9 @@ function Format-FileGrid {
         Write-Host ($indentString + $prefix + ($row -join ""))
     }
 }
-
-# ---------------------------------------------- ----------------------------------------------------------------
-# ----------------------------------------------    Main Script    ----------------------------------------------
-# ---------------------------------------------- ----------------------------------------------------------------
+# =============================================================================================================================
+# ==================================================  MAIN SCRIPT  ============================================================
+# =============================================================================================================================
 
 # Create empty arrays for each type of data to be stored
 $clsidInfo = @()
@@ -2608,8 +2631,7 @@ $deepLinkData = @()
 $deepLinksProcessedData = @()
 $URLProtocolsData = @()
 
-
-
+# Loop for Deep Links
 if (-not $SkipDeepLinks -and $allSettingsXmlPath) {
     # Process other settings data
     $deepLinkData = Get-AllSettings-Data -xmlFilePath $allSettingsXmlPath -SaveXML:(!$NoStatistics)
@@ -2637,7 +2659,7 @@ if (-not $SkipDeepLinks -and $allSettingsXmlPath) {
     }
 }
 
-# If statement to check if CLSID is skipped by argument
+# Loop for CLSID Links
 if (-not $SkipCLSID) {
     # Retrieve all CLSIDs with a "ShellFolder" subkey from the registry.
     # These CLSIDs represent shell folders that are embedded within Windows.
@@ -2686,7 +2708,7 @@ if (-not $SkipCLSID) {
 
 }
 
-
+# Loop for special named folders
 if (-not $SkipNamedFolders) {
     # Retrieve all named special folders from the registry.
     $namedFolders = Get-ChildItem -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions"
@@ -2721,6 +2743,7 @@ if (-not $SkipNamedFolders) {
     }
 }
 
+# Loop for Task Links
 if (-not $SkipTaskLinks) {
     # Process Task Links - Use the extracted XML data from Shell32 to create shortcuts for task links
     Write-Host "`n -----Processing Task Links -----"
@@ -2799,6 +2822,7 @@ if (-not $SkipTaskLinks) {
     }
 }
 
+# Loop for MS-settings: Links
 if (-not $SkipMSSettings) {
     $msSettingsList = Get-MS-SettingsFrom-SystemSettingsDLL -DllPath $SystemSettingsDllPath
 
@@ -2830,6 +2854,7 @@ if (-not $SkipMSSettings) {
     }
 }
 
+# Loop for URL Protocols
 if (-not $SkipURLProtocols){
     Write-Host "`n----- Processing URL Protocols -----"
     if ($AllURLProtocols){
@@ -2855,6 +2880,10 @@ if (-not $SkipURLProtocols){
         }
     }
 }
+
+# ===================================================================================================================================
+# ==================================================  CSV FILE CREATION  ============================================================
+# ===================================================================================================================================
 
 # Create the CSV files using stored data. Skip each depending on the corresponding switch.
 if (-not $NoStatistics) {
@@ -2898,6 +2927,10 @@ if ($displayCsvFiles -or $displayXmlFiles) {
         Format-FileGrid -fileNames $displayXmlFiles -Indent 7
     }
 }
+
+# ================================================================================================================================
+# ==================================================  SCRIPT RESULTS  ============================================================
+# ================================================================================================================================
 
 # Output a message indicating that the script execution is complete and the CSV files have been created.
 Write-Host "`n------------------------------------------------"
