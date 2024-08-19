@@ -392,7 +392,7 @@ function Show-SuperGodModeDialog {
 }
 
 # Start the GUI dialog if no parameters are provided
-if ($MyInvocation.BoundParameters.Count -eq 0 -and -not $NoGUI) {
+if (-not $NoGUI) {
     Write-Host "`nUse the GUI window that just appeared to select any options and run the script.`n"
     $params = Show-SuperGodModeDialog
     if ($null -eq $params) {
