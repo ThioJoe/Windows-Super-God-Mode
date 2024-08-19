@@ -124,27 +124,33 @@
 #
 # ------------------------------------------------------------------------------------------------------
 param(
+    # Alternative Options Arguments
     [switch]$DontGroupTasks,
-    [switch]$NoStatistics,
-    [switch]$KeepPreviousOutputFolders,
-    [string]$CustomDLLPath,
-    [string]$CustomLanguageFolderPath,
-    [string]$CustomSystemSettingsDLLPath,
-    [string]$CustomAllSystemSettingsXMLPath,
+    [switch]$UseAlternativeCategoryNames,
+    [switch]$AllURLProtocols,
+    [switch]$CollectExtraURLProtocolInfo,
+    # Control Output
     [string]$Output,
+    [switch]$KeepPreviousOutputFolders,
+    # Arguments to Limit Shortcut Creation
+    [switch]$NoStatistics,
     [switch]$SkipCLSID,
     [switch]$SkipNamedFolders,
     [switch]$SkipTaskLinks,
     [switch]$SkipMSSettings,
     [switch]$SkipDeepLinks,
     [switch]$SkipURLProtocols,
-    [switch]$AllURLProtocols,
-    [switch]$UseAlternativeCategoryNames,
-    [switch]$CollectExtraURLProtocolInfo,
-    [switch]$NoGUI,
+    # Debugging
     [switch]$Verbose,
-    [switch]$Debug
+    [switch]$Debug,
+    # Advanced Arguments
+    [switch]$NoGUI,
+    [string]$CustomDLLPath,
+    [string]$CustomLanguageFolderPath,
+    [string]$CustomSystemSettingsDLLPath,
+    [string]$CustomAllSystemSettingsXMLPath
 )
+
 
 $VERSION = "1.0.0"
 
@@ -3086,3 +3092,5 @@ Write-Host $URLProtocolsData.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipURLProtocols) { "   (Skipped)" })
 
 Write-Host "`n------------------------------------------------`n"
+
+Read-Host "Press Enter to exit"
