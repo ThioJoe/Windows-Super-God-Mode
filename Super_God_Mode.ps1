@@ -1703,6 +1703,126 @@ function Create-Deep-Link-CSVFile {
     $csvContent | Out-File -FilePath $outputPath -Encoding utf8
 }
 
+function Get-AppDetails-From-Registry {
+    param(
+        [Array]$urlProtocolData
+    )
+
+    # Make a deep copy of the input data
+    $localUrlProtocolData = Make-DeepCopy $urlProtocolData
+
+    # Gather protocol info from other registry locations to add to the data
+    # For installed package Protocols, look in HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages
+    # Search app subkeys for Capabilities > URLAssociations. Where entry besides (Default) will be named as the protocol, and will have value of the app class id
+
+    # For debugging
+    #$originalProtocolData = Make-DeepCopy $localUrlProtocolData
+    #$regPackageDataOnlyArray = @() # Stores only data from packages, mostly for debugging
+
+    $packagesRegPath = 'Registry::HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages'
+    # Get subkeys of the Package key but only where the URLAssociations key exists at Package/WhateverPackage/AppName/Capabilities/URLAssociations and the key has a value besides (Default)
+    Get-ChildItem -Path $packagesRegPath -ErrorAction SilentlyContinue | ForEach-Object {
+        $packagePath = $_.PSPath
+        $packageFullName = $_.PSChildName
+        $packageApps = Get-ChildItem -Path $packagePath
+        # Get subkeys of the package
+        foreach ($app in $packageApps) {
+            # Truncate until the _ to get the package name
+            $packageName = $_.PSChildName -replace '_.*$'
+            $packageAppKeyName = $app.PSChildName
+            $capabilitiesPath = Join-Path $app.PSPath "Capabilities"
+            $urlAssociationsPath = Join-Path $capabilitiesPath "URLAssociations"
+
+            if (Test-Path $urlAssociationsPath) {
+                $urlAssociations = Get-ItemProperty -Path $urlAssociationsPath -ErrorAction SilentlyContinue
+
+                # Get the properties but exclude the built in PSObject properties, leaving only the subkeys that are the protocol names
+                $urlAssociations.PSObject.Properties | Where-Object { $_.Name -notin @("PSPath", "PSParentPath", "PSChildName", "PSDrive", "PSProvider") } | ForEach-Object {
+                    $protocol = $_.Name
+                    $appClassId = $_.Value
+
+                    # Get the ApplicationName and ApplicationDescription values from Capabilities key value
+                    $packageLocalizedAppName = Get-ItemProperty -Path $capabilitiesPath -Name "ApplicationName" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty ApplicationName
+                    $packageLocalizedAppDescription = Get-ItemProperty -Path $capabilitiesPath -Name "ApplicationDescription" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty ApplicationDescription
+
+                    # Get the PackageRootFolder value
+                    $packageRootFolder = Get-ItemProperty -Path $packagePath -Name "PackageRootFolder" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty PackageRootFolder
+                    # Append AppxManifest.xml to the path to get the full path to the manifest
+                    $appxManifestPath = Join-Path $packageRootFolder "AppxManifest.xml"
+
+                    # If a displayname exists and starts with ms-resource: or @ then it needs to be resolved. It is an entry in the root of the packages path in the registry key
+                    $packageLocalizedDisplayName = Get-ItemProperty -Path $packagePath -Name "DisplayName" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty DisplayName
+                    if ($packageLocalizedDisplayName -match '^ms-resource:|^@') {
+                        $packageLocalizedDisplayName = Get-LocalizedString -StringReference $packageLocalizedDisplayName -AppxManifestPath $appxManifestPath
+                    }
+
+                    # If the values start with @{ they are a resource and need to be resolved. If they fail just set them blank
+                    if ($packageLocalizedAppName -match '^@{') {
+                        try{
+                            $packageLocalizedAppName = Get-LocalizedString -StringReference $packageLocalizedAppName
+                        } catch {
+                            $packageLocalizedAppName = ""
+                        }
+                    }
+                    if ($packageLocalizedAppDescription -match '^@{') {
+                        try {
+                            $packageLocalizedAppDescription = Get-LocalizedString -StringReference $packageLocalizedAppDescription
+                        } catch {
+                            $packageLocalizedAppDescription = ""
+                        }
+                    }
+
+                    # Check if the protocol is already in the list, if so merge the data, otherwise create a new object to add to $localUrlProtocolData
+                    if ($localUrlProtocolData.Protocol -contains $protocol) {
+                        # Find the existing object and update the PackageName and ClassID properties
+                        $existingProtocol = $localUrlProtocolData | Where-Object { $_.Protocol -eq $protocol }
+                        $existingProtocol.PackageName = $packageName
+                        $existingProtocol.PackageFullName = $packageFullName
+                        $existingProtocol.PackageAppName = $packageLocalizedAppName
+                        $existingProtocol.PackageAppDescription = $packageLocalizedAppDescription
+                        $existingProtocol.ClassID = $appClassId
+                        $existingProtocol.PackageAppKeyName = $packageAppKeyName
+
+                         # If the package name starts with Microsoft* or Windows then it's a Microsoft package, update the IsMicrosoft property
+                        if ($packageName -match '^Microsoft|^Windows') {
+                            $existingProtocol.IsMicrosoft = $true
+                        }
+                    } else {
+                        # Determine if microsoft by checking protocol name
+                        $isMicrosoft = $false
+                        if ($protocol -match '^ms-|^microsoft', 'IgnoreCase') {
+                            $isMicrosoft = $true
+                        }
+                        # If the package name starts with Microsoft* or Windows then it's a Microsoft package
+                        if ($packageName -match '^Microsoft|^Windows') {
+                            $isMicrosoft = $true
+                        }
+                        $packageProtocolData = $null
+                        # Create a new object to store the URL protocol data
+                        $packageProtocolData = [PSCustomObject]@{
+                            Protocol = $protocol
+                            Name = $packageLocalizedAppName
+                            Command = ""
+                            IconPath = ""
+                            PackageName = $packageName
+                            PackageFullName = $packageFullName
+                            PackageAppKeyName = $packageAppKeyName
+                            PackageAppName = $packageLocalizedAppName
+                            PackageAppDescription = $packageLocalizedAppDescription
+                            ClassID = $appClassId
+                            IsMicrosoft = $isMicrosoft
+                        }
+                        #$regPackageDataOnlyArray += $packageProtocolData # For debugging
+                        $localUrlProtocolData += $packageProtocolData
+                    }
+                }
+            }
+        }
+    }
+
+    return $localUrlProtocolData
+}
+
 function Get-AppDetails-From-AppxManifest {
     param(
         [string]$CustomLanguageFolder
@@ -1764,6 +1884,7 @@ function Get-AppDetails-From-AppxManifest {
                     Command = $command
                     IconPath = ""  # AppxManifest doesn't typically include icon paths
                     PackageName = $PackageName
+                    PackageFullName = $appx.PackageFullName
                     PackageAppKeyName = $appId
                     PackageAppName = $displayName
                     PackageAppDescription = $description
@@ -1801,7 +1922,7 @@ function Get-And-Process-URL-Protocols {
     )
     # Create object to store data. Will want to store multiple properties for each URL protocol
     $urlProtocols = @()
-    $urlProtocolData = @()
+    $urlProtocolDataOriginal = @()
 
     Write-Verbose "Gathering URL Protocol data from the registry"
     $urlProtocols = @{}
@@ -1872,6 +1993,7 @@ function Get-And-Process-URL-Protocols {
                 IconPath = $iconPath
                 # Create empty properties for package data later
                 PackageName = ""
+                PackageFullName = ""
                 PackageAppKeyName = ""
                 PackageAppName = ""
                 PackageAppDescription = ""
@@ -1880,111 +2002,72 @@ function Get-And-Process-URL-Protocols {
             }
 
             # Add the URL protocol data object to the array
-            $urlProtocolData += $urlProtocol
+            $urlProtocolDataOriginal += $urlProtocol
         }
 
     #Sort the array by protocol name
-    $urlProtocolData = $urlProtocolData | Sort-Object -Property Protocol
+    $urlProtocolDataOriginal = $urlProtocolDataOriginal | Sort-Object -Property Protocol
 
-    # Gather protocol info from other registry locations to add to the data
-    # For installed package Protocols, look in HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages
-    # Search app subkeys for Capabilities > URLAssociations. Where entry besides (Default) will be named as the protocol, and will have value of the app class id
-
-    # For debugging
-    #$originalProtocolData = Make-DeepCopy $urlProtocolData
-    #$regPackageDataOnlyArray = @() # Stores only data from packages, mostly for debugging
-
-    $packagesRegPath = 'Registry::HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages'
-    # Get subkeys of the Package key but only where the URLAssociations key exists at Package/WhateverPackage/AppName/Capabilities/URLAssociations and the key has a value besides (Default)
-    Get-ChildItem -Path $packagesRegPath -ErrorAction SilentlyContinue | ForEach-Object {
-        $packagePath = $_.PSPath
-        $packageName = $_.PSChildName
-        $packageApps = Get-ChildItem -Path $packagePath
-        # Get subkeys of the package
-        foreach ($app in $packageApps) {
-            $packageAppKeyName = $app.PSChildName
-            $capabilitiesPath = Join-Path $app.PSPath "Capabilities"
-            $urlAssociationsPath = Join-Path $capabilitiesPath "URLAssociations"
-
-
-            if (Test-Path $urlAssociationsPath) {
-                $urlAssociations = Get-ItemProperty -Path $urlAssociationsPath -ErrorAction SilentlyContinue
-
-                # Get the properties but exclude the built in PSObject properties, leaving only the subkeys that are the protocol names
-                $urlAssociations.PSObject.Properties | Where-Object { $_.Name -notin @("PSPath", "PSParentPath", "PSChildName", "PSDrive", "PSProvider") } | ForEach-Object {
-                    $protocol = $_.Name
-                    $appClassId = $_.Value
-
-                    # Get the ApplicationName and ApplicationDescription values from Capabilities key value
-                    $packageLocalizedAppName = Get-ItemProperty -Path $capabilitiesPath -Name "ApplicationName" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty ApplicationName
-                    $packageLocalizedAppDescription = Get-ItemProperty -Path $capabilitiesPath -Name "ApplicationDescription" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty ApplicationDescription
-
-                    # If the values start with @{ they are a resource and need to be resolved. If they fail just set them blank
-                    if ($packageLocalizedAppName -match '^@{') {
-                        try{
-                            $packageLocalizedAppName = Get-LocalizedString -StringReference $packageLocalizedAppName
-                        } catch {
-                            $packageLocalizedAppName = ""
-                        }
-                    }
-                    if ($packageLocalizedAppDescription -match '^@{') {
-                        try {
-                            $packageLocalizedAppDescription = Get-LocalizedString -StringReference $packageLocalizedAppDescription
-                        } catch {
-                            $packageLocalizedAppDescription = ""
-                        }
-                    }
-
-                    # Check if the protocol is already in the list, if so merge the data, otherwise create a new object to add to $urlProtocolData
-                    if ($urlProtocolData.Protocol -contains $protocol) {
-                        # Find the existing object and update the PackageName and ClassID properties
-                        $existingProtocol = $urlProtocolData | Where-Object { $_.Protocol -eq $protocol }
-                        $existingProtocol.PackageName = $packageName
-                        $existingProtocol.PackageAppName = $packageLocalizedAppName
-                        $existingProtocol.PackageAppDescription = $packageLocalizedAppDescription
-                        $existingProtocol.ClassID = $appClassId
-                        $existingProtocol.PackageAppKeyName = $packageAppKeyName
-
-                         # If the package name starts with Microsoft* or Windows then it's a Microsoft package, update the IsMicrosoft property
-                        if ($packageName -match '^Microsoft|^Windows') {
-                            $existingProtocol.IsMicrosoft = $true
-                        }
-                    } else {
-                        # Determine if microsoft by checking protocol name
-                        $isMicrosoft = $false
-                        if ($protocol -match '^ms-|^microsoft', 'IgnoreCase') {
-                            $isMicrosoft = $true
-                        }
-                        # If the package name starts with Microsoft* or Windows then it's a Microsoft package
-                        if ($packageName -match '^Microsoft|^Windows') {
-                            $isMicrosoft = $true
-                        }
-                        $packageProtocolData = $null
-                        # Create a new object to store the URL protocol data
-                        $packageProtocolData = [PSCustomObject]@{
-                            Protocol = $protocol
-                            Name = $packageLocalizedAppName
-                            Command = ""
-                            IconPath = ""
-                            PackageName = $packageName
-                            PackageAppKeyName = $packageAppKeyName
-                            PackageAppName = $packageLocalizedAppName
-                            PackageAppDescription = $packageLocalizedAppDescription
-                            ClassID = $appClassId
-                            IsMicrosoft = $isMicrosoft
-                        }
-                        #$regPackageDataOnlyArray += $packageProtocolData # For debugging
-                        $urlProtocolData += $packageProtocolData
-                    }
-                }
-            }
-        }
-
-    }
+    # Start timer to see how long function takes
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    # Get package data for each protocol from the registry
+    $protocolRegistryData = Get-AppDetails-From-Registry -urlProtocolData $urlProtocolDataOriginal
+    Write-Host "Time taken to get registry data: $($stopwatch.Elapsed.TotalSeconds) seconds"
 
     # Alternative package data
-    $altTestData = Get-AppDetails-From-AppxManifest -CustomLanguageFolder $CustomLanguageFolder
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $protocolAppxData = Get-AppDetails-From-AppxManifest -CustomLanguageFolder $CustomLanguageFolder
+    Write-Host "Time taken to get appx data: $($stopwatch.Elapsed.TotalSeconds) seconds"
 
+    # Merge $protocolAppxData into $urlProtocolDataOriginal where the protocol matches - Fill in property only if it is missing
+    $urlProtocolDataPlusAppx = Make-DeepCopy $urlProtocolDataOriginal
+    foreach ($protocol in $urlProtocolDataPlusAppx) {
+        $appxData = $protocolAppxData | Where-Object { $_.Protocol -eq $protocol.Protocol }
+        if ($appxData) {
+            if (-not $protocol.PackageName) {
+                $protocol.PackageName = $appxData.PackageName
+            }
+            if (-not $protocol.PackageFullName) {
+                $protocol.PackageFullName = $appxData.PackageFullName
+            }
+            if (-not $protocol.PackageAppKeyName) {
+                $protocol.PackageAppKeyName = $appxData.PackageAppKeyName
+            }
+            if (-not $protocol.PackageAppName) {
+                $protocol.PackageAppName = $appxData.PackageAppName
+            }
+            if (-not $protocol.PackageAppDescription) {
+                $protocol.PackageAppDescription = $appxData.PackageAppDescription
+            }
+            if (-not $protocol.Command) {
+                $protocol.Command = $appxData.Command
+            }
+            if (-not $protocol.ClassID) {
+                $protocol.ClassID = $appxData.ClassID
+            }
+            if (-not $protocol.IsMicrosoft) {
+                $protocol.IsMicrosoft = $appxData.IsMicrosoft
+            }
+        }
+    }
+
+    # Version where appx details are preferred over original existing
+    $urlProtocolDataPreferredAppx = Make-DeepCopy $urlProtocolDataOriginal
+    foreach ($protocol in $urlProtocolDataPreferredAppx) {
+        $appxData = $protocolAppxData | Where-Object { $_.Protocol -eq $protocol.Protocol }
+        if ($appxData) {
+            $protocol.PackageName = $appxData.PackageName
+            $protocol.PackageFullName = $appxData.PackageFullName
+            $protocol.PackageAppKeyName = $appxData.PackageAppKeyName
+            $protocol.PackageAppName = $appxData.PackageAppName
+            $protocol.PackageAppDescription = $appxData.PackageAppDescription
+            $protocol.Command = $appxData.Command
+            $protocol.ClassID = $appxData.ClassID
+            $protocol.IsMicrosoft = $appxData.IsMicrosoft
+        }
+    }
+
+    $urlProtocolData = $protocolRegistryData
     # Now have all data in $urlProtocolData array, but we want to filter it
     # Will only include protocols that are marked as Microsoft or are associated with a package
     $filteredUrlProtocolData = $urlProtocolData | Where-Object { $_.IsMicrosoft -or $_.PackageName }
