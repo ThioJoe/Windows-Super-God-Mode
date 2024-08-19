@@ -183,13 +183,13 @@ function Show-SuperGodModeDialog {
     <Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Super God Mode Options" Height="675" Width="800">
+        Title="Super God Mode Options" Height="685" Width="800">
         <Window.Resources>
             <Color x:Key="BackgroundColor">#1E1E1E</Color>
             <Color x:Key="ForegroundColor">#CCCCCC</Color>
             <Color x:Key="AccentColor">#0078D4</Color>
             <Color x:Key="SecondaryBackgroundColor">#2D2D2D</Color>
-            <Color x:Key="BorderColor">#444444</Color>
+            <Color x:Key="BorderColor">#3F3F3F</Color>
             <Color x:Key="WarningColor">#FF6B68</Color>
             <Color x:Key="VersionColor">#888888</Color>
 
@@ -200,6 +200,33 @@ function Show-SuperGodModeDialog {
             <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
             <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
             <SolidColorBrush x:Key="VersionBrush" Color="{StaticResource VersionColor}"/>
+
+            <Thickness x:Key="BorderThickness">1</Thickness>
+            <Thickness x:Key="GroupBoxPadding">5</Thickness>
+
+            <Style x:Key="DarkModeGroupBoxStyle" TargetType="GroupBox">
+                <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                <Setter Property="BorderThickness" Value="{StaticResource BorderThickness}"/>
+                <Setter Property="Padding" Value="{StaticResource GroupBoxPadding}"/>
+                <Setter Property="Margin" Value="0,10,0,10"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="GroupBox">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Grid.Row="0" Grid.RowSpan="2"/>
+                                <Border Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="{TemplateBinding BorderThickness}" Grid.Row="1">
+                                    <ContentPresenter Margin="{TemplateBinding Padding}"/>
+                                </Border>
+                                <TextBlock Margin="5,0,0,0" Padding="3,0,3,0" Background="{StaticResource BackgroundBrush}" HorizontalAlignment="Left" VerticalAlignment="Top" TextElement.Foreground="{StaticResource ForegroundBrush}" Text="{TemplateBinding Header}"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
             <Style x:Key="SubtleButtonStyle" TargetType="Button">
                 <Setter Property="Background" Value="Transparent"/>
@@ -257,24 +284,24 @@ function Show-SuperGodModeDialog {
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <GroupBox Header="Alternative Options" Margin="0,10,5,10" Grid.Column="0" Foreground="{StaticResource ForegroundBrush}" BorderBrush="{StaticResource BorderBrush}">
+                        <GroupBox Header="Alternative Options" Grid.Column="0" Style="{StaticResource DarkModeGroupBoxStyle}">
                             <StackPanel Margin="5">
-                                <CheckBox x:Name="chkDontGroupTasks" Content="Don't Group Tasks" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkDontGroupTasks" Content="Don't Group Tasks" Margin="0,5,0,5" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.DontGroupTasks)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkUseAlternativeCategoryNames" Content="Use Alternative Category Names" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkUseAlternativeCategoryNames" Content="Use Alternative Category Names" Margin="0,5,0,5" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.UseAlternativeCategoryNames)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkAllURLProtocols" Content="Include third-party app URL Protocols" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkAllURLProtocols" Content="Include third-party app URL Protocols" Margin="0,5,0,5" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.AllURLProtocols)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkCollectExtraURLProtocolInfo" Content="Collect Extra URL Protocol Info" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkCollectExtraURLProtocolInfo" Content="Collect Extra URL Protocol Info" Margin="0,5,0,5" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.CollectExtraURLProtocolInfo)" />
                                     </CheckBox.ToolTip>
@@ -282,7 +309,7 @@ function Show-SuperGodModeDialog {
                             </StackPanel>
                         </GroupBox>
 
-                        <GroupBox Header="Limit Shortcut Creation" Margin="5,10,0,10" Grid.Column="1" Foreground="{StaticResource ForegroundBrush}" BorderBrush="{StaticResource BorderBrush}">
+                        <GroupBox Header="Limit Shortcut Creation" Grid.Column="1" Style="{StaticResource DarkModeGroupBoxStyle}">
                             <Grid Margin="5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -334,7 +361,7 @@ function Show-SuperGodModeDialog {
                         </GroupBox>
                     </Grid>
 
-                    <GroupBox Header="Control Output" Margin="0,10" Grid.Row="2" Foreground="{StaticResource ForegroundBrush}" BorderBrush="{StaticResource BorderBrush}">
+                    <GroupBox Header="Control Output" Grid.Row="2" Style="{StaticResource DarkModeGroupBoxStyle}">
                         <StackPanel Margin="5">
                             <CheckBox x:Name="chkKeepPreviousOutputFolders" Content="Don't Auto-Delete Existing Output Folders" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
                                 <CheckBox.ToolTip>
@@ -361,7 +388,7 @@ function Show-SuperGodModeDialog {
                 </Grid>
             </ScrollViewer>
 
-            <TextBlock x:Name="txtVersion" Text="Version: $VERSION" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,5" FontSize="12" Foreground="{StaticResource VersionBrush}"/>
+            <TextBlock x:Name="txtVersion" Text="Version: $VERSION" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,5" FontSize="12" Foreground="{StaticResource VersionBrush}"/>
         </Grid>
     </Window>
 "@
