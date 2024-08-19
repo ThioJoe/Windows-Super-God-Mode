@@ -129,7 +129,7 @@ if ($Output) {
 
 # Construct paths for subfolders
 $CLSIDshortcutsOutputFolder = Join-Path $mainShortcutsFolder "CLSID Shell Folder Shortcuts"
-$namedShortcutsOutputFolder = Join-Path $mainShortcutsFolder "Named Shell Folder Shortcuts"
+$namedShortcutsOutputFolder = Join-Path $mainShortcutsFolder "Special Named Folders"
 $taskLinksOutputFolder = Join-Path $mainShortcutsFolder "All Task Links"
 $msSettingsOutputFolder = Join-Path $mainShortcutsFolder "System Settings"
 $deepLinksOutputFolder = Join-Path $mainShortcutsFolder "Deep Links"
@@ -1728,6 +1728,7 @@ function Create-Deep-Link-CSVFile {
     $csvContent | Out-File -FilePath $outputPath -Encoding utf8
 }
 
+# Currently unused in favor of Get-AppDetails-From-AppxManifest
 function Get-AppDetails-From-Registry {
     param(
         [Array]$urlProtocolData
@@ -2100,7 +2101,7 @@ function Get-And-Process-URL-Protocols {
     #     }
     # }
 
-    # Version where appx details are preferred over original existing
+    # This makes it so Appx details are preferred over original existing
     $urlProtocolDataPreferredAppx = Make-DeepCopy $urlProtocolDataOriginal
     foreach ($protocol in $urlProtocolDataPreferredAppx) {
         $appxData = $protocolAppxData | Where-Object { $_.Protocol -eq $protocol.Protocol }
@@ -2117,12 +2118,12 @@ function Get-And-Process-URL-Protocols {
         }
     }
 
-    # Which version to use
     $urlProtocolData = $urlProtocolDataPreferredAppx
 
     # Now have all data in $urlProtocolData array, but we want to filter it
     $filteredUrlProtocolData = @()
 
+    # Based on the parameter $AllURLProtocols, only include Microsoft protocols if not specified
     if ($OnlyMicrosoftApps) {
         foreach ($protocol in $urlProtocolData) {
             if ($protocol.IsMicrosoft) {
@@ -2567,42 +2568,42 @@ if ($SaveCSV) {
 
 
 # Output a message indicating that the script execution is complete and the CSV files have been created.
-Write-Host "`n-----------------------------------------------"
-Write-Host "        Super God Mode Script Complete" -ForeGroundColor Yellow
-Write-Host "-----------------------------------------------`n"
+Write-Host "`n------------------------------------------------"
+Write-Host   "      Windows Super God Mode Script Result      " -ForeGroundColor Yellow
+Write-Host   "------------------------------------------------`n"
 
 # Display total counts
 $totalCount = $clsidInfo.Count + $namedFolders.Count + $taskLinks.Count + $msSettingsList.Count + $deepLinksProcessedData.Count + $URLProtocolsData.Count
 
 # Output the total counts of each, and color the numbers to stand out. Done by writing the text and then the number separately with -NoNewLine. If it was skipped, also add that but not colored.
-Write-Host "Total Shortcuts Created: " -NoNewline
+Write-Host "         Total Shortcuts Created: " -NoNewline
 Write-Host $totalCount -ForegroundColor Green
 
-Write-Host "  > CLSID Links:     " -NoNewline
+Write-Host "           > CLSID Links:     " -NoNewline
 Write-Host $clsidInfo.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipCLSID) { "   (Skipped)" }) # If skipped, add the skipped text, otherwise still write empty string because we used -NoNewline previously
 
-Write-Host "  > Named Folders:   " -NoNewline
+Write-Host "           > Special Folders: " -NoNewline
 Write-Host $namedFolders.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipNamedFolders) { "   (Skipped)" })
 
-Write-Host "  > Task Links:      " -NoNewline
+Write-Host "           > Task Links:      " -NoNewline
 Write-Host $taskLinks.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipTaskLinks) { "   (Skipped)" })
 
-Write-Host "  > Settings Links:  " -NoNewline
+Write-Host "           > Settings Links:  " -NoNewline
 Write-Host $msSettingsList.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipMSSettings) { "   (Skipped)" })
 
-Write-Host "  > Deep Links:      " -NoNewline
+Write-Host "           > Deep Links:      " -NoNewline
 Write-Host $deepLinksProcessedData.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipDeepLinks) { "   (Skipped)" })
 
-Write-Host "  > URL Protocols:   " -NoNewline
+Write-Host "           > URL Protocols:   " -NoNewline
 Write-Host $URLProtocolsData.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipURLProtocols) { "   (Skipped)" })
 
-Write-Host "`n-----------------------------------------------`n"
+Write-Host "`n------------------------------------------------`n"
 
 # If SaveXML switch was used, also output the paths to the saved XML files
 if ($SaveXML -and -not $SkipTaskLinks) {
