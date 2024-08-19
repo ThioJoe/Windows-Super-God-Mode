@@ -1837,8 +1837,20 @@ function Get-AppDetails-From-AppxManifest {
             $ns = New-Object Xml.XmlNamespaceManager $xml.NameTable
             $ns.AddNamespace("main", "http://schemas.microsoft.com/appx/manifest/foundation/windows10")
             $ns.AddNamespace("uap", "http://schemas.microsoft.com/appx/manifest/uap/windows10")
+            $ns.AddNamespace("uap2", "http://schemas.microsoft.com/appx/manifest/uap/windows10/2")
+            $ns.AddNamespace("uap3", "http://schemas.microsoft.com/appx/manifest/uap/windows10/3")
+            $ns.AddNamespace("uap4", "http://schemas.microsoft.com/appx/manifest/uap/windows10/4")
+            $ns.AddNamespace("uap5", "http://schemas.microsoft.com/appx/manifest/uap/windows10/5")
 
-            $protocolElements = $xml.SelectNodes("//uap:Extension[@Category = 'windows.protocol']/uap:Protocol", $ns)
+            # Create an array of namespace prefixes to check
+            $uapNamespaces = @("uap", "uap2", "uap3", "uap4", "uap5")
+
+            # Build the XPath query dynamically
+            $xpathQuery = ($uapNamespaces | ForEach-Object { 
+                "//$_`:Extension[@Category = 'windows.protocol']/$_`:Protocol"
+            }) -join ' | '
+
+            $protocolElements = $xml.SelectNodes($xpathQuery, $ns)
 
             foreach ($protocolElement in $protocolElements) {
                 $protocol = $protocolElement.GetAttribute("Name")
