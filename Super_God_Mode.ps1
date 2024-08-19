@@ -204,6 +204,7 @@ function Show-SuperGodModeDialog {
             <Color x:Key="BorderColor">#3F3F3F</Color>
             <Color x:Key="WarningColor">#FF6B68</Color>
             <Color x:Key="VersionColor">#888888</Color>
+            <Color x:Key="ButtonHoverColor">#1b99fa</Color>
 
             <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
             <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource ForegroundColor}"/>
@@ -212,6 +213,7 @@ function Show-SuperGodModeDialog {
             <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
             <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
             <SolidColorBrush x:Key="VersionBrush" Color="{StaticResource VersionColor}"/>
+            <SolidColorBrush x:Key="ButtonHoverBrush" Color="{StaticResource ButtonHoverColor}"/>
 
             <Thickness x:Key="BorderThickness">1</Thickness>
             <Thickness x:Key="GroupBoxPadding">5</Thickness>
@@ -246,10 +248,11 @@ function Show-SuperGodModeDialog {
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="FontSize" Value="12"/>
                 <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Padding" Value="10,5"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}">
+                            <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </ControlTemplate>
@@ -257,7 +260,7 @@ function Show-SuperGodModeDialog {
                 </Setter>
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+                        <Setter Property="Background" Value="{StaticResource ButtonHoverBrush}"/>
                     </Trigger>
                 </Style.Triggers>
             </Style>
@@ -274,7 +277,7 @@ function Show-SuperGodModeDialog {
                         <TextBlock Text="&quot;Super God Mode&quot; Script" FontSize="24" Foreground="White" HorizontalAlignment="Center" Margin="0,10,0,0"/>
                         <TextBlock Text="For Windows" FontSize="16" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,10"/>
                     </StackPanel>
-                    <Button x:Name="btnAbout" Content="About" Style="{StaticResource SubtleButtonStyle}" 
+                    <Button x:Name="btnAbout" Content="About" Style="{StaticResource SubtleButtonStyle}"
                             HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,10,0"/>
                 </Grid>
             </Border>
@@ -454,8 +457,7 @@ function Show-SuperGodModeDialog {
     # After loading the XAML and before showing the window
     $btnAbout = $window.FindName("btnAbout")
     $btnAbout.Add_Click({
-        [System.Windows.MessageBox]::Show("
-    `"Super God Mode`" Script For Windows
+        [System.Windows.MessageBox]::Show("    `"Super God Mode`" Script For Windows
 
     Version: $VERSION
     Author: ThioJoe
@@ -465,7 +467,7 @@ function Show-SuperGodModeDialog {
     ",
             "About Super God Mode Script",
             [System.Windows.MessageBoxButton]::OK,
-            [System.Windows.MessageBoxImage]::Information
+            [System.Windows.MessageBoxImage]::None
         )
     })
 
