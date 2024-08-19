@@ -1607,6 +1607,9 @@ function Create-Deep-Link-Shortcut {
         $name = $rawTarget
     }
 
+    $target = ""
+    $targetArgs = ""
+
     # Determine type of link/command. First check if it matches application ID format like "Microsoft.Recovery"
     if ($rawTarget -match '^Microsoft\.[a-zA-Z]+$') {
         $shortcutType = "app"
@@ -1656,6 +1659,11 @@ function Create-Deep-Link-Shortcut {
         } else {
             $target = $rawTarget
         }
+    }
+
+    # Expand variables in the arguments such as %windir%, because shortcuts don't seem to work with them in the arguments
+    if ($targetArgs) {
+        $arguments = [Environment]::ExpandEnvironmentVariables($arguments)
     }
 
     # Sanitize the name to make it a valid filename
