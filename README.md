@@ -1,15 +1,20 @@
 # Windows "Super God Mode"
 
-This PowerShell script creates shortcuts to all special shell folders, named folders, and task links in Windows, providing easy access to a wide range of system settings and features. It was inspired by the famously nicknamed "God Mode" folder, and creates many more shortcuts than even that.
+This PowerShell script creates shortcuts to all special shell folders, named folders, task links, system settings, deep links, and URL protocols in Windows, providing easy access to a wide range of system settings and features. It was inspired by the famously nicknamed "God Mode" folder and creates many more shortcuts than even that.
 
 ## Features
 
-- Creates shortcuts for all CLSID-based shell folders
-- Creates shortcuts for all named special folders
-- Creates shortcuts for task links (sub-pages within shell folders and control panel menus)
+- Creates shortcuts for various Windows components:
+  - CLSID-based shell folders
+  - Named special folders
+  - Task links (sub-pages within shell folders and control panel menus)
+  - System settings (ms-settings: links)
+  - Deep links (direct links to various settings menus across Windows)
+  - URL protocols
 - Generates CSV files with detailed information about the shortcuts
 - Optionally saves XML content from shell32.dll for reference
 - Customizable output location and various execution options
+- Graphical User Interface (GUI) for easy configuration
 
 ## Usage
 
@@ -19,28 +24,55 @@ This PowerShell script creates shortcuts to all special shell folders, named fol
    ```
    Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process
    ```
-5. Run the script with any desired optional parameters:
+4. Run the script:
    ```
-   .\Super_God_Mode.ps1 [optional parameters]
+   .\Super_God_Mode.ps1
    ```
+   - If no parameters are provided, a GUI will appear for easy configuration.
+   - You can also run the script with optional parameters (see below).
 
-### Parameters
+## CLI Parameters
 
-- `-SaveCSV`: Save information about all shortcuts into CSV files
-- `-SaveXML`: Save the XML content from shell32.dll
-- `-Output`: Specify a custom output folder path
-- `-DeletePreviousOutputFolder`: Delete the previous output folder before running
-- `-Verbose`: Enable verbose output
+Note: Except for `-Debug` and `-Verbose`, you must use `-NoGUI` for arguments to take effect.
+
+#### Alternative Options Arguments
+
 - `-DontGroupTasks`: Prevent grouping task shortcuts by application name
+- `-UseAlternativeCategoryNames`: Use alternative category names for task links
+- `-AllURLProtocols`: Include third-party URL protocols from installed software
+- `-CollectExtraURLProtocolInfo`: Collect additional information about URL protocols
+
+#### Control Output
+
+- `-Output`: Specify a custom output folder path
+- `-KeepPreviousOutputFolders`: Don't auto-delete existing output folders before running
+
+#### Arguments to Limit Shortcut Creation
+
+- `-NoStatistics`: Skip creating the statistics folder and files
 - `-SkipCLSID`: Skip creating shortcuts for CLSID-based shell folders
 - `-SkipNamedFolders`: Skip creating shortcuts for named special folders
 - `-SkipTaskLinks`: Skip creating shortcuts for task links
-- `-DLLPath`: Specify a custom DLL file path for shell32.dll
+- `-SkipMSSettings`: Skip creating shortcuts for ms-settings: links
+- `-SkipDeepLinks`: Skip creating shortcuts for deep links
+- `-SkipURLProtocols`: Skip creating shortcuts for URL protocols
+
+#### Debugging
+
+- `-Verbose`: Enable verbose output. Can be used with or without `-NoGUI`.
+- `-Debug`: Enable debug output (also enables verbose output). Can be used with or without `-NoGUI`.
+
+#### Advanced Arguments
+
+- `-NoGUI`: Skip the GUI dialog and run with default or provided parameters
+- `-CustomDLLPath`: Specify a custom DLL file path for shell32.dll
+- `-CustomLanguageFolderPath`: Specify a path to a folder containing language-specific MUI files
+- `-CustomSystemSettingsDLLPath`: Specify a custom path to the SystemSettings.dll file
 
 ### Example
 
 ```powershell
-.\Super_God_Mode.ps1 -SaveCSV -SaveXML -Output "C:\SuperGodMode" -Verbose
+.\Super_God_Mode.ps1 -Output "C:\SuperGodMode" -AllURLProtocols -Verbose
 ```
 
 ## Output
@@ -50,13 +82,17 @@ The script creates a folder (default name: "Shell Folder Shortcuts") containing:
 - Shortcuts to CLSID-based shell folders
 - Shortcuts to named special folders
 - Shortcuts to task links
-- CSV files with detailed information about the shortcuts (if `-SaveCSV` is used)
-- XML files with shell32.dll content (if `-SaveXML` is used)
+- Shortcuts to system settings (ms-settings: links)
+- Shortcuts to deep links
+- Shortcuts to URL protocols
+- CSV files with detailed information about the shortcuts (if not disabled)
+- XML files with shell32.dll content (if not disabled)
 
 ## Notes
 
 - Some shortcuts may not work on all Windows versions due to differences in available features.
 - The script does not modify any system settings; it only creates shortcuts to existing Windows features.
+- All parameters and GUI settings are optional. The script will run with default settings if the user doesn't change anything.
 
 ___
 
