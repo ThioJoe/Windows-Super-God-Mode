@@ -114,18 +114,14 @@ param(
 # If -Debug is used, set $DebugPreference to Continue, otherwise set it to SilentlyContinue. This way it will show messages without stopping if -Debug is used and not otherwise
 if ($PSBoundParameters['Debug']) {
     $DebugPreference = "Continue"
-} else {
-    $DebugPreference = "SilentlyContinue"
-}
+} else { $DebugPreference = "SilentlyContinue" }
 
 # Set the output folder path for the generated shortcuts based on the provided argument or default location. Convert to full path if necessary
 if ($Output) {
     # Convert to full path only if necessary, otherwise use as is
     if (-not [System.IO.Path]::IsPathRooted($Output)) {
         $mainShortcutsFolder = Join-Path $PSScriptRoot $Output
-    } else {
-        $mainShortcutsFolder = $Output
-    }
+    } else { $mainShortcutsFolder = $Output }
 } else {
     # Default output folder path is a subfolder named "Shell Folder Shortcuts" in the script's directory
     $mainShortcutsFolder = Join-Path $PSScriptRoot "Shell Folder Shortcuts"
@@ -318,7 +314,7 @@ if (-not $SkipCLSID) {
 }
 
 if (-not $SkipNamedFolders) {
-    New-FolderWithIcon -FolderPath $namedShortcutsOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "46"
+    New-FolderWithIcon -FolderPath $namedShortcutsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "77"
 }
 
 if (-not $SkipTaskLinks) {
@@ -328,10 +324,10 @@ if (-not $SkipMSSettings) {
     New-FolderWithIcon -FolderPath $msSettingsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "114"
 }
 if (-not $SkipDeepLinks) {
-    New-FolderWithIcon -FolderPath $deepLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "114"
+    New-FolderWithIcon -FolderPath $deepLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "175"
 }
 if (-not $SkipURLProtocols) {
-    New-FolderWithIcon -FolderPath $URLProtocolLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "114"
+    New-FolderWithIcon -FolderPath $URLProtocolLinksOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "46"
 }
 
 # If -SaveCSV or -SaveXML switches are used, create the statistics folder and set to default folder icon
