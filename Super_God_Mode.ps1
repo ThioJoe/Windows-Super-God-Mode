@@ -13,21 +13,17 @@
 # 4. Wait for it to finish, then check the "Shell Folder Shortcuts" folder for the generated shortcuts.
 
 # ------------------------- OPTIONAL ARGUMENTS -------------------------
-# -SaveCSV
+# -NoStatistics
 #     Switch (Takes no values)
-#     Save info about all the shortcuts into CSV spreadsheet files for each type of shell folder
-#
-# -SaveXML
-#     Switch (Takes no values)
-#     Save the XML content from shell32.dll as a file containing info about the task links
+#     Skip creating the statistics folder and files containing CSV data about the shell folders and tasks and XML files with other collected data
 #
 # -Output
 #     String (Optional)
 #     Specify a custom output folder path (relative or absolute) to save the generated shortcuts. If not provided, a folder named "Shell Folder Shortcuts" will be created in the script's directory.
 #
-# -DeletePreviousOutputFolder
+# -KeepPreviousOutputFolders
 #     Switch (Takes no values)
-#     Delete the previous output folder before running the script if one exists matching the one that would be created
+#     Doesn't delete existing output folders before running the script. Any existing shortcuts will still be overwritten if being created again.
 #
 # -Verbose
 #     Switch (Takes no values)
@@ -94,7 +90,7 @@
 param(
     [switch]$DontGroupTasks,
     [switch]$NoStatistics,
-    [switch]$DeletePreviousOutputFolder,
+    [switch]$KeepPreviousOutputFolders,
     [string]$CustomDLLPath,
     [string]$CustomLanguageFolderPath,
     [string]$CustomSystemSettingsXMLPath,
@@ -199,9 +195,9 @@ try {
     }
 }
 
-# If the -DeletePreviousOutputFolder switch is used, go into the set main folder and delete each set subfolder using above variable names
+# If the -KeepPreviousOutputFolders switch is not used, go into the set main folder and delete each set subfolder using above variable names
 # Doing this instead of just deleting the entire main folder in case the user wants to put the output into a directory in use for other things
-if ($DeletePreviousOutputFolder) {
+if (-not $KeepPreviousOutputFolders) {
     try {
         if (Test-Path $mainShortcutsFolder) {
             # Remove folders
