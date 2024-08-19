@@ -93,8 +93,7 @@
 [CmdletBinding()]
 param(
     [switch]$DontGroupTasks,
-    [switch]$SaveXML,
-    [switch]$SaveCSV,
+    [switch]$NoStatistics,
     [switch]$DeletePreviousOutputFolder,
     [string]$CustomDLLPath,
     [string]$CustomLanguageFolderPath,
@@ -331,7 +330,7 @@ if (-not $SkipURLProtocols) {
 }
 
 # If -SaveCSV or -SaveXML switches are used, create the statistics folder and set to default folder icon
-if ($SaveCSV -or $SaveXML) {
+if (-not $NoStatistics) {
     New-FolderWithIcon -FolderPath $statisticsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "3"
 }
 
@@ -2349,7 +2348,7 @@ if (-not $SkipMSSettings) {
 
 if (-not $SkipDeepLinks -and $allSettingsXmlPath) {
     # Process other settings data
-    $deepLinkData = Get-AllSettings-Data -xmlFilePath $allSettingsXmlPath -SaveXML:$SaveXML
+    $deepLinkData = Get-AllSettings-Data -xmlFilePath $allSettingsXmlPath -SaveXML:(!$NoStatistics)
 
     if ($null -eq $deepLinkData) {
         Write-Host "No MS Settings data found or error occurred while parsing."
@@ -2462,7 +2461,7 @@ if (-not $SkipTaskLinks) {
     # Process Task Links - Use the extracted XML data from Shell32 to create shortcuts for task links
     Write-Host "`n -----Processing Task Links -----"
     # Retrieve task links from the XML content in shell32.dll.
-    $taskLinks = Get-TaskLinks -SaveXML:$SaveXML -DLLPath:$CustomDLLPath -CustomLanguageFolder:$CustomLanguageFolderPath
+    $taskLinks = Get-TaskLinks -SaveXML:(!$NoStatistics) -DLLPath:$CustomDLLPath -CustomLanguageFolder:$CustomLanguageFolderPath
     $createdShortcutNames = @{} # Track created shortcuts to be able to tasks with the same name but different commands by appending a number
 
     foreach ($task in $taskLinks) {
@@ -2545,7 +2544,7 @@ $msSettingsDisplayPath = ""
 $deepLinksDisplayPath = ""
 $urlProtocolsDisplayPath = ""
 
-if ($SaveCSV) {
+if (-not $NoStatistics) {
     if (-not $SkipCLSID) {
         Create-CLSIDCsvFile -outputPath $clsidCsvPath -clsidData $clsidInfo
         $CLSIDDisplayPath = "`n  > " + $clsidCsvPath
@@ -2614,7 +2613,7 @@ Write-Host $(if ($SkipURLProtocols) { "   (Skipped)" })
 Write-Host "`n------------------------------------------------`n"
 
 # If SaveXML switch was used, also output the paths to the saved XML files
-if ($SaveXML -and -not $SkipTaskLinks) {
+if (-not $NoStatistics -and -not $SkipTaskLinks) {
     Write-Host "XML & txt files have been saved at:"
     if (-not $SkipTaskLinks) {
         Write-Host "  > $xmlContentFilePath"
