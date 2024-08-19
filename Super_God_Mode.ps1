@@ -412,28 +412,51 @@ if ($Output) {
     $mainShortcutsFolder = Join-Path $PSScriptRoot "Shell Folder Shortcuts"
 }
 
-# Construct paths for subfolders
-$CLSIDshortcutsOutputFolder = Join-Path $mainShortcutsFolder "CLSID Shell Folder Shortcuts"
-$namedShortcutsOutputFolder = Join-Path $mainShortcutsFolder "Special Named Folders"
-$taskLinksOutputFolder = Join-Path $mainShortcutsFolder "All Task Links"
-$msSettingsOutputFolder = Join-Path $mainShortcutsFolder "System Settings"
-$deepLinksOutputFolder = Join-Path $mainShortcutsFolder "Deep Links"
-$URLProtocolLinksOutputFolder = Join-Path $mainShortcutsFolder "URL Protocols"
-$statisticsOutputFolder = Join-Path $mainShortcutsFolder "_Script Result Statistics"
+# Define folder names
+$clsidFolderName = "CLSID Shell Folder Shortcuts"
+$namedFolderName = "Special Named Folders"
+$taskLinksFolderName = "All Task Links"
+$msSettingsFolderName = "System Settings"
+$deepLinksFolderName = "Deep Links"
+$urlProtocolsFolderName = "URL Protocols"
+$statisticsFolderName = "_Script Result Statistics"
 
-# Set filenames for various output files (CSV and optional XML)
-$clsidCsvPath = Join-Path $statisticsOutputFolder "CLSID_Shell_Folders.csv"
-$namedFoldersCsvPath = Join-Path $statisticsOutputFolder "Named_Shell_Folders.csv"
-$taskLinksCsvPath = Join-Path $statisticsOutputFolder "Task_Links.csv"
-$msSettingsCsvPath = Join-Path $statisticsOutputFolder "MS_Settings.csv"
-$deepLinksCsvPath = Join-Path $statisticsOutputFolder "Deep_Links.csv"
-$URLProtocolLinksCsvPath = Join-Path $statisticsOutputFolder "URL_Protocols.csv"
+# Construct paths for subfolders
+$CLSIDshortcutsOutputFolder = Join-Path $mainShortcutsFolder $clsidFolderName
+$namedShortcutsOutputFolder = Join-Path $mainShortcutsFolder $namedFolderName
+$taskLinksOutputFolder = Join-Path $mainShortcutsFolder $taskLinksFolderName
+$msSettingsOutputFolder = Join-Path $mainShortcutsFolder $msSettingsFolderName
+$deepLinksOutputFolder = Join-Path $mainShortcutsFolder $deepLinksFolderName
+$URLProtocolLinksOutputFolder = Join-Path $mainShortcutsFolder $urlProtocolsFolderName
+$statisticsOutputFolder = Join-Path $mainShortcutsFolder $statisticsFolderName
+
+# Define hashtables for CSV and XML files
+$csvFiles = @{
+    CLSID = @{ Value = "CLSID_Shell_Folders.csv"; Skip = $SkipCLSID }
+    NamedFolders = @{ Value = "Named_Shell_Folders.csv"; Skip = $SkipNamedFolders }
+    TaskLinks = @{ Value = "Task_Links.csv"; Skip = $SkipTaskLinks }
+    MSSettings = @{ Value = "MS_Settings.csv"; Skip = $SkipMSSettings }
+    DeepLinks = @{ Value = "Deep_Links.csv"; Skip = $SkipDeepLinks }
+    URLProtocols = @{ Value = "URL_Protocols.csv"; Skip = $SkipURLProtocols }
+}
+$xmlFiles = @{
+    Shell32Content = @{ Value = "Shell32_Tasks.xml"; Skip = $SkipTaskLinks }
+    Shell32ResolvedContent = @{ Value = "Shell32_Tasks_Resolved.xml"; Skip = $SkipTaskLinks }
+    ResolvedSettings = @{ Value = "Settings_XML_Resolved.xml"; Skip = $SkipDeepLinks }
+}
+
+# Set filenames for various output files (CSV and XML)
+$clsidCsvPath = Join-Path $statisticsOutputFolder $csvFiles.CLSID.Value
+$namedFoldersCsvPath = Join-Path $statisticsOutputFolder $csvFiles.NamedFolders.Value
+$taskLinksCsvPath = Join-Path $statisticsOutputFolder $csvFiles.TaskLinks.Value
+$msSettingsCsvPath = Join-Path $statisticsOutputFolder $csvFiles.MSSettings.Value
+$deepLinksCsvPath = Join-Path $statisticsOutputFolder $csvFiles.DeepLinks.Value
+$URLProtocolLinksCsvPath = Join-Path $statisticsOutputFolder $csvFiles.URLProtocols.Value
 
 # XML content file paths
-$xmlContentFilePath = Join-Path $statisticsOutputFolder "Shell32_XML_Content.xml"
-$resolvedXmlContentFilePath = Join-Path $statisticsOutputFolder "Shell32_XML_Content_Resolved.xml"
-$resolvedSettingsXmlContentFilePath = Join-Path $statisticsOutputFolder "Settings_XML_Content_Resolved.xml"
-#$msSettingsListFilePath = Join-Path $statisticsOutputFolder "MS_Settings_List.txt"
+$xmlContentFilePath = Join-Path $statisticsOutputFolder $xmlFiles.Shell32Content.Value
+$resolvedXmlContentFilePath = Join-Path $statisticsOutputFolder $xmlFiles.Shell32ResolvedContent.Value
+$resolvedSettingsXmlContentFilePath = Join-Path $statisticsOutputFolder $xmlFiles.ResolvedSettings.Value
 
 # Other constants / known paths.
 # Available AllSystemSettings XML files may differ depending on Windows 11 or Windows 10, so will try them in order:
@@ -2522,6 +2545,52 @@ function Create-Protocol-Shortcut{
     }
 }
 
+# Function to format informaount about file output in grid
+function Format-FileGrid {
+    param (
+        [array]$fileNames,
+        [int]$columnsPerRow = 3,
+        [int]$minSpacing = 4,
+        [int]$indent = 5,
+        [string]$prefix = "",
+        [switch]$noSort
+    )
+
+    $indentString = " " * $indent
+    $sortedNames = if ($noSort) { $fileNames } else { $fileNames | Sort-Object }
+
+    # Calculate column widths
+    $columnWidths = @()
+    for ($i = 0; $i -lt $columnsPerRow; $i++) {
+        $columnItems = @()
+        for ($j = $i; $j -lt $sortedNames.Count; $j += $columnsPerRow) {
+            $columnItems += $sortedNames[$j]
+        }
+        $maxLength = ($columnItems | Measure-Object Length -Maximum).Maximum
+        if ($maxLength -gt 0) {
+            $columnWidths += $maxLength
+        }
+    }
+
+    # Output rows
+    for ($i = 0; $i -lt $sortedNames.Count; $i += $columnsPerRow) {
+        $row = @()
+        for ($j = 0; $j -lt $columnsPerRow; $j++) {
+            if ($i + $j -lt $sortedNames.Count) {
+                $item = $sortedNames[$i + $j]
+                $padding = if ($j -lt ($columnWidths.Count - 1)) {
+                    $paddingLength = [Math]::Max(0, $columnWidths[$j] - $item.Length + $minSpacing)
+                    " " * $paddingLength
+                } else {
+                    ""
+                }
+                $row += $item + $padding
+            }
+        }
+        Write-Host ($indentString + $prefix + ($row -join ""))
+    }
+}
+
 # ---------------------------------------------- ----------------------------------------------------------------
 # ----------------------------------------------    Main Script    ----------------------------------------------
 # ---------------------------------------------- ----------------------------------------------------------------
@@ -2784,44 +2853,48 @@ if (-not $SkipURLProtocols){
     }
 }
 
-# Create the CSV files using the stored CLSID and 'task link' (aka menu sub-pages) data. Skip each depending on the corresponding switch.
-# Also construct strings containing display paths with nicer formatting to display at the end of the script.
-$CLSIDDisplayPath = ""
-$namedFolderDisplayPath = ""
-$taskLinksDisplayPath = ""
-$msSettingsDisplayPath = ""
-$deepLinksDisplayPath = ""
-$urlProtocolsDisplayPath = ""
-
+# Create the CSV files using stored data. Skip each depending on the corresponding switch.
 if (-not $NoStatistics) {
     if (-not $SkipCLSID) {
         Create-CLSIDCsvFile -outputPath $clsidCsvPath -clsidData $clsidInfo
-        $CLSIDDisplayPath = "`n  > " + $clsidCsvPath
     }
-
     if (-not $SkipNamedFolders) {
         Create-NamedFoldersCsvFile -outputPath $namedFoldersCsvPath
-        $namedFolderDisplayPath = "`n  > " + $namedFoldersCsvPath
     }
-
     if (-not $SkipTaskLinks) {
         Create-TaskLinksCsvFile -outputPath $taskLinksCsvPath -taskLinksData $taskLinks
-        $taskLinksDisplayPath = "`n  > " + $taskLinksCsvPath
     }
     if (-not $SkipMSSettings) {
         Create-MSSettingsCsvFile -outputPath $msSettingsCsvPath -msSettingsList $msSettingsList
-        $msSettingsDisplayPath = "`n  > " + $msSettingsCsvPath
     }
     if (-not $SkipDeepLinks) {
         Create-Deep-Link-CSVFile -outputPath $deepLinksCsvPath -deepLinksDataArray $deepLinksProcessedData
-        $deepLinksDisplayPath = "`n  > " + $deepLinksCsvPath
     }
     if (-not $SkipURLProtocols) {
         Create-URL-Protocols-CSVFile -outputPath $URLProtocolLinksCsvPath -urlProtocolsData $URLProtocolsData
-        $urlProtocolsDisplayPath = "`n  > " + $URLProtocolLinksCsvPath
     }
 }
 
+# Output information about the CSV and XML files that were created
+# Collect non-skipped file names
+$displayCsvFiles = $csvFiles.Values | Where-Object { -not $NoStatistics -and -not $_.Skip } | ForEach-Object { $_.Value }
+$displayXmlFiles = $xmlFiles.Values | Where-Object { -not $NoStatistics -and -not $_.Skip } | ForEach-Object { $_.Value }
+
+# Output results
+if ($displayCsvFiles -or $displayXmlFiles) {
+    Write-Host "`n--------------------------------------------------------------------------------"
+    Write-Host "Statistics Files and XML Data saved in folder: `"$statisticsFolderName`""
+
+    if ($displayCsvFiles) {
+        Write-Host "`n   - CSV Files:"
+        Format-FileGrid -fileNames $displayCsvFiles -Indent 7
+    }
+
+    if ($displayXmlFiles) {
+        Write-Host "`n   - XML Files:"
+        Format-FileGrid -fileNames $displayXmlFiles -Indent 7
+    }
+}
 
 # Output a message indicating that the script execution is complete and the CSV files have been created.
 Write-Host "`n------------------------------------------------"
@@ -2860,22 +2933,3 @@ Write-Host $URLProtocolsData.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipURLProtocols) { "   (Skipped)" })
 
 Write-Host "`n------------------------------------------------`n"
-
-# If SaveXML switch was used, also output the paths to the saved XML files
-if (-not $NoStatistics -and -not $SkipTaskLinks) {
-    Write-Host "XML & txt files have been saved at:"
-    if (-not $SkipTaskLinks) {
-        Write-Host "  > $xmlContentFilePath"
-        Write-Host "  > $resolvedXmlContentFilePath"
-    }
-    if (-not $SkipDeepLinks) {
-        Write-Host "  > $resolvedSettingsXmlContentFilePath"
-    }
-    Write-Host "`n"
-}
-
-# As long as any of the CSV files were created, output the paths to them - check by seeing if strings are empty
-if ($CLSIDDisplayPath -or $namedFolderDisplayPath -or $taskLinksDisplayPath -or $msSettingsDisplayPath -or $deepLinksDisplayPath) {
-    $csvPrintString = "CSV files have been created at:" + "$CLSIDDisplayPath" + "$namedFolderDisplayPath" + "$taskLinksDisplayPath" + "$msSettingsDisplayPath" + "$deepLinksDisplayPath" + "$urlProtocolsDisplayPath" + "`n"
-    Write-Host $csvPrintString
-}
