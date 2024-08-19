@@ -391,7 +391,7 @@ function Show-SuperGodModeDialog {
     }
 }
 
-# Start the GUI dialog if no parameters are provided
+# Start the GUI dialog unless -NoGUI is used
 if (-not $NoGUI) {
     Write-Host "`nUse the GUI window that just appeared to select any options and run the script.`n"
     $params = Show-SuperGodModeDialog
