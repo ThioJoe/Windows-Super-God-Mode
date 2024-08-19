@@ -106,8 +106,16 @@ param(
     [switch]$SkipMSSettings,
     [switch]$SkipDeepLinks,
     [switch]$SkipURLProtocols,
+    [switch]$AllURLProtocols,
     [switch]$UseAlternativeCategoryNames
 )
+
+# If -Debug is used, set $DebugPreference to Continue, otherwise set it to SilentlyContinue. This way it will show messages without stopping if -Debug is used and not otherwise
+if ($PSBoundParameters['Debug']) {
+    $DebugPreference = "Continue"
+} else {
+    $DebugPreference = "SilentlyContinue"
+}
 
 # Set the output folder path for the generated shortcuts based on the provided argument or default location. Convert to full path if necessary
 if ($Output) {
@@ -151,6 +159,18 @@ $allSettingsXmlPath1 = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSetti
 $allSettingsXmlPath2 = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings_{FDB289F3-FCFC-4702-8015-18926E996EC1}.xml"
 $allSettingsXmlPath3 = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings_{253E530E-387D-4BC2-959D-E6F86122E5F2}.xml"
 $systemSettingsDllPath = "C:\Windows\ImmersiveControlPanel\SystemSettings.dll"
+
+# URI Protocols deemed "permanent" and not to be included in the URL Protocols section because they aren't special
+# See: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
+$permanentURIProtocols = @(
+    'bb','drop','fax','filesystem','grd','mailserver','modem','p1','pack','payment','prospero','snews','upt','videotex','wais','wpid','z39.50',
+    'aaa','aaas','about','acap','acct','cap','cid','coap','coap+tcp','coap+ws','coaps','coaps+tcp','coaps+ws','crid','data','dav','dict','dns',
+    'dtn','example','file','ftp','geo','go','gopher','h323','http','https','iax','icap','im','imap','info','ipn','ipp','ipps','iris','iris.beep',
+    'iris.lwz','iris.xpc','iris.xpcs','jabber','ldap','leaptofrogans','mailto','mid','msrp','msrps','mt','mtqp','mupdate','news','nfs','ni','nih',
+    'nntp','opaquelocktoken','pkcs11','pop','pres','reload','rtsp','rtsps','rtspu','service','session','shttp','sieve','sip','sips','sms','snmp',
+    'soap.beep','soap.beeps','stun','stuns','tag','tel','telnet','tftp','thismessage','tip','tn3270','turn','turns','tv','urn','vemmi','vnc','ws',
+    'wss','xcon','xcon-userid','xmlrpc.beep','xmlrpc.beeps','xmpp','z39.50r','z39.50s'
+)
 
 # Check which AllSystemSettings XML file to use
 if (Test-Path $allSettingsXmlPath1) {
@@ -399,7 +419,7 @@ function Get-LocalizedString {
     )
     if ($AppxManifestPath) {
         $manifestParentFolder = Split-Path $AppxManifestPath | Split-Path -Leaf
-        Write-Verbose "--------------------------------------------------------------------------------------"
+        Write-Debug "--------------------------------------------------------------------------------------"
         Write-Verbose "Retrieving Resource: $StringReference  | Package: $manifestParentFolder"
     } else {
         Write-Verbose "Retrieving Resource: $StringReference"
@@ -471,19 +491,19 @@ function Get-FullMsResource {
         [string]$AppxManifestPath
     )
 
-    Write-Verbose "Constructing Full Reference for Short Reference: $ShortReference"
-    Write-Verbose "   | AppxManifestPath: $AppxManifestPath"
+    Write-Debug "Constructing Full Reference for Short Reference: $ShortReference"
+    Write-Debug "   | AppxManifestPath: $AppxManifestPath"
 
     # Load the AppxManifest.xml file
     $manifest = [xml](Get-Content $AppxManifestPath)
 
     # Extract the package name from the manifest
     $packageName = $manifest.Package.Identity.Name
-    Write-Verbose "   | Package Name: $packageName"
+    Write-Debug "   | Package Name: $packageName"
 
     # Get the resource name from the short reference. The part after "ms-resource:". There may or may not be slashes
     $resourceName = $ShortReference -replace '^ms-resource:/*', ''
-    Write-Verbose "   | Resource Name: $resourceName"
+    Write-Debug "   | Resource Name: $resourceName"
 
     # If the resource name already contains the package name, just use it as is
     if ($resourceName -match "^$packageName/") {
@@ -498,7 +518,7 @@ function Get-FullMsResource {
         $fullReference = "@{$packageName`?ms-resource://$packageName/Resources/$resourceName}"
     }
 
-    Write-Verbose "   > Constructed Full Reference: $fullReference"
+    Write-Debug "   > Constructed Full Reference: $fullReference"
 
     # Use the existing Get-MsResource function to resolve the full reference
     return Get-MsResource $fullReference
@@ -508,80 +528,80 @@ function Get-MsResource {
     param (
         [string]$ResourcePath
     )
-    Write-Verbose "Processing ResourcePath: $ResourcePath"
+    Write-Debug "Processing ResourcePath: $ResourcePath"
 
     $stringBuilder = New-Object System.Text.StringBuilder 1024
 
     $result = [Win32]::SHLoadIndirectString($ResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
-    Write-Verbose "   > SHLoadIndirectString result: $result"
+    Write-Debug "   > SHLoadIndirectString result: $result"
 
     if ($result -eq 0) {
         $resolvedString = $stringBuilder.ToString()
-        Write-Verbose "   > Resolved string: $resolvedString"
+        Write-Debug "   > Resolved string: $resolvedString"
         return $resolvedString
     } else {
-        Write-Verbose "   + SHLoadIndirectString failed. Attempting alternative methods..."
+        Write-Debug "   + SHLoadIndirectString failed. Attempting alternative methods..."
 
         # Extract package name and resource URI
         $packageFullName = ($ResourcePath -split '\?')[0].Trim('@{}')
         $resourceUri = ($ResourcePath -split '\?')[1].Trim('@{}')
-        Write-Verbose "      > Extracted package full name: $packageFullName"
-        Write-Verbose "      > Extracted resource URI: $resourceUri"
+        Write-Debug "      > Extracted package full name: $packageFullName"
+        Write-Debug "      > Extracted resource URI: $resourceUri"
 
         # Extract package name without version and architecture
         $packageName = ($packageFullName -split '_')[0]
-        Write-Verbose "      > Extracted package name: $packageName"
+        Write-Debug "      > Extracted package name: $packageName"
 
         # Find the package installation path
-        Write-Verbose "      + Searching for package using Get-AppxPackage"
+        Write-Debug "      + Searching for package using Get-AppxPackage"
         $package = Get-AppxPackage | Where-Object { $_.Name -eq $packageName }
         if (-not $package) {
-            Write-Verbose "      + Exact package match not found. Trying to match by package family name."
+            Write-Debug "      + Exact package match not found. Trying to match by package family name."
             $packageFamilyName = ($packageFullName -split '_')[-1]
             $package = Get-AppxPackage | Where-Object { $_.PackageFamilyName -eq "${packageName}_$packageFamilyName" }
         }
 
         if ($package) {
-            Write-Verbose "      + Package found: $($package.Name)"
+            Write-Debug "      + Package found: $($package.Name)"
             $packagePath = $package.InstallLocation
-            Write-Verbose "      > Package installation path: $packagePath"
+            Write-Debug "      > Package installation path: $packagePath"
             $priPath = Join-Path $packagePath "resources.pri"
-            Write-Verbose "      + Attempting to use resources.pri at: $priPath"
+            Write-Debug "      + Attempting to use resources.pri at: $priPath"
             if (Test-Path $priPath) {
                 $newResourcePath = "@{" + $priPath + "?" + $resourceUri + "}"
-                Write-Verbose "      > New resource path: $newResourcePath"
-                Write-Verbose "      + Attempting to call SHLoadIndirectString with new resource path"
+                Write-Debug "      > New resource path: $newResourcePath"
+                Write-Debug "      + Attempting to call SHLoadIndirectString with new resource path"
                 $result = [Win32]::SHLoadIndirectString($newResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
-                Write-Verbose "      > SHLoadIndirectString result with new path: $result"
+                Write-Debug "      > SHLoadIndirectString result with new path: $result"
                 if ($result -eq 0) {
-                    Write-Verbose "      + Successfully retrieved resource using resources.pri"
+                    Write-Debug "      + Successfully retrieved resource using resources.pri"
                     $resolvedString = $stringBuilder.ToString()
-                    Write-Verbose "      > Resolved string: $resolvedString"
+                    Write-Debug "      > Resolved string: $resolvedString"
                     return $resolvedString
                 }
-                Write-Verbose "      > Failed to retrieve using resources.pri. Error code: $result"
+                Write-Debug "      > Failed to retrieve using resources.pri. Error code: $result"
             } else {
-                Write-Verbose "      > resources.pri not found at expected location"
+                Write-Debug "      > resources.pri not found at expected location"
             }
         } else {
-            Write-Verbose "      + Package not found"
+            Write-Debug "      + Package not found"
         }
 
         # If still failed, try without the /resources/ folder, if it's present
         if ($resourceUri -match '^/resources/') {
-            Write-Verbose "         + Attempting to retrieve resource without /resources/ folder"
+            Write-Debug "         + Attempting to retrieve resource without /resources/ folder"
             $resourceUriWithoutResources = $resourceUri -replace '/resources/', '/'
             $newResourcePath = "@{" + $priPath + "?" + $resourceUriWithoutResources + "}"
-            Write-Verbose "         > New resource path without /resources/: $newResourcePath"
+            Write-Debug "         > New resource path without /resources/: $newResourcePath"
             $result = [Win32]::SHLoadIndirectString($newResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
-            Write-Verbose "         > SHLoadIndirectString result without /resources/: $result"
+            Write-Debug "         > SHLoadIndirectString result without /resources/: $result"
             if ($result -eq 0) {
-                Write-Verbose "         + Successfully retrieved resource without /resources/ folder"
+                Write-Debug "         + Successfully retrieved resource without /resources/ folder"
                 $resolvedString = $stringBuilder.ToString()
-                Write-Verbose "         > Resolved string: $resolvedString"
+                Write-Debug "         > Resolved string: $resolvedString"
                 return $resolvedString
             }
-            Write-Verbose "         + Failed to retrieve without /resources/ folder. Error code: $result"
+            Write-Debug "         + Failed to retrieve without /resources/ folder. Error code: $result"
         }
 
         # If still failed, try removing parts of the package name in the resource path one at a time
@@ -590,21 +610,21 @@ function Get-MsResource {
             $packageParts = $packageName.Split('.')
             for ($i = 1; $i -lt $packageParts.Count; $i++) {
                 $truncatedPackageName = $packageParts[$i..($packageParts.Count - 1)] -join '.'
-                Write-Verbose "            + Attempting to retrieve resource with truncated package name: $truncatedPackageName"
+                Write-Debug "            + Attempting to retrieve resource with truncated package name: $truncatedPackageName"
                 $truncatedPackageResourceUri = $resourceUri -replace [regex]::Escape($packageName), $truncatedPackageName
                 $newResourcePath = "@{" + $priPath + "?" + $truncatedPackageResourceUri + "}"
-                Write-Verbose "            > Iteration $i`: $newResourcePath"
+                Write-Debug "            > Iteration $i`: $newResourcePath"
                 # Execute check
                 $result = [Win32]::SHLoadIndirectString($newResourcePath, $stringBuilder, $stringBuilder.Capacity, [IntPtr]::Zero)
-                Write-Verbose "            > SHLoadIndirectString result: $result"
+                Write-Debug "            > SHLoadIndirectString result: $result"
                 if ($result -eq 0) {
                     $resolvedString = $stringBuilder.ToString()
-                    Write-Verbose "            > Success: Resolved string: $resolvedString"
+                    Write-Debug "            > Success: Resolved string: $resolvedString"
                     return $resolvedString
                 }
             }
         } else {
-            Write-Verbose "         > Not trying truncated package because reference is not a package, or resources .pri is not found."
+            Write-Debug "         > Not trying truncated package because reference is not a package, or resources .pri is not found."
         }
 
         Write-Error "   > All attempts to retrieve resource failed for ms-resource: $ResourcePath. Error code: $result"
@@ -1862,7 +1882,7 @@ function Get-AppDetails-From-AppxManifest {
             $uapNamespaces = @("uap", "uap2", "uap3", "uap4", "uap5")
 
             # Build the XPath query dynamically
-            $xpathQuery = ($uapNamespaces | ForEach-Object { 
+            $xpathQuery = ($uapNamespaces | ForEach-Object {
                 "//$_`:Extension[@Category = 'windows.protocol']/$_`:Protocol | " +
                 "//uap:Extension[@Category = 'windows.protocol']/$_`:Protocol"
             }) -join ' | '
@@ -1947,7 +1967,8 @@ function Make-DeepCopy {
 function Get-And-Process-URL-Protocols {
     param(
         [string]$CustomLanguageFolder,
-        [switch]$OnlyMicrosoftApps
+        [switch]$OnlyMicrosoftApps,
+        [string[]]$permanentProtocolsIgnore
     )
     # Create object to store data. Will want to store multiple properties for each URL protocol
     $urlProtocols = @()
@@ -2100,11 +2121,26 @@ function Get-And-Process-URL-Protocols {
     $urlProtocolData = $urlProtocolDataPreferredAppx
 
     # Now have all data in $urlProtocolData array, but we want to filter it
+    $filteredUrlProtocolData = @()
+
     if ($OnlyMicrosoftApps) {
-        $filteredUrlProtocolData = $urlProtocolData | Where-Object { $_.IsMicrosoft }
-    # Will only include protocols that are marked as Microsoft or are associated with any package
+        foreach ($protocol in $urlProtocolData) {
+            if ($protocol.IsMicrosoft) {
+                $filteredUrlProtocolData += $protocol
+            } else {
+                Write-Verbose "Not including non-Microsoft protocol: $($protocol.Protocol)"
+            }
+        }
+    # Include any protocols not in the permanent list
     } else {
-        $filteredUrlProtocolData = $urlProtocolData | Where-Object { $_.IsMicrosoft -or $_.PackageName }
+        #$filteredUrlProtocolData = $urlProtocolData | Where-Object { $_.IsMicrosoft -or $_.PackageName }
+        foreach ($protocol in $urlProtocolData) {
+            if ($permanentProtocolsIgnore -notcontains $protocol.Protocol) {
+                $filteredUrlProtocolData += $protocol
+            } else {
+                Write-Verbose "Ignoring protocol: $($protocol.Protocol)"
+            }
+        }
     }
 
     # For remaining protocols, try to get icon from the command if it is a path to an executable
@@ -2189,7 +2225,7 @@ function Create-Protocol-Shortcut{
     param (
         [string]$protocol,
         [string]$name,
-        [string]$command,
+        #[string]$command,
         [string]$iconPath,
         [string]$shortcutPath
     )
@@ -2247,7 +2283,13 @@ $URLProtocolsData = @()
 
 if (-not $SkipURLProtocols){
     Write-Host "`n----- Processing URL Protocols -----"
-    $URLProtocolsData = Get-And-Process-URL-Protocols
+    if ($AllURLProtocols){
+        $OnlyMicrosoftApps = $false
+    } else {
+        $OnlyMicrosoftApps = $true
+    }
+
+    $URLProtocolsData = Get-And-Process-URL-Protocols -CustomLanguageFolder $CustomLanguageFolderPath -OnlyMicrosoftApps:$OnlyMicrosoftApps -permanentProtocolsIgnore $permanentURIProtocols
     #Write-Host "Found $($URLProtocolsData.Count) URL Protocols"
     foreach ($protocol in $URLProtocolsData) {
         # Check whether to use original icon path or derived icon
@@ -2580,3 +2622,5 @@ if ($CLSIDDisplayPath -or $namedFolderDisplayPath -or $taskLinksDisplayPath -or 
     $csvPrintString = "CSV files have been created at:" + "$CLSIDDisplayPath" + "$namedFolderDisplayPath" + "$taskLinksDisplayPath" + "$msSettingsDisplayPath" + "$deepLinksDisplayPath" + "$urlProtocolsDisplayPath" + "`n"
     Write-Host $csvPrintString
 }
+
+Write-Debug "This is a test and should only print in debug!"
