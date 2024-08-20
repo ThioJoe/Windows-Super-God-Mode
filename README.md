@@ -2,6 +2,9 @@
 
 This PowerShell script creates shortcuts to all special shell folders, named folders, task links, system settings, deep links, and URL protocols in Windows, providing easy access to a wide range of system settings and features. It was inspired by the famously nicknamed "God Mode" folder and creates many more shortcuts than even that.
 
+![Window](https://github.com/user-attachments/assets/bba03bc3-a624-4d2b-aec3-c9404a5cd33f)
+
+
 ## Features
 
 - Creates shortcuts for various Windows components:
@@ -68,6 +71,7 @@ Note: Except for `-Debug` and `-Verbose`, you must use `-NoGUI` for arguments to
 - `-CustomDLLPath`: Specify a custom DLL file path for shell32.dll
 - `-CustomLanguageFolderPath`: Specify a path to a folder containing language-specific MUI files
 - `-CustomSystemSettingsDLLPath`: Specify a custom path to the SystemSettings.dll file
+- `-CustomAllSystemSettingsXMLPath`: Specify a custom path to the "AllSystemSettings_" XML file
 
 ### Example
 
