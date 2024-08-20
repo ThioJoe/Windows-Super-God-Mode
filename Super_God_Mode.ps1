@@ -129,6 +129,7 @@ param(
     [switch]$UseAlternativeCategoryNames,
     [switch]$AllURLProtocols,
     [switch]$CollectExtraURLProtocolInfo,
+    [switch]$AllowDuplicateDeepLinks,
     # Control Output
     [string]$Output,
     [switch]$KeepPreviousOutputFolders,
@@ -2756,34 +2757,6 @@ $deepLinkData = @()
 $deepLinksProcessedData = @()
 $URLProtocolsData = @()
 
-# Loop for Deep Links
-if (-not $SkipDeepLinks -and $allSettingsXmlPath) {
-    # Process other settings data
-    $deepLinkData = Get-AllSettings-Data -xmlFilePath $allSettingsXmlPath -SaveXML:(!$NoStatistics)
-
-    if ($null -eq $deepLinkData) {
-        Write-Host "No MS Settings data found or error occurred while parsing."
-        return
-    }
-
-    Write-Host "`n----- Processing Deep Links -----"
-
-    foreach ($deepLink in $deepLinkData) {
-        # Check if it has a DeepLink
-        if ($deepLink.DeepLink) {
-            $result = Create-Deep-Link-Shortcut -settingArray $deepLink
-
-            if ($result) {
-                Write-Host "Created Deep Link Shortcut: $($deepLink.Description)"
-                # Add the updated deepLink object to the processed data array. Will also now contain FullCommand and ShortcutPath
-                $deepLinksProcessedData += $result
-            } else {
-                Write-Host "Failed to create Deep Link shortcut: $($deepLink.Description)"
-            }
-        }
-    }
-}
-
 # Loop for CLSID Links
 if (-not $SkipCLSID) {
     # Retrieve all CLSIDs with a "ShellFolder" subkey from the registry.
@@ -2947,6 +2920,54 @@ if (-not $SkipTaskLinks) {
     }
 }
 
+# Loop for Deep Links
+if (-not $SkipDeepLinks -and $allSettingsXmlPath) {
+    # Process other settings data
+    $deepLinkData = Get-AllSettings-Data -xmlFilePath $allSettingsXmlPath -SaveXML:(!$NoStatistics)
+
+    if ($null -eq $deepLinkData) {
+        Write-Host "No MS Settings data found or error occurred while parsing."
+        return
+    }
+
+    Write-Host "`n----- Processing Deep Links -----"
+
+    foreach ($deepLink in $deepLinkData) {
+        $existingTaskLink = ""
+        # Check if it has a DeepLink
+        if ($deepLink.DeepLink) {
+            # If set to not create duplicate deeplinks, check if a task link (check $task.Command in $tasklinks) with the same command already exists, and skip if so
+            if (-not $AllowDuplicateDeepLinks -and -not $SkipTaskLinks) {
+
+                foreach ($taskLink in $taskLinks) {
+                    $trimmedCommand = $taskLink.Command.Trim()
+                    $trimmedDeepLink = $deepLink.DeepLink.Trim()
+
+                    if (($trimmedCommand -eq $trimmedDeepLink) -and ($taskLink.Name -eq $deepLink.Description)) {
+                        $existingTaskLink = $taskLink
+                        break
+                    }
+                }
+
+                if ($existingTaskLink) {
+                    Write-Verbose "Skipping Deep Link: $($deepLink.Description) as a task link with the same command already exists"
+                    continue
+                }
+            }
+
+            $result = Create-Deep-Link-Shortcut -settingArray $deepLink
+
+            if ($result) {
+                Write-Host "Created Deep Link Shortcut: $($deepLink.Description)"
+                # Add the updated deepLink object to the processed data array. Will also now contain FullCommand and ShortcutPath
+                $deepLinksProcessedData += $result
+            } else {
+                Write-Host "Failed to create Deep Link shortcut: $($deepLink.Description)"
+            }
+        }
+    }
+}
+
 # Loop for MS-settings: Links
 if (-not $SkipMSSettings) {
     $msSettingsList = Get-MS-SettingsFrom-SystemSettingsDLL -DllPath $SystemSettingsDllPath
@@ -3095,4 +3116,8 @@ Write-Host $(if ($SkipURLProtocols) { "   (Skipped)" })
 
 Write-Host "`n------------------------------------------------`n"
 
-Read-Host "Press Enter to exit"
+if (-not $NoGUI) {
+    Write-Host "Press any key to exit..." -NoNewline
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+}
+
