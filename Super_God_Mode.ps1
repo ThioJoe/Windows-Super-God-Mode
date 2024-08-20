@@ -2958,7 +2958,7 @@ if (-not $SkipDeepLinks -and $allSettingsXmlPath) {
                     $trimmedCommand = $taskLink.Command.Trim()
                     $trimmedDeepLink = $deepLink.DeepLink.Trim()
 
-                    if (($trimmedCommand -eq $trimmedDeepLink) -and ($taskLink.Name -eq $deepLink.Description)) {
+                    if ($trimmedCommand -eq $trimmedDeepLink) {
                         $existingTaskLink = $taskLink
                         break
                     }
