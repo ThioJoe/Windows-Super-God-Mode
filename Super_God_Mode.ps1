@@ -2667,7 +2667,7 @@ function Create-URL-Protocols-CSVFile {
     $csvContent | Out-File -FilePath $outputPath -Encoding utf8
 }
 
-function Create-Protocol-Shortcut{
+function Create-Protocol-Shortcut2{
     param (
         [string]$protocol,
         [string]$name,
@@ -2709,6 +2709,30 @@ function Create-Protocol-Shortcut{
     }
     catch {
         Write-Host "Error creating shortcut for $name`: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+# Alternate version of Create-Protocol-Shortcut that creates a .url file instead of a .lnk file
+function Create-Protocol-Shortcut {
+    param (
+        [string]$protocol,
+        [string]$name,
+        #[string]$command,
+        [string]$iconPath,
+        [string]$shortcutPath
+    )
+    Write-Verbose "Creating URL file for $protocol"
+    try {
+        $urlFileContent = "[InternetShortcut]`nURL=$protocol`:///`n"
+        if ($iconPath) {
+            $urlFileContent += "IconFile=$iconPath`n"
+        }
+        $urlFileContent | Out-File -FilePath $shortcutPath -Encoding ascii
+        return $true
+    }
+    catch {
+        Write-Host "Error creating URL file for $name`: $($_.Exception.Message)"
         return $false
     }
 }
@@ -3033,7 +3057,7 @@ if (-not $SkipURLProtocols){
         } else {
             $protocol.IconPath
         }
-        $success = Create-Protocol-Shortcut -protocol $protocol.Protocol -name $protocol.Name -command $protocol.Command -iconPath $iconPath -shortcutPath (Join-Path $URLProtocolLinksOutputFolder "$($protocol.Protocol).lnk")
+        $success = Create-Protocol-Shortcut -protocol $protocol.Protocol -name $protocol.Name -command $protocol.Command -iconPath $iconPath -shortcutPath (Join-Path $URLProtocolLinksOutputFolder "$($protocol.Protocol).url")
         if ($success) {
             Write-Host "Created URL Protocol Shortcut: $($protocol.Name)"
         } else {
