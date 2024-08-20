@@ -1,8 +1,19 @@
 # Windows "Super God Mode"
 
-This PowerShell script creates shortcuts to all special shell folders, named folders, task links, system settings, deep links, and URL protocols in Windows, providing easy access to a wide range of system settings and features. It was inspired by the famously nicknamed "God Mode" folder and creates many more shortcuts than even that.
+This PowerShell script <b>creates shortcuts to all special shell folders, named folders, task links, system settings, deep links, and URL protocols in Windows</b>, providing easy access to a wide range of system settings and features.
 
-![Window](https://github.com/user-attachments/assets/bba03bc3-a624-4d2b-aec3-c9404a5cd33f)
+It was inspired by the famously nicknamed "God Mode" folder and creates many more shortcuts than even that.
+
+## Screenshots
+
+  
+<p align="center">
+<img width="700" src="https://github.com/user-attachments/assets/78182f92-658b-41a3-b3bd-9a7805f52c40">
+</p><p align="center">
+<img width="289" alt="Result" src="https://github.com/user-attachments/assets/64172eae-f945-4f65-a55e-966113f322fc">
+<img width="392" alt="Folders" src="https://github.com/user-attachments/assets/b711e44d-5387-4e93-9341-4ce92f5e2dc4">
+</p>
+
 
 
 ## Features
