@@ -2748,8 +2748,20 @@ function Format-FileGrid {
         [switch]$noSort
     )
 
+    if ($fileNames.Count -eq 0) {
+        return
+    }
+
     $indentString = " " * $indent
     $sortedNames = if ($noSort) { $fileNames } else { $fileNames | Sort-Object }
+
+    # If the number of $sortedNames is less than the columnsPerRow, just directly output them in a single row
+    if ($sortedNames.Count -le $columnsPerRow) {
+        # Create padding string of length $minSpacing
+        $padding = " " * $minSpacing
+        Write-Host ($indentString + $prefix + ($sortedNames -join $padding))
+        return
+    }
 
     # Calculate column widths
     $columnWidths = @()
@@ -2782,6 +2794,7 @@ function Format-FileGrid {
         Write-Host ($indentString + $prefix + ($row -join ""))
     }
 }
+
 # =============================================================================================================================
 # ==================================================  MAIN SCRIPT  ============================================================
 # =============================================================================================================================
@@ -3093,9 +3106,10 @@ if (-not $NoStatistics) {
 }
 
 # Output information about the CSV and XML files that were created
-# Collect non-skipped file names
-$displayCsvFiles = $csvFiles.Values | Where-Object { -not $NoStatistics -and -not $_.Skip } | ForEach-Object { $_.Value }
-$displayXmlFiles = $xmlFiles.Values | Where-Object { -not $NoStatistics -and -not $_.Skip } | ForEach-Object { $_.Value }
+if (-not $NoStatistics) {
+    $displayCsvFiles = @($csvFiles.Values | Where-Object { -not $_.Skip } | ForEach-Object { $_.Value })
+    $displayXmlFiles = @($xmlFiles.Values | Where-Object { -not $_.Skip } | ForEach-Object { $_.Value })
+}
 
 # Output results
 if ($displayCsvFiles -or $displayXmlFiles) {
