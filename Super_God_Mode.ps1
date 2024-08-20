@@ -2589,44 +2589,6 @@ function Get-And-Process-URL-Protocols {
         }
     }
 
-    # For remaining protocols, try to get icon from the command if it is a path to an executable
-    foreach ($protocol in $filteredUrlProtocolData) {
-        $iconSources = @()
-        # Some have multiple commands in an array so need to check each one
-        foreach ($command in $protocol.Command) {
-            # Check if it contains .exe or .cpl, but not rundll32.exe
-            if ($command -match '\.(exe|cpl)$' -and $command -notmatch 'rundll32\.exe') {
-                # Need to split on spaces and commas to separate possible arguments
-                $commandParts = $command -split '[\s,]'
-                # Check each part to see if it is a path to an executable or .cpl file, but not if it's rundll32.exe
-                foreach ($part in $commandParts) {
-                    if ($part -match '\.(exe|cpl)$' -and $part -notmatch 'rundll32\.exe') {
-                        $iconSources += $part
-                    }
-                }
-            }
-        }
-        # If there are any icon resources found, try each to see if they exist and check each for an icon
-        if ($iconSources) {
-            foreach ($iconTest in $iconSources) {
-                if (Test-Path $iconTest) {
-                    if (Check-File-For-Icon -FilePath $iconTest) {
-                        $protocol.DerivedIcon = $iconTest
-                        break
-                    }
-                }
-            }
-        }
-    }
-
-    # Remove references to png files in the icon path
-    foreach ($protocol in $filteredUrlProtocolData) {
-        # Need to use } because they would be resource references not pure paths
-        if ($protocol.IconPath -match '\.png}$') {
-            $protocol.IconPath = ""
-        }
-    }
-
     return $filteredUrlProtocolData
 }
 
@@ -2636,7 +2598,7 @@ function Create-URL-Protocols-CSVFile {
         [array]$urlProtocolsData
     )
 
-    $csvContent = "Protocol,Name,Command,Original Icon Path,Derived Icon,Package Name,Package AppName,Package AppD escription,IsMicrosoft`n"
+    $csvContent = "Protocol,Name,Command,Package Name,Package AppName,Package AppD escription,IsMicrosoft`n"
 
     foreach ($item in $urlProtocolsData) {
         $protocol = $item.Protocol -replace '"', '""'
@@ -2645,72 +2607,16 @@ function Create-URL-Protocols-CSVFile {
 
         $name = $item.Name -replace '"', '""'
         $command = $item.Command -replace '"', '""'
-        $iconPath = if ($item.IconPath) {
-            "`"$($item.IconPath -replace '"', '""')`""  # Escape double quotes in the icon path.
-        } else {
-            "None"
-        }
-        $derivedIcon = if ($item.DerivedIcon) {
-            "`"$($item.DerivedIcon -replace '"', '""')`""  # Escape double quotes in the icon path.
-        } else {
-            "None"
-        }
         $packageName = $item.PackageName -replace '"', '""'
         $packageAppName = $item.PackageAppName -replace '"', '""'
         $packageAppDescription = $item.PackageAppDescription -replace '"', '""'
         #$classID = $item.ClassID -replace '"', '""'
         $isMicrosoft = $item.IsMicrosoft
 
-        $csvContent += "`"$protocol`",`"$name`",`"$command`",$iconPath,$derivedIcon,`"$packageName`",`"$packageAppName`",`"$packageAppDescription`",$isMicrosoft`n"
+        $csvContent += "`"$protocol`",`"$name`",`"$command`",`"$packageName`",`"$packageAppName`",`"$packageAppDescription`",$isMicrosoft`n"
     }
 
     $csvContent | Out-File -FilePath $outputPath -Encoding utf8
-}
-
-function Create-Protocol-Shortcut2{
-    param (
-        [string]$protocol,
-        [string]$name,
-        #[string]$command,
-        [string]$iconPath,
-        [string]$shortcutPath
-    )
-    Write-Verbose "Creating shortcut for $protocol"
-    try {
-        $shell = New-Object -ComObject WScript.Shell
-        $shortcut = $shell.CreateShortcut($shortcutPath)
-        $shortcut.TargetPath = $protocol + "://"
-        #$shortcut.Arguments = $protocol
-        if ($iconPath) {
-            Write-Verbose "Setting custom icon: $iconPath"
-            # If it starts with @{ then it's a resource and needs to be resolved
-            if ($iconPath -match '^@{') {
-                try {
-                    $resolvedIconPath = Get-LocalizedString -StringReference $iconPath
-                    Write-Verbose "Resolved icon path: $resolvedIconPath"
-                    $shortcut.IconLocation = $resolvedIconPath
-                } catch {
-                    Write-Verbose "Failed to resolve icon path: $iconPath"
-                    Write-Verbose "Using default icon"
-                    $shortcut.IconLocation = $iconPath
-                }
-            }
-            # If it's not a resource, just set it
-            else {
-                $shortcut.IconLocation = $iconPath
-            }
-        } else {
-            Write-Verbose "No iconPath provided, using default"
-        }
-
-        $shortcut.Save()
-        [System.Runtime.Interopservices.Marshal]::ReleaseComObject($shell) | Out-Null
-        return $true
-    }
-    catch {
-        Write-Host "Error creating shortcut for $name`: $($_.Exception.Message)"
-        return $false
-    }
 }
 
 # Alternate version of Create-Protocol-Shortcut that creates a .url file instead of a .lnk file
@@ -2719,15 +2625,13 @@ function Create-Protocol-Shortcut {
         [string]$protocol,
         [string]$name,
         #[string]$command,
-        [string]$iconPath,
         [string]$shortcutPath
     )
     Write-Verbose "Creating URL file for $protocol"
+    # Write the URL file content to the file
     try {
+        #Windows will automatically display the icon for the protocol, so we don't need to specify it in the URL file
         $urlFileContent = "[InternetShortcut]`nURL=$protocol`:///`n"
-        if ($iconPath) {
-            $urlFileContent += "IconFile=$iconPath`n"
-        }
         $urlFileContent | Out-File -FilePath $shortcutPath -Encoding ascii
         return $true
     }
@@ -3064,13 +2968,7 @@ if (-not $SkipURLProtocols){
     $URLProtocolsData = Get-And-Process-URL-Protocols -CustomLanguageFolder $CustomLanguageFolderPath -OnlyMicrosoftApps:$OnlyMicrosoftApps -permanentProtocolsIgnore $permanentURIProtocols -GetExtraData:$CollectExtraURLProtocolInfo
     #Write-Host "Found $($URLProtocolsData.Count) URL Protocols"
     foreach ($protocol in $URLProtocolsData) {
-        # Check whether to use original icon path or derived icon
-        $iconPath = if ($protocol.DerivedIcon) {
-            $protocol.DerivedIcon
-        } else {
-            $protocol.IconPath
-        }
-        $success = Create-Protocol-Shortcut -protocol $protocol.Protocol -name $protocol.Name -command $protocol.Command -iconPath $iconPath -shortcutPath (Join-Path $URLProtocolLinksOutputFolder "$($protocol.Protocol).url")
+        $success = Create-Protocol-Shortcut -protocol $protocol.Protocol -name $protocol.Name -command $protocol.Command -shortcutPath (Join-Path $URLProtocolLinksOutputFolder "$($protocol.Protocol).url")
         if ($success) {
             Write-Host "Created URL Protocol Shortcut: $($protocol.Name)"
         } else {
