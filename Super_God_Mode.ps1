@@ -182,6 +182,7 @@ function Show-SuperGodModeDialog {
         KeepPreviousOutputFolders = "Doesn't delete existing output folders before running the script. &#x0a;It will still overwrite any existing shortcuts if being created again."
         NoStatistics = "Skip creating the statistics folder and files containing CSV data about the shell folders &#x0a;and tasks and XML files with other collected data"
         SkipCLSID = "Skip creating shortcuts for shell folders based on CLSIDs"
+        AllowDuplicateDeepLinks = "Allow the creation of Deep Links that are the same as an existing Task Link. &#x0a;By default, such duplicates are not included in the Deep Links folder."
         SkipNamedFolders = "Skip creating shortcuts for named special folders"
         SkipTaskLinks = "Skip creating shortcuts for task links (sub-pages within shell folders and control panel menus)"
         SkipMSSettings = "Skip creating shortcuts for ms-settings: links (system settings pages)"
@@ -302,24 +303,29 @@ function Show-SuperGodModeDialog {
 
                         <GroupBox Header="Alternative Options" Grid.Column="0" Style="{StaticResource DarkModeGroupBoxStyle}">
                             <StackPanel Margin="5">
-                                <CheckBox x:Name="chkDontGroupTasks" Content="Don't Group Tasks" Margin="0,5,0,5" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkDontGroupTasks" Content="Don't Group Tasks" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.DontGroupTasks)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkUseAlternativeCategoryNames" Content="Use Alternative Category Names" Margin="0,5,0,5" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkUseAlternativeCategoryNames" Content="Use Alternative Category Names" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.UseAlternativeCategoryNames)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkAllURLProtocols" Content="Include third-party app URL Protocols" Margin="0,5,0,5" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkAllURLProtocols" Content="Include third-party app URL Protocols" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.AllURLProtocols)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkCollectExtraURLProtocolInfo" Content="Collect Extra URL Protocol Info" Margin="0,5,0,5" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkCollectExtraURLProtocolInfo" Content="Collect Extra URL Protocol Info" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.CollectExtraURLProtocolInfo)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
+                                <CheckBox x:Name="chkAllowDuplicateDeepLinks" Content="Allow Duplicate Deep Links" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.AllowDuplicateDeepLinks)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
                             </StackPanel>
@@ -418,6 +424,7 @@ function Show-SuperGodModeDialog {
     $chkCollectExtraURLProtocolInfo = $window.FindName("chkCollectExtraURLProtocolInfo")
     $chkKeepPreviousOutputFolders = $window.FindName("chkKeepPreviousOutputFolders")
     $chkNoStatistics = $window.FindName("chkNoStatistics")
+    $chkAllowDuplicateDeepLinks = $window.FindName("chkAllowDuplicateDeepLinks")
     $chkSkipCLSID = $window.FindName("chkSkipCLSID")
     $chkSkipNamedFolders = $window.FindName("chkSkipNamedFolders")
     $chkSkipTaskLinks = $window.FindName("chkSkipTaskLinks")
@@ -500,6 +507,7 @@ function Show-SuperGodModeDialog {
         CollectExtraURLProtocolInfo = $chkCollectExtraURLProtocolInfo.IsChecked
         KeepPreviousOutputFolders = $chkKeepPreviousOutputFolders.IsChecked
         NoStatistics = $chkNoStatistics.IsChecked
+        AllowDuplicateDeepLinks = $chkAllowDuplicateDeepLinks.IsChecked
         SkipCLSID = $chkSkipCLSID.IsChecked
         SkipNamedFolders = $chkSkipNamedFolders.IsChecked
         SkipTaskLinks = $chkSkipTaskLinks.IsChecked
@@ -525,6 +533,7 @@ if (-not $NoGUI) {
     $CollectExtraURLProtocolInfo = $params.CollectExtraURLProtocolInfo
     $KeepPreviousOutputFolders = $params.KeepPreviousOutputFolders
     $NoStatistics = $params.NoStatistics
+    $AllowDuplicateDeepLinks = $params.AllowDuplicateDeepLinks
     $SkipCLSID = $params.SkipCLSID
     $SkipNamedFolders = $params.SkipNamedFolders
     $SkipTaskLinks = $params.SkipTaskLinks
