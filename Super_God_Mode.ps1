@@ -13,7 +13,7 @@
 #        Set-ExecutionPolicy -ExecutionPolicy unrestricted -Scope Process
 # 3. Without closing the PowerShell window, run the script by typing the name of the script file starting with  .\  for example:
 #        .\Super_God_Mode.ps1
-# 4. Wait for it to finish, then check the "Shell Folder Shortcuts" folder for the generated shortcuts.
+# 4. Wait for it to finish, then check the "Super God Mode" folder for the generated shortcuts.
 
 # ======================================================================================================
 # ===================================  ARGUMENTS (ALL ARE OPTIONAL)  ===================================
@@ -41,7 +41,7 @@
 #
 # -Output
 #     • String Type
-#     Specify a custom output folder path (relative or absolute) to save the generated shortcuts. If not provided, a folder named "Shell Folder Shortcuts" will be created in the script's directory.
+#     Specify a custom output folder path (relative or absolute) to save the generated shortcuts. If not provided, a folder named "Super God Mode" will be created in the script's directory.
 #
 # -KeepPreviousOutputFolders
 #     • Switch (Takes no values)
@@ -172,6 +172,10 @@ if ($Debug) {
 
 # Function to show a GUI dialog for selecting script options
 function Show-SuperGodModeDialog {
+    # Add param for output folder default name
+    param(
+        [string]$defaultOutputFolderName
+    )
     # Define tooltips here for easy editing
     $tooltips = @{
         # Use &#x0a; for line breaks in the tooltip text
@@ -439,7 +443,6 @@ function Show-SuperGodModeDialog {
 
     # Set default values
     $defaultOutputPath = $PSScriptRoot
-    $defaultOutputFolderName = "Shell Folder Shortcuts"
     $txtOutputPath.Text = $defaultOutputPath
     $txtOutputFolderName.Text = $defaultOutputFolderName
     $txtCurrentPath.Text = [System.IO.Path]::Combine($defaultOutputPath, $defaultOutputFolderName)
@@ -518,10 +521,13 @@ function Show-SuperGodModeDialog {
     }
 }
 
+# Setting the default folder name up here so it can be used in the GUI dialog
+$defaultOutputFolderName = "Super God Mode"
+
 # Start the GUI dialog unless -NoGUI is used
 if (-not $NoGUI) {
     Write-Host "`nUse the GUI window that just appeared to select any options and run the script.`n"
-    $params = Show-SuperGodModeDialog
+    $params = Show-SuperGodModeDialog -defaultOutputFolderName $defaultOutputFolderName
     if ($null -eq $params) {
         Write-host "Script GUI window appears to have been closed. Exiting script.`n" -ForegroundColor Yellow
         exit
@@ -556,8 +562,8 @@ if ($Output) {
         $mainShortcutsFolder = Join-Path $PSScriptRoot $Output
     } else { $mainShortcutsFolder = $Output }
 } else {
-    # Default output folder path is a subfolder named "Shell Folder Shortcuts" in the script's directory
-    $mainShortcutsFolder = Join-Path $PSScriptRoot "Shell Folder Shortcuts"
+    # Default output folder path is a subfolder named "Super God Mode" in the script's directory
+    $mainShortcutsFolder = Join-Path $PSScriptRoot $defaultOutputFolderName
 }
 
 # Define folder names
