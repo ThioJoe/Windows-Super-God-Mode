@@ -75,14 +75,14 @@ function Get-ProtocolsInFile {
 
     foreach ($encodingName in $encodingsToTry) {
         $encoding = [System.Text.Encoding]::GetEncoding($encodingName)
-        
+
         try {
             $content = [System.IO.File]::ReadAllText($filePathToCheck, $encoding)
 
             foreach ($protocol in $protocolsList) {
                 # Different patterns for UTF-8 and Unicode
                 if ($encodingName -eq "UTF-8") {
-                    $uriPattern = [regex]::Escape($protocol) + "://[^""\s<>()\\]+"
+                    $uriPattern = [regex]::Escape($protocol) + "://[^""\s<>()\\``]+"
                 } else {
                     $uriPattern = [regex]::Escape($protocol) + "://[\x20-\x7E]+"
                 }
@@ -90,10 +90,15 @@ function Get-ProtocolsInFile {
                 $matches = [regex]::Matches($content, $uriPattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
 
                 if ($matches.Count -gt 0) {
-                    $results[$protocol] = @($matches | ForEach-Object { 
+                    # Store the matches along with the encoding used and other data
+                    $results[$protocol] = @($matches | ForEach-Object {
+                        # If the match contains a bracket, or ends with an equals sign, mark it as "UsesVariables"
+                        $usesVariables = $_.Value -match "[<>()\[\]]|=$"
+
                         [PSCustomObject]@{
                             FullURL = $_.Value
                             EncodingUsed = $encodingName
+                            UsesVariables = $usesVariables
                         }
                     })
                 }
@@ -146,26 +151,50 @@ $appDetails = Get-AppDetails
 $results = @()
 $searchedFiles = @()
 
+# Define ignored file extensions
+$ignoredExtensions = @(
+    # Images
+    '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', ".ico",
+    # Other irrelevant file types
+    ".p7x", ".ttf", ".onnxe",
+    # Compressed or other files that don't produce reliable results
+    ".bundle", '.vsix'
+)
+
+# Main script execution
+$appDetails = Get-AppDetails
+
+$results = @()
+$searchedFiles = @()
+
+$totalFiles = ($appDetails | ForEach-Object {
+    Get-ChildItem -Path $_.Folder -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions }
+}).Count
+
+$processedFiles = 0
+$lastPercentage = -1  # Initialize to -1 to ensure the first 0% is displayed
+$processedFiles = 0
+$currentPercentage = 0
+
 foreach ($app in $appDetails) {
-    Write-Host "Searching in $($app.Name) | For URIs: $($app.URIs -join ', ')"
-    $files = Get-ChildItem -Path $app.Folder -Recurse -File | Where-Object { $_.Extension -notin @(
-            # ----- Files to Ignore -----
-            # Images
-            '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', ".ico",
-            # Other irrelevant file types
-            ".p7x", ".ttf", ".onnxe"
-            # Compressed or other files that don't produce reliable results
-            ".bundle", '.vsix'
-        )
-    }
+    Write-Verbose "`rSearching in $($app.Name) | For URIs: $($app.URIs -join ', ')"
+    $files = Get-ChildItem -Path $app.Folder -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions }
     foreach ($file in $files) {
         $searchedFiles += $file.FullName
         $fileResults = Get-ProtocolsInFile -protocolsList $app.URIs -filePathToCheck $file.FullName -encodingMap $encodingMap
         if ($fileResults -and $fileResults.Matches.Count -gt 0) {
             $results += $fileResults
         }
+        $processedFiles++
+        $currentPercentage = [math]::Floor(($processedFiles / $totalFiles) * 100)
+        if ($currentPercentage -ne $lastPercentage) {
+            Write-Host "`rProgress: $currentPercentage%" -NoNewline
+            $lastPercentage = $currentPercentage
+        }
     }
 }
+
+Write-Host "`nProcessing complete.$(" " * $paddingLength)"
 
 # Prepare data for CSV export
 $csvData = @()
@@ -178,6 +207,7 @@ foreach ($result in $results) {
                     Protocol = $protocol
                     FullURL = $match.FullURL
                     EncodingUsed = $match.EncodingUsed
+                    UsesVariables = $match.UsesVariables
                 }
             }
         }
