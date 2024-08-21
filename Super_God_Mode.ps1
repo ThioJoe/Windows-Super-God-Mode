@@ -141,6 +141,7 @@ param(
     [switch]$SkipMSSettings,
     [switch]$SkipDeepLinks,
     [switch]$SkipURLProtocols,
+    [switch]$SkipCrawlingURLPages,
     # Debugging
     [switch]$Verbose,
     [switch]$Debug,
@@ -575,6 +576,7 @@ $taskLinksFolderName = "All Task Links"
 $msSettingsFolderName = "System Settings"
 $deepLinksFolderName = "Deep Links"
 $urlProtocolsFolderName = "URL Protocols"
+$URLProtocolPageLinksFolderName = "URL Protocol Direct Links"
 $statisticsFolderName = "_Script Result Statistics"
 
 # Construct paths for subfolders
@@ -584,6 +586,7 @@ $taskLinksOutputFolder = Join-Path $mainShortcutsFolder $taskLinksFolderName
 $msSettingsOutputFolder = Join-Path $mainShortcutsFolder $msSettingsFolderName
 $deepLinksOutputFolder = Join-Path $mainShortcutsFolder $deepLinksFolderName
 $URLProtocolLinksOutputFolder = Join-Path $mainShortcutsFolder $urlProtocolsFolderName
+$URLProtocolPageLinksOutputFolder = Join-Path $mainShortcutsFolder $URLProtocolPageLinksFolderName
 $statisticsOutputFolder = Join-Path $mainShortcutsFolder $statisticsFolderName
 
 # Define hashtables for CSV and XML files
@@ -594,6 +597,7 @@ $csvFiles = @{
     MSSettings = @{ Value = "MS_Settings.csv"; Skip = $SkipMSSettings }
     DeepLinks = @{ Value = "Deep_Links.csv"; Skip = $SkipDeepLinks }
     URLProtocols = @{ Value = "URL_Protocols.csv"; Skip = $SkipURLProtocols }
+    URLProtocolPages = @{ Value = "URL_Protocol_Pages.csv"; Skip = $SkipCrawlingURLPages }
 }
 $xmlFiles = @{
     Shell32Content = @{ Value = "Shell32_Tasks.xml"; Skip = $SkipTaskLinks }
@@ -608,6 +612,7 @@ $taskLinksCsvPath = Join-Path $statisticsOutputFolder $csvFiles.TaskLinks.Value
 $msSettingsCsvPath = Join-Path $statisticsOutputFolder $csvFiles.MSSettings.Value
 $deepLinksCsvPath = Join-Path $statisticsOutputFolder $csvFiles.DeepLinks.Value
 $URLProtocolLinksCsvPath = Join-Path $statisticsOutputFolder $csvFiles.URLProtocols.Value
+$URLProtocolPageLinksCsvPath = Join-Path $statisticsOutputFolder $csvFiles.URLProtocolPages.Value
 
 # XML content file paths
 $xmlContentFilePath = Join-Path $statisticsOutputFolder $xmlFiles.Shell32Content.Value
@@ -698,6 +703,9 @@ if (-not $KeepPreviousOutputFolders) {
             if (Test-Path $URLProtocolLinksOutputFolder){
                 Remove-Item -Path $URLProtocolLinksOutputFolder -Recurse -Force
             }
+            if (Test-Path $URLProtocolPageLinksOutputFolder){
+                Remove-Item -Path $URLProtocolPageLinksOutputFolder -Recurse -Force
+            }
         }
     } catch {
         Write-Error "Failed to delete contents of previous output folder: $_"
@@ -735,6 +743,11 @@ if ($CustomSystemSettingsDLLPath) {
     } else {
         $systemSettingsDllPath = $CustomSystemSettingsDLLPath
     }
+}
+
+# Validate or set appropriate incompatible or dependent switches
+if ($SkipURLProtocols) {
+    $SkipCrawlingURLPages = $true
 }
 
 # Function to create a folder with a custom icon and set Details view
@@ -799,6 +812,9 @@ if (-not $SkipDeepLinks) {
 }
 if (-not $SkipURLProtocols) {
     New-FolderWithIcon -FolderPath $URLProtocolLinksOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "46"
+}
+if (-not $SkipCrawlingURLPages) {
+    New-FolderWithIcon -FolderPath $URLProtocolPageLinksOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "46"
 }
 
 # If -SaveCSV or -SaveXML switches are used, create the statistics folder and set to default folder icon
@@ -2343,9 +2359,25 @@ function Get-AppDetails-From-AppxManifest {
     )
 
     $urlProtocolData = @()
+
+    # Will also want to store data relative to the app to use for crawling app files for URL links
+    $associatedProtocolsPerApp = @()
+
+
     foreach ($appx in Get-AppxPackage) {
         #$isMicrosoft = $appx.Publisher -match "^CN=Microsoft Corporation," -or $protocol -match "^ms-|^microsoft" -or $appx.PublisherId -eq "8wekyb3d8bbwe" -or $appx.PublisherId -eq "cw5n1h2txyewy"
         $isMicrosoft = ($appx.PublisherId -eq "8wekyb3d8bbwe") -or ($appx.PublisherId -eq "cw5n1h2txyewy")
+
+        # Just store data for all apps for now. Create object to put into $associatedProtocolsPerApp
+        $appInfo = [PSCustomObject]@{
+            PackageFullName = $appx.PackageFullName
+            PackageName = $appx.Name
+            InstallLocation = $appx.InstallLocation
+            Publisher = $appx.Publisher
+            PublisherId = $appx.PublisherId
+            IsMicrosoft = $isMicrosoft
+            Protocols = @()
+        }
 
         if ($OnlyMicrosoftApps -and -not $isMicrosoft) {
             continue
@@ -2409,6 +2441,9 @@ function Get-AppDetails-From-AppxManifest {
                     $PackageName = Get-LocalizedString -StringReference $PackageName -AppxManifestPath $manifestPath -CustomLanguageFolder $CustomLanguageFolder
                 }
 
+                # Add protocol data to the appInfo object
+                $appInfo.Protocols += $protocol
+
                 $protocolData = [PSCustomObject]@{
                     Protocol = $protocol
                     Name = $displayName
@@ -2423,16 +2458,25 @@ function Get-AppDetails-From-AppxManifest {
                     #ClassID = ""  # AppxManifest doesn't include ClassID
                     IsMicrosoft = $isMicrosoft
                     #ManifestPath = $manifestPath
+                    InstallLocation = $location
                 }
 
                 $urlProtocolData += $protocolData
+
             }
         }
+        $associatedProtocolsPerApp+= $appInfo
     }
-    # Sort by protocol
+    # Sort $urlProtocolData by protocol
     $urlProtocolData = $urlProtocolData | Sort-Object -Property Protocol
+    # Sort $associatedProtocolsPerApp by PackageName
+    $associatedProtocolsPerApp = $associatedProtocolsPerApp | Sort-Object -Property PackageName
 
-    return $urlProtocolData
+    # Return both arrays
+    return @{
+        UrlProtocolData = $urlProtocolData
+        AssociatedProtocolsPerApp = $associatedProtocolsPerApp
+    }
 }
 
 # Deep copy function using serialization and deserialization
@@ -2545,7 +2589,11 @@ function Get-And-Process-URL-Protocols {
     #Sort the array by protocol name
     $urlProtocolDataOriginal = $urlProtocolDataOriginal | Sort-Object -Property Protocol
 
-    $protocolAppxData = Get-AppDetails-From-AppxManifest -CustomLanguageFolder $CustomLanguageFolder -OnlyMicrosoftApps:$OnlyMicrosoftApps -GetExtraData:$GetExtraData
+    # Returns two arrays, one with the original data and one with the appx data, so need to split it up
+    $arrayProtocolAndAppxData = Get-AppDetails-From-AppxManifest -CustomLanguageFolder $CustomLanguageFolder -OnlyMicrosoftApps:$OnlyMicrosoftApps -GetExtraData:$GetExtraData
+    $protocolAppxData = $arrayProtocolAndAppxData.UrlProtocolData
+    $associatedProtocolsPerApp = $arrayProtocolAndAppxData.AssociatedProtocolsPerApp
+
     Write-host "Appx Data Count: $($protocolAppxData.Count)"
 
     # This makes it so Appx details are preferred over original existing
@@ -2591,7 +2639,11 @@ function Get-And-Process-URL-Protocols {
         }
     }
 
-    return $filteredUrlProtocolData
+    # Return both arrays
+    return @{
+        FilteredUrlProtocolData = $filteredUrlProtocolData
+        AssociatedProtocolsPerApp = $associatedProtocolsPerApp
+    }
 }
 
 function Create-URL-Protocols-CSVFile {
@@ -2600,7 +2652,7 @@ function Create-URL-Protocols-CSVFile {
         [array]$urlProtocolsData
     )
 
-    $csvContent = "Protocol,Name,Command,Package Name,Package AppName,Package AppD escription,IsMicrosoft`n"
+    $csvContent = "Protocol,Name,Command,Package Name,Package AppName,Package App Description,IsMicrosoft`n"
 
     foreach ($item in $urlProtocolsData) {
         $protocol = $item.Protocol -replace '"', '""'
@@ -2698,6 +2750,220 @@ function Format-FileGrid {
             }
         }
         Write-Host ($indentString + $prefix + ($row -join ""))
+    }
+}
+
+# Function to search for protocol URLs in AppX package files
+function Search-ProtocolURLsInAppXFiles {
+    param (
+        [Parameter(Mandatory=$true)]
+        $associatedProtocolsPerApp,
+        $URLProtocolsData,
+        [switch]$SkipAppXURLSearch
+    )
+
+    if ($SkipAppXURLSearch) {
+        Write-Host "Skipping AppX URL search as requested."
+        return $null
+    }
+
+    $results = @()
+    $searchedFiles = @()
+    $ignoredExtensions = @('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', ".ico", ".p7x", ".ttf", ".onnxe", ".bundle", '.vsix')
+    $encodingMap = @{
+        ".txt" = "UTF-8"; ".xml" = "UTF-8"; ".json" = "UTF-8"; ".dll" = "Unicode"; 
+        ".exe" = "Unicode"; ".js" = "UTF-8"; ".map" = "UTF-8"
+    }
+
+    # Only want to search packages that are in $URLProtocolsData
+    $packagesToSearchList = $URLProtocolsData.PackageName
+    # Remove empty lines from the list and deduplicate
+    $packagesToSearchList = $packagesToSearchList | Where-Object { $_ -ne "" }
+    $packagesToSearchList = $packagesToSearchList | Sort-Object -Unique
+
+    # Create new object by extracting out from $associatedProtocolsPerApp only the entries that are in $packagesToSearch
+    $packagesToSearch = $associatedProtocolsPerApp | Where-Object { $packagesToSearchList -contains $_.PackageName }
+
+    $totalFiles = ($packagesToSearch | ForEach-Object {
+        Get-ChildItem -Path $_.InstallLocation -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions }
+    }).Count
+
+    $processedFiles = 0
+    $lastPercentage = -1
+    $processedFiles = 0
+    $searchedFiles = @()
+
+    foreach ($appPackage in $packagesToSearch) {
+        $URIsList = $appPackage.Protocols
+        $folderPath = $appPackage.InstallLocation
+
+        Write-Verbose "`rSearching in $($appPackage.PackageName) | For URIs: $($URIsList -join ', ')"
+        $files = Get-ChildItem -Path $folderPath -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions }
+        foreach ($file in $files) {
+            $searchedFiles += $file.FullName
+            $fileResults = Get-ProtocolsInFile -protocolsList $URIsList -filePathToCheck $file.FullName -encodingMap $encodingMap
+            if ($fileResults -and $fileResults.Matches.Count -gt 0) {
+                $results += $fileResults
+            }
+            $processedFiles++
+            $currentPercentage = [math]::Floor(($processedFiles / $totalFiles) * 100)
+            if ($currentPercentage -ne $lastPercentage) {
+                Write-Host "`rProgress: $currentPercentage%" -NoNewline
+                $lastPercentage = $currentPercentage
+            }
+        }
+    }
+    Write-Host "" # Write blank line because we were using carriage return
+
+    # Remove any entries where the fullpath is a duplicate of another
+    $resultsUniqueFullURL = $results | Sort-Object -Property FullURL -Unique
+
+    return $resultsUniqueFullURL
+}
+
+# Function to get protocols in a file
+function Get-ProtocolsInFile {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string[]]$protocolsList,
+        [Parameter(Mandatory=$true)]
+        [string]$filePathToCheck,
+        [Parameter(Mandatory=$true)]
+        [hashtable]$encodingMap
+    )
+
+    if (-not (Test-Path $filePathToCheck)) {
+        Write-Error "File not found: $filePathToCheck"
+        return $null
+    }
+
+    $resultsArray = @()
+    $fileExtension = [System.IO.Path]::GetExtension($filePathToCheck).ToLower()
+    $encodingsToTry = if ($encodingMap.ContainsKey($fileExtension)) { @($encodingMap[$fileExtension]) } else { @("UTF-8", "Unicode") }
+
+    foreach ($encodingName in $encodingsToTry) {
+        $encoding = [System.Text.Encoding]::GetEncoding($encodingName)
+        try {
+            $content = [System.IO.File]::ReadAllText($filePathToCheck, $encoding)
+            foreach ($protocol in $protocolsList) {
+                $uriPattern = if ($encodingName -eq "UTF-8") {
+                    # [regex]::Escape($protocol) + "://[^""\s<>()\\``]+"
+                    [regex]::Escape($protocol) + "://[^`"\s<>()\\``]+" # Need to escape with backticks because powershell
+                } else {
+                    # [regex]::Escape($protocol) + "://[\x20-\x7E]+"
+                    [regex]::Escape($protocol) + "://[ -~]+"
+                }
+                $matches = [regex]::Matches($content, $uriPattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+                if ($matches.Count -gt 0) {
+                    $resultsArray += @($matches | ForEach-Object {
+                        [PSCustomObject]@{
+                            FullURL = $_.Value -replace '".*$', '' # Further clean up the url. Cut off anything after a double quote, including the quote
+                            EncodingUsed = $encodingName
+                            UsesVariables = $_.Value -match "[<>()\[\]{}]|=$|:$" # If it contains characters that indicate it might be a variable or a command, mark it as such, or ends with characters that suggest it expects a value after
+                            FilePath = $filePathToCheck
+                            Protocol = $protocol
+                        }
+                    })
+                }
+            }
+            if ($resultsArray.Count -gt 0) { break }
+        }
+        catch {
+            Write-Warning "Error processing file $filePathToCheck with $encodingName encoding: $_"
+        }
+    }
+
+    # Returning the modified results array
+    return $resultsArray
+}
+
+# Function to create CSV for AppX URL search results
+function Create-AppXURLSearchResultsToCSV {
+    param (
+        [Parameter(Mandatory=$true)]
+        [Array]$urlItemsData,
+        [Parameter(Mandatory=$true)]
+        [string]$outputPath
+    )
+
+    # Manually create CSV data
+    # Create the column headers
+    $csvContent = "Protocol,Full URL,Encoding Used,Embedded Variables, Found in File`n"
+
+    # Loop through each URL item and add it to the CSV content
+    foreach ($urlItem in $urlItemsData) {
+        $protocol = $urlItem.Protocol
+        $fullURL = $urlItem.FullURL
+        $encodingUsed = $urlItem.EncodingUsed
+        $usesVariables = $urlItem.UsesVariables
+        $filePath = $urlItem.FilePath
+
+        # Escape double qoutes in everything
+        $fullURL = $fullURL -replace '"', '""'
+        $protocol = $protocol -replace '"', '""'
+        $encodingUsed = $encodingUsed -replace '"', '""'
+        $usesVariables = $usesVariables -replace '"', '""'
+        $filePath = $filePath -replace '"', '""'
+
+        # Add the URL item to the CSV content
+        $csvContent += "`"$protocol`",`"$fullURL`",`"$encodingUsed`",`"$usesVariables`",`"$filePath`"`n"
+    }
+
+    # Write to csv file
+    $csvContent | Out-File -FilePath $outputPath -Encoding utf8
+
+}
+
+# Function to create shortcuts for AppX URL search results
+function Create-AppXURLShortcuts {
+    param (
+        [Parameter(Mandatory=$true)]
+        [Array]$foundURLsItems,
+        [Parameter(Mandatory=$true)]
+        [string]$shortcutFolder
+    )
+
+    # Create list of created shortcut names to avoid duplicates
+    $createdShortcuts = @()
+
+    foreach ($urlItem in $foundURLsItems) {
+        # If the URL uses variables, skip creating a shortcut for it
+        if ($urlItem.UsesVariables) {
+            Write-Verbose "Skipping URL with variables: $($urlItem.FullURL)"
+            continue
+        }
+
+        $fullURL = $urlItem.FullURL
+        Write-Verbose "Creating URL file for $fullURL"
+
+        # Crop off any parameter part of the URL
+        $simplifiedURL = $fullURL -replace '\?.*$', ''
+
+        # Sanitize the URL to make it a valid filename
+        $sanitizedURLForName = $simplifiedURL -replace '://', ' - ' # Replace the :// with a space dash space
+        $sanitizedURLForName = $sanitizedURLForName -replace '[\\/:*?"<>|]', '_'
+        $sanitizedURLForName = $sanitizedURLForName -replace '_+$', '' # Cut off any extra underscore at the end
+
+        # If shortcut of same name was already created, append a number to the name.
+        $i = 1
+        $originalSanitizedURLForName = $sanitizedURLForName
+        while ($createdShortcuts -contains $sanitizedURLForName) {
+            $sanitizedURLForName = "$originalSanitizedURLForName ($i)"
+            $i++
+        }
+
+        $shortcutPath = Join-Path $shortcutFolder "$sanitizedURLForName.url"
+
+        # Write the URL file content to the file
+        try {
+            #Windows will automatically display the icon for the protocol, so we don't need to specify it in the URL file
+            $urlFileContent = "[InternetShortcut]`nURL=$fullURL`n"
+            $urlFileContent | Out-File -FilePath $shortcutPath -Encoding ascii
+            $createdShortcuts += $sanitizedURLForName
+        }
+        catch {
+            Write-Host "Error creating URL file for $fullURL`: $($_.Exception.Message)"
+        }
     }
 }
 
@@ -2968,14 +3234,26 @@ if (-not $SkipURLProtocols){
         $OnlyMicrosoftApps = $true
     }
 
-    $URLProtocolsData = Get-And-Process-URL-Protocols -CustomLanguageFolder $CustomLanguageFolderPath -OnlyMicrosoftApps:$OnlyMicrosoftApps -permanentProtocolsIgnore $permanentURIProtocols -GetExtraData:$CollectExtraURLProtocolInfo
-    #Write-Host "Found $($URLProtocolsData.Count) URL Protocols"
+    $protocolAndAppxData = Get-And-Process-URL-Protocols -CustomLanguageFolder $CustomLanguageFolderPath -OnlyMicrosoftApps:$OnlyMicrosoftApps -permanentProtocolsIgnore $permanentURIProtocols -GetExtraData:$CollectExtraURLProtocolInfo
+    $URLProtocolsData = $protocolAndAppxData.FilteredUrlProtocolData
+    $associatedProtocolsPerApp = $protocolAndAppxData.AssociatedProtocolsPerApp
+
     foreach ($protocol in $URLProtocolsData) {
         $success = Create-Protocol-Shortcut -protocol $protocol.Protocol -name $protocol.Name -command $protocol.Command -shortcutPath (Join-Path $URLProtocolLinksOutputFolder "$($protocol.Protocol).url")
         if ($success) {
             Write-Host "Created URL Protocol Shortcut: $($protocol.Name)"
         } else {
             Write-Host "Failed to create URL Protocol shortcut: $($protocol.Name)"
+        }
+    }
+
+    if (-not $SkipCrawlingURLPages) {
+        Write-Host "`n----- Searching For Hidden URL Links -----"
+        # Search for URLs in AppX package files by brute force
+        $appXURLSearchResults = Search-ProtocolURLsInAppXFiles -associatedProtocolsPerApp $associatedProtocolsPerApp -URLProtocolsData $URLProtocolsData -SkipAppXURLSearch:$SkipCrawlingURLPages
+
+        if ($appXURLSearchResults) {
+            Create-AppXURLShortcuts -foundURLsItems $appXURLSearchResults -shortcutFolder $URLProtocolPageLinksOutputFolder
         }
     }
 }
@@ -3003,6 +3281,9 @@ if (-not $NoStatistics) {
     }
     if (-not $SkipURLProtocols) {
         Create-URL-Protocols-CSVFile -outputPath $URLProtocolLinksCsvPath -urlProtocolsData $URLProtocolsData
+    }
+    if (-not $SkipCrawlingURLPages -and -not $SkipURLProtocols) {
+        Create-AppXURLSearchResultsToCSV -urlItemsData $appXURLSearchResults -outputPath $URLProtocolPageLinksCsvPath
     }
 }
 
@@ -3038,7 +3319,7 @@ Write-Host   "      Windows Super God Mode Script Result      " -ForeGroundColor
 Write-Host   "------------------------------------------------`n"
 
 # Display total counts
-$totalCount = $clsidInfo.Count + $namedFolders.Count + $taskLinks.Count + $msSettingsList.Count + $deepLinksProcessedData.Count + $URLProtocolsData.Count
+$totalCount = $clsidInfo.Count + $namedFolders.Count + $taskLinks.Count + $msSettingsList.Count + $deepLinksProcessedData.Count + $URLProtocolsData.Count + $appXURLSearchResults.Results.Count
 
 # Output the total counts of each, and color the numbers to stand out. Done by writing the text and then the number separately with -NoNewLine. If it was skipped, also add that but not colored.
 Write-Host "         Total Shortcuts Created: " -NoNewline
@@ -3067,6 +3348,10 @@ Write-Host $(if ($SkipDeepLinks) { "   (Skipped)" })
 Write-Host "           > URL Protocols:   " -NoNewline
 Write-Host $URLProtocolsData.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipURLProtocols) { "   (Skipped)" })
+
+Write-Host "           > URL Pages:       " -NoNewline
+Write-Host $appXURLSearchResults.Results.Count -ForegroundColor Cyan -NoNewline
+Write-Host $(if ($SkipCrawlingURLPages -or $SkipURLProtocols) { "   (Skipped)" })
 
 Write-Host "`n------------------------------------------------`n"
 
