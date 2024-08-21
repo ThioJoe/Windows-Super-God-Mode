@@ -184,14 +184,14 @@ function Show-SuperGodModeDialog {
         AllURLProtocols = "When creating shortcuts to URL protocols like 'ms-settings://', include third party &#x0a;URL protocols from installed software, not just Microsoft or system protocols"
         CollectExtraURLProtocolInfo = "Collects extra information about URL protocols that goes into the CSV spreadsheet. &#x0a;Optional because it is not used in the shortcuts and takes slightly longer."
         KeepPreviousOutputFolders = "Doesn't delete existing output folders before running the script. &#x0a;It will still overwrite any existing shortcuts if being created again."
-        NoStatistics = "Skip creating the statistics folder and files containing CSV data about the shell folders &#x0a;and tasks and XML files with other collected data"
-        SkipCLSID = "Skip creating shortcuts for shell folders based on CLSIDs"
+        CollectStatistics = "Create the statistics folder and files containing CSV data about the shell folders &#x0a;and tasks and XML files with other collected data"
         AllowDuplicateDeepLinks = "Allow the creation of Deep Links that are the same as an existing Task Link. &#x0a;By default, such duplicates are not included in the Deep Links folder."
-        SkipNamedFolders = "Skip creating shortcuts for named special folders"
-        SkipTaskLinks = "Skip creating shortcuts for task links (sub-pages within shell folders and control panel menus)"
-        SkipMSSettings = "Skip creating shortcuts for ms-settings: links (system settings pages)"
-        SkipDeepLinks = "Skip creating shortcuts for deep links (direct links to various settings menus across Windows)"
-        SkipURLProtocols = "Skip creating shortcuts for URL protocols (e.g., ms-settings:, etc.)"
+        CollectCLSID = "Create shortcuts for shell folders based on CLSIDs"
+        CollectNamedFolders = "Create shortcuts for named special folders"
+        CollectTaskLinks = "Create shortcuts for task links (sub-pages within shell folders and control panel menus)"
+        CollectMSSettings = "Create shortcuts for ms-settings: links (system settings pages)"
+        CollectDeepLinks = "Create shortcuts for deep links (direct links to various settings menus across Windows)"
+        CollectURLProtocols = "Create shortcuts for URL protocols (e.g., ms-settings:, etc.)"
     }
 
     Add-Type -AssemblyName PresentationFramework
@@ -335,7 +335,7 @@ function Show-SuperGodModeDialog {
                             </StackPanel>
                         </GroupBox>
 
-                        <GroupBox Header="Limit Shortcut Creation" Grid.Column="1" Style="{StaticResource DarkModeGroupBoxStyle}">
+                        <GroupBox Header="Control Outputs" Grid.Column="1" Style="{StaticResource DarkModeGroupBoxStyle}">
                             <Grid Margin="5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -348,46 +348,46 @@ function Show-SuperGodModeDialog {
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <CheckBox x:Name="chkNoStatistics" Content="Skip Statistics" Margin="0,5,5,5" Grid.Column="0" Grid.Row="0" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkCollectStatistics" Content="Collect Statistics" IsChecked="True" Margin="0,5,5,5" Grid.Column="0" Grid.Row="0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
-                                        <ToolTip Content="$($tooltips.NoStatistics)" />
+                                        <ToolTip Content="$($tooltips.CollectStatistics)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkSkipCLSID" Content="Skip CLSID" Margin="5,5,0,5" Grid.Column="1" Grid.Row="0" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkCollectCLSID" Content="CLSID Links" IsChecked="True" Margin="5,5,0,5" Grid.Column="1" Grid.Row="0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
-                                        <ToolTip Content="$($tooltips.SkipCLSID)" />
+                                        <ToolTip Content="$($tooltips.CollectCLSID)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkSkipNamedFolders" Content="Skip Named Folders" Margin="0,5,5,5" Grid.Column="0" Grid.Row="1" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkCollectNamedFolders" Content="Named Folders Links" IsChecked="True" Margin="0,5,5,5" Grid.Column="0" Grid.Row="1" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
-                                        <ToolTip Content="$($tooltips.SkipNamedFolders)" />
+                                        <ToolTip Content="$($tooltips.CollectNamedFolders)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkSkipTaskLinks" Content="Skip Task Links" Margin="5,5,0,5" Grid.Column="1" Grid.Row="1" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkCollectTaskLinks" Content="Task Links" IsChecked="True" Margin="5,5,0,5" Grid.Column="1" Grid.Row="1" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
-                                        <ToolTip Content="$($tooltips.SkipTaskLinks)" />
+                                        <ToolTip Content="$($tooltips.CollectTaskLinks)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkSkipMSSettings" Content="Skip MS Settings" Margin="0,5,5,5" Grid.Column="0" Grid.Row="2" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkCollectMSSettings" Content="MS-Settings Links" IsChecked="True" Margin="0,5,5,5" Grid.Column="0" Grid.Row="2" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
-                                        <ToolTip Content="$($tooltips.SkipMSSettings)" />
+                                        <ToolTip Content="$($tooltips.CollectMSSettings)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkSkipDeepLinks" Content="Skip Deep Links" Margin="5,5,0,5" Grid.Column="1" Grid.Row="2" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkCollectDeepLinks" Content="Deep Links" IsChecked="True" Margin="5,5,0,5" Grid.Column="1" Grid.Row="2" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
-                                        <ToolTip Content="$($tooltips.SkipDeepLinks)" />
+                                        <ToolTip Content="$($tooltips.CollectDeepLinks)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkSkipURLProtocols" Content="Skip URL Protocols" Margin="0,5,5,5" Grid.Column="0" Grid.Row="3" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkCollectURLProtocols" Content="URL Protocols Links" IsChecked="True" Margin="0,5,5,5" Grid.Column="0" Grid.Row="3" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
-                                        <ToolTip Content="$($tooltips.SkipURLProtocols)" />
+                                        <ToolTip Content="$($tooltips.CollectURLProtocols)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
                             </Grid>
                         </GroupBox>
                     </Grid>
 
-                    <GroupBox Header="Control Output" Grid.Row="2" Style="{StaticResource DarkModeGroupBoxStyle}">
+                    <GroupBox Header="Output Location" Grid.Row="2" Style="{StaticResource DarkModeGroupBoxStyle}">
                         <StackPanel Margin="5">
                             <CheckBox x:Name="chkKeepPreviousOutputFolders" Content="Don't Auto-Delete Existing Output Folders" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
                                 <CheckBox.ToolTip>
@@ -427,14 +427,16 @@ function Show-SuperGodModeDialog {
     $chkAllURLProtocols = $window.FindName("chkAllURLProtocols")
     $chkCollectExtraURLProtocolInfo = $window.FindName("chkCollectExtraURLProtocolInfo")
     $chkKeepPreviousOutputFolders = $window.FindName("chkKeepPreviousOutputFolders")
-    $chkNoStatistics = $window.FindName("chkNoStatistics")
     $chkAllowDuplicateDeepLinks = $window.FindName("chkAllowDuplicateDeepLinks")
-    $chkSkipCLSID = $window.FindName("chkSkipCLSID")
-    $chkSkipNamedFolders = $window.FindName("chkSkipNamedFolders")
-    $chkSkipTaskLinks = $window.FindName("chkSkipTaskLinks")
-    $chkSkipMSSettings = $window.FindName("chkSkipMSSettings")
-    $chkSkipDeepLinks = $window.FindName("chkSkipDeepLinks")
-    $chkSkipURLProtocols = $window.FindName("chkSkipURLProtocols")
+
+    $chkCollectStatistics = $window.FindName("chkCollectStatistics")
+    $chkCollectCLSID = $window.FindName("chkCollectCLSID")
+    $chkCollectNamedFolders = $window.FindName("chkCollectNamedFolders")
+    $chkCollectTaskLinks = $window.FindName("chkCollectTaskLinks")
+    $chkCollectMSSettings = $window.FindName("chkCollectMSSettings")
+    $chkCollectDeepLinks = $window.FindName("chkCollectDeepLinks")
+    $chkCollectURLProtocols = $window.FindName("chkCollectURLProtocols")
+
     $txtOutputPath = $window.FindName("txtOutputPath")
     $txtCurrentPath = $window.FindName("txtCurrentPath")
     $txtOutputFolderName = $window.FindName("txtOutputFolderName")
@@ -509,14 +511,14 @@ function Show-SuperGodModeDialog {
         AllURLProtocols = $chkAllURLProtocols.IsChecked
         CollectExtraURLProtocolInfo = $chkCollectExtraURLProtocolInfo.IsChecked
         KeepPreviousOutputFolders = $chkKeepPreviousOutputFolders.IsChecked
-        NoStatistics = $chkNoStatistics.IsChecked
+        NoStatistics = !$chkCollectStatistics.IsChecked
         AllowDuplicateDeepLinks = $chkAllowDuplicateDeepLinks.IsChecked
-        SkipCLSID = $chkSkipCLSID.IsChecked
-        SkipNamedFolders = $chkSkipNamedFolders.IsChecked
-        SkipTaskLinks = $chkSkipTaskLinks.IsChecked
-        SkipMSSettings = $chkSkipMSSettings.IsChecked
-        SkipDeepLinks = $chkSkipDeepLinks.IsChecked
-        SkipURLProtocols = $chkSkipURLProtocols.IsChecked
+        SkipCLSID = !$chkCollectCLSID.IsChecked
+        SkipNamedFolders = !$chkCollectNamedFolders.IsChecked
+        SkipTaskLinks = !$chkCollectTaskLinks.IsChecked
+        SkipMSSettings = !$chkCollectMSSettings.IsChecked
+        SkipDeepLinks = !$chkCollectDeepLinks.IsChecked
+        SkipURLProtocols = !$chkCollectURLProtocols.IsChecked
         Output = $txtCurrentPath.Text
     }
 }
