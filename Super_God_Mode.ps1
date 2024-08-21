@@ -2900,7 +2900,7 @@ if (-not $SkipDeepLinks -and $allSettingsXmlPath) {
                     $trimmedDeepLink = $deepLink.DeepLink.Trim()
 
                     # Test if the deep link has the same command or same  application name/page structure
-                    if (($trimmedCommand -eq $trimmedDeepLink) -or ($trimmedDeepLink -eq "$($taskLink.ApplicationName)\$($taskLink.Page)")) {
+                    if (($trimmedCommand -eq $trimmedDeepLink) -or ($trimmedDeepLink -eq "$($taskLink.ApplicationName)\$($taskLink.Page)".Trim("\\"))) {
                         $existingTaskLink = $taskLink
                         break
                     }
