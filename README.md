@@ -24,12 +24,19 @@ It was inspired by the famously nicknamed "God Mode" folder and creates many mor
   - System settings (ms-settings: links)
   - Deep links (direct links to various settings menus across Windows)
   - URL protocols
+  - Hidden App Links (Internal-use and undocumented URL links used by apps)
 - Generates CSV files with detailed information about the shortcuts
-- Optionally saves XML content from shell32.dll for reference
-- Customizable output location and various execution options
+- Saves XML content retrieved from shell32.dll and other sources for reference
 - Graphical User Interface (GUI) for easy configuration
 
-## Usage
+## How to Run:
+
+### Option 1 (Easier): Using .Bat Launcher
+1. Download the latest version of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/raw/main/Super_God_Mode.ps1), right click and save-as a .ps1 file)
+2. Download the launcher batch file to the same location. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/raw/main/SuperGodMode-EasyLauncher.bat))
+3. Run the batch file.
+
+### Option 2: Manually running
 
 1. Download the latest version of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/raw/main/Super_God_Mode.ps1))
 2. Open PowerShell to the directory with the script. (Tip: In File Explorer, just type "PowerShell.exe" into the address bar to open it to that path).
@@ -62,13 +69,15 @@ Note: Except for `-Debug` and `-Verbose`, you must use `-NoGUI` for arguments to
 
 #### Arguments to Limit Shortcut Creation
 
-- `-NoStatistics`: Skip creating the statistics folder and files
+- `-NoStatistics`: Don't create statistics folder and files
+- `-NoReadMe`: Don't create tips text file
 - `-SkipCLSID`: Skip creating shortcuts for CLSID-based shell folders
 - `-SkipNamedFolders`: Skip creating shortcuts for named special folders
 - `-SkipTaskLinks`: Skip creating shortcuts for task links
 - `-SkipMSSettings`: Skip creating shortcuts for ms-settings: links
 - `-SkipDeepLinks`: Skip creating shortcuts for deep links
 - `-SkipURLProtocols`: Skip creating shortcuts for URL protocols
+- `-SkipHiddenAppLinks`: Skip creating shortcuts to hidden app links
 
 #### Debugging
 
@@ -91,7 +100,7 @@ Note: Except for `-Debug` and `-Verbose`, you must use `-NoGUI` for arguments to
 
 ## Output
 
-The script creates a folder (default name: "Shell Folder Shortcuts") containing:
+The script creates a folder (default name: "Super God Mode") containing:
 
 - Shortcuts to CLSID-based shell folders
 - Shortcuts to named special folders
@@ -99,8 +108,9 @@ The script creates a folder (default name: "Shell Folder Shortcuts") containing:
 - Shortcuts to system settings (ms-settings: links)
 - Shortcuts to deep links
 - Shortcuts to URL protocols
-- CSV files with detailed information about the shortcuts (if not disabled)
-- XML files with shell32.dll content (if not disabled)
+- Shortcuts to Hidden App Links
+- A Statistics folder (With CSV and XML data files)
+- A text file with some tips and other info
 
 ## Notes
 
@@ -118,12 +128,12 @@ The "Extra Tools" folder contains additional scripts that complement the main fu
 
 This script allows you to easily retrieve the localized string of a single specific string reference.
 
-**Features:**
+Features:
 - Interactively prompts for string references
 - Resolves and displays the localized string values
 - Supports the `@dllpath,-resourceID` format
 
-**Usage:**
+Usage:
 1. Run the script in PowerShell
 2. Enter the string reference when prompted (e.g., `@%SystemRoot%\system32\shell32.dll,-9227`)
 3. The script will display the resolved string value
@@ -132,12 +142,31 @@ This script allows you to easily retrieve the localized string of a single speci
 
 This script processes entire XML files containing Windows string references and resolves them to their actual string values. Mostly intended to be used with the XML from shell32.dll.mun containing all the Windows task links.
 
-**Features:**
+Features:
 - Processes entire XML files, replacing string references with their resolved values
 - Supports custom DLL paths for resolving strings
 - Generates a new XML file with resolved strings
 
-**Usage:**
+Usage:
 ```powershell
 .\Windows_XML_String_Resolver.ps1 -XmlFilePath "path\to\your\file.xml" [-CustomResourcePaths "shell32=C:\custom\path\shell32.dll", "user32=C:\another\path\user32.mui"] [-Debug]
 ```
+
+### Get-MS-Settings-Strings.ps1
+
+This script will find text strings of "ms-settings:" in a DLL file and output them to a text file. 
+It is a standalone version of the feature built into the main script. Intended mainly for: "C:\Windows\ImmersiveControlPanel\SystemSettings.dll".
+
+Usage:
+```
+`.\Get-MS-Settings-Strings.ps1 -DllPath "C:\Windows\ImmersiveControlPanel\SystemSettings.dll" -OutputFilePath "SystemSettings-MS-Settings.txt"
+```
+- If not specified via arguments, the script will prompt the user for the DLL path, and output to the same directory as the script.
+
+### Find_URLs_From_AppxPackage_Files.ps1
+
+This script fetches the URI protocols for each installed AppxPackage via their AppxManifest.xml file, then brute force searches for those URIs in all files in the app's install directory.
+It is a standalone version of the feature built into the main script.
+
+Usage:
+- No arguments necessary:  `.\Find_URLs_From_AppxPackage_Files.ps1`
