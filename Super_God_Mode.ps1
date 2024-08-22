@@ -916,6 +916,7 @@ if (-not $NoReadMe) {
     # Create tips file in statistics folder
     $tipsFilePath = Join-Path $mainShortcutsFolder "!Read Me - Tips And Info.txt"
     $tipsContent = @"
+------------------------- Tips -------------------------
 
 • To easily see where shortcuts go, in Windows Explorer enable the `"Link Target`" column. (Right click column headers > More > Link Target)
         Note: The column will not show what it considers "arguments" (anything after a space in the target path), so this column is mostly useful for the `"$urlProtocolsFolderName`", `"$URLProtocolPageLinksFolderName`", and `"$msSettingsFolderName`" folders.
@@ -943,6 +944,13 @@ if (-not $NoReadMe) {
         - Alternatively, you could run this command yourself in a powershell window before running the script:   		    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
             > Which also would just allow scripts for that current PowerShell session, then you can run the script with: 	.\Super_God_Mode.ps1
             > NOTE: When doing this yourself using Set-ExecutionPolicy, DO NOT forget the `-Scope Process` part, or it could lessen your system security by allowing all scripts to run permanently.
+
+
+---------------------------------------------------------------------------
+Created With:   `"Super God Mode`" Script - Version: $VERSION
+Author:         ThioJoe
+Project Link:   https://github.com/ThioJoe/Windows-Super-God-Mode
+
 "@
     Set-Content -Path $tipsFilePath -Value $tipsContent -Force
 }
