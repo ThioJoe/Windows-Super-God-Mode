@@ -696,8 +696,10 @@ if ($CustomAllSystemSettingsXMLPath) {
 }
 
 # Creates the main directory if it does not exist; `-Force` ensures it is created without errors if it already exists. It won't overwrite any files within even if the folder already exists
+$mainFolderWasCreatedThisRun = $false
 try {
     New-Item -Path $mainShortcutsFolder -ItemType Directory -Force -ErrorAction Stop | Out-Null
+    $mainFolderWasCreatedThisRun = $true
 # If creating the folder failed and it doesn't already exist, throw an error and exit the script. Give suggestions for some specific cases
 } catch [System.UnauthorizedAccessException] {
     Write-Error "Failed to create output folder: $_"
@@ -794,10 +796,28 @@ function New-FolderWithIcon {
     param (
         [string]$FolderPath,
         [string]$IconFile,
-        [string]$IconIndex
+        [string]$IconIndex,
+        [string]$IconFileWin10,
+        [string]$IconIndexWin10,
+        [switch]$DetailsView,
+        [switch]$desktopIniOnly
     )
     # Create the folder
-    New-Item -Path $FolderPath -ItemType Directory -Force | Out-Null
+    if (-not $desktopIniOnly) {
+        New-Item -Path $FolderPath -ItemType Directory -Force | Out-Null
+    }
+
+    # Check current build of windows to determine which icon to use
+    $windowsBuildNum = [System.Environment]::OSVersion.Version.Build
+    if ($windowsBuildNum -lt 22000) {
+        # Update the icon index if a different one is specified for Windows 10 and earlier
+        if ($IconIndexWin10) {
+            $IconIndex = $IconIndexWin10
+        }
+        if ($IconFileWin10) {
+            $IconFile = $IconFileWin10
+        }
+    }
 
     # If there's not a negative sign at the beginning of the index, add one
     if ($IconIndex -notmatch '^-') {
@@ -805,13 +825,20 @@ function New-FolderWithIcon {
     }
 
     # Create desktop.ini content
-    $desktopIniContent = @"
+    if ($DetailsView) {
+        $desktopIniContent = @"
 [.ShellClassInfo]
 IconResource=$IconFile,$IconIndex
 [ViewState]
 Mode=4
 Vid={137E7700-3573-11CF-AE69-08002B2E1262}
 "@
+    } else {
+        $desktopIniContent = @"
+[.ShellClassInfo]
+IconResource=$IconFile,$IconIndex
+"@
+    }
 
     # Create desktop.ini file
     $desktopIniPath = Join-Path $FolderPath "desktop.ini"
@@ -832,33 +859,37 @@ Vid={137E7700-3573-11CF-AE69-08002B2E1262}
 #    - You can use the tool 'IconsExtract' from NirSoft to see icons in a DLL file and their indexes: https://www.nirsoft.net/utils/iconsext.html
 #    - Another good dll to use for icons is "C:\Windows\System32\imageres.dll" which has a lot of icons
 
+# Create desktop.ini for main folder if it was created this run
+if ($mainFolderWasCreatedThisRun) {
+    New-FolderWithIcon -FolderPath $mainShortcutsFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "10" -IconIndexWin10 "274" -IconFileWin10 "C:\Windows\System32\shell32.dll" -desktopIniOnly
+}
 if (-not $SkipCLSID) {
-    New-FolderWithIcon -FolderPath $CLSIDshortcutsOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "20"
+    New-FolderWithIcon -FolderPath $CLSIDshortcutsOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "20" -IconIndexWin10 "210" -DetailsView
 }
 
 if (-not $SkipNamedFolders) {
-    New-FolderWithIcon -FolderPath $namedShortcutsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "77"
+    New-FolderWithIcon -FolderPath $namedShortcutsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "77" -DetailsView
 }
 
 if (-not $SkipTaskLinks) {
-    New-FolderWithIcon -FolderPath $taskLinksOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "137"
+    New-FolderWithIcon -FolderPath $taskLinksOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "137" -DetailsView
 }
 if (-not $SkipMSSettings) {
-    New-FolderWithIcon -FolderPath $msSettingsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "114"
+    New-FolderWithIcon -FolderPath $msSettingsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "114" -DetailsView
 }
 if (-not $SkipDeepLinks) {
-    New-FolderWithIcon -FolderPath $deepLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "175"
+    New-FolderWithIcon -FolderPath $deepLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "175" -DetailsView
 }
 if (-not $SkipURLProtocols) {
-    New-FolderWithIcon -FolderPath $URLProtocolLinksOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "46"
+    New-FolderWithIcon -FolderPath $URLProtocolLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "5302" -DetailsView
 }
 if (-not $SkipHiddenAppLinks) {
-    New-FolderWithIcon -FolderPath $URLProtocolPageLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "1025"
+    New-FolderWithIcon -FolderPath $URLProtocolPageLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "1025" -DetailsView
 }
 
 # If -SaveCSV or -SaveXML switches are used, create the statistics folder and set to default folder icon
 if (-not $NoStatistics) {
-    New-FolderWithIcon -FolderPath $statisticsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "3"
+    New-FolderWithIcon -FolderPath $statisticsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "3" -DetailsView
 }
 
 # ==================================================================================================================================
