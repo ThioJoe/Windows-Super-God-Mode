@@ -629,7 +629,7 @@ $msSettingsFolderName = "System Settings"
 $deepLinksFolderName = "Deep Links"
 $urlProtocolsFolderName = "URL Protocols"
 $URLProtocolPageLinksFolderName = "Hidden App Links"
-$statisticsFolderName = "_Script Result Statistics"
+$statisticsFolderName = "__Script Result Statistics"
 
 # Construct paths for subfolders
 $CLSIDshortcutsOutputFolder = Join-Path $mainShortcutsFolder $clsidFolderName
@@ -649,7 +649,7 @@ $csvFiles = @{
     MSSettings = @{ Value = "MS_Settings.csv"; Skip = $SkipMSSettings }
     DeepLinks = @{ Value = "Deep_Links.csv"; Skip = $SkipDeepLinks }
     URLProtocols = @{ Value = "URL_Protocols.csv"; Skip = $SkipURLProtocols }
-    URLProtocolPages = @{ Value = "URL_Protocol_Pages.csv"; Skip = $SkipHiddenAppLinks }
+    URLProtocolPages = @{ Value = "Hidden_App_Links.csv"; Skip = $SkipHiddenAppLinks }
 }
 $xmlFiles = @{
     Shell32Content = @{ Value = "Shell32_Tasks.xml"; Skip = $SkipTaskLinks }
@@ -926,6 +926,15 @@ if (-not $NoReadMe) {
 • The script will generate different amounts of shortcuts depending on the version of Windows, what features are enabled, and what software is installed.
         - The script doesn't use a hardcoded list of shortcuts, it actually reads the system to find what is available.
         - All the shortcuts use the actual icons and names associated with them in the system. Only the names and icons of the main folders are chosen by me.
+
+
+• Notes about the `"$URLProtocolPageLinksFolderName`" folder:
+        - You'll notice the list of URLs in the CSV statistics file is longer than the number of shortcuts actually created.
+             > This is because Some of the found URLs contain "variable" placeholders (such as {1} or end in an equals sign) which require information to be filled in at runtime, so they can't be made into shortcuts.
+             > These can be identified via the `"Embedded Variables`" column in the CSV file. They are still collected for informational purposes.
+        - These URLs are pulled directly from the text of application files and binaries and are mostly undocumented or meant for internal use. That's why I call them `"hidden`".
+             > Therefore these links might not work, or might contain oddly specific references, such as `"xbox://search/?productType=games&query=angry%20birds`"
+             > That's because the URL was contained somewhere in some app file, possibly as an example, for testing, or even part of a help message. I chose to just include them all.
 
 "@
     Set-Content -Path $tipsFilePath -Value $tipsContent -Force
@@ -1379,10 +1388,9 @@ function Get-FolderName {
     return @($clsid, $nameSource)
 }
 
-# Function: Create-Shortcut
 # This function creates a shortcut for a given CLSID or shell folder.
 # It assigns the appropriate target path, arguments, and icon based on the CLSID information.
-function Create-Shortcut {
+function Create-CLSID-Shortcut {
     param (
         [string]$clsid,         # The CLSID of the shell folder
         [string]$name,          # The name of the shortcut
@@ -3054,7 +3062,7 @@ function Create-AppXURLShortcuts {
         $sanitizedURLForName = $sanitizedURLForName -replace '_+$', '' # Cut off any extra underscore at the end
 
         # If shortcut of same name was already created, append a number to the name.
-        $i = 1
+        $i = 2
         $originalSanitizedURLForName = $sanitizedURLForName
         while ($createdShortcuts -contains $sanitizedURLForName) {
             $sanitizedURLForName = "$originalSanitizedURLForName ($i)"
@@ -3100,6 +3108,8 @@ if (-not $SkipCLSID) {
 
     Write-Host "`n----- Processing $($shellFolders.Count) Shell Folders -----"
 
+    $usedNames = @()  # Track used names to avoid duplicates
+
     # Loop through each relevant CLSID that was found and process it to create shortcuts.
     foreach ($folder in $shellFolders) {
         $clsid = $folder.PSChildName  # Extract the CLSID.
@@ -3112,10 +3122,20 @@ if (-not $SkipCLSID) {
 
         # Sanitize the folder name to make it a valid filename.
         $sanitizedName = $name -replace '[\\/:*?"<>|]', '_'
+
+        # Ensure the folder name is unique by appending a number if necessary.
+        $i = 2
+        $originalSanitizedName = $sanitizedName
+        while ($usedNames -contains $sanitizedName) {
+            $sanitizedName = "$originalSanitizedName ($i)"
+            $i++
+        }
+        $usedNames += $sanitizedName
+
         $shortcutPath = Join-Path $CLSIDshortcutsOutputFolder "$sanitizedName.lnk"
 
         Write-Verbose "Attempting to create shortcut: $shortcutPath"
-        $success = Create-Shortcut -clsid $clsid -name $name -shortcutPath $shortcutPath
+        $success = Create-CLSID-Shortcut -clsid $clsid -name $name -shortcutPath $shortcutPath
 
         if ($success) {
             Write-Host "Created CLSID Shortcut For: $name"
