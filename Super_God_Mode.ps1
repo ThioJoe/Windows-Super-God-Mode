@@ -47,11 +47,16 @@
 #     • Switch (Takes no values)
 #     Doesn't delete existing output folders before running the script. Any existing shortcuts will still be overwritten if being created again.
 #
-# -------------------------------  Arguments to Limit Shortcut Creation  -------------------------------
+# -------------------------------  Arguments to Limit Outputs  -------------------------------
 #
 # -NoStatistics
 #     • Switch (Takes no values)
 #     Skip creating the statistics folder and files containing CSV data about the shell folders and tasks and XML files with other collected data
+#
+# -NoReadMe
+#     • Switch (Takes no values)
+#     Skip creating the ReadMe text file in the main folder
+#
 #
 # -SkipCLSID
 #     • Switch (Takes no values)
@@ -137,8 +142,9 @@ param(
     # Control Output
     [string]$Output,
     [switch]$KeepPreviousOutputFolders,
-    # Arguments to Limit Shortcut Creation
+    # Arguments to Limit Outputs
     [switch]$NoStatistics,
+    [switch]$NoReadMe,
     [switch]$SkipCLSID,
     [switch]$SkipNamedFolders,
     [switch]$SkipTaskLinks,
@@ -157,6 +163,13 @@ param(
     [string]$CustomAllSystemSettingsXMLPath
 )
 
+# Note: Arguments that are command line only and not used in the GUI:
+# -NoReadMe
+# -NoGUI
+# -CustomDLLPath
+# -CustomLanguageFolderPath
+# -CustomSystemSettingsDLLPath
+# -CustomAllSystemSettingsXMLPath
 
 $VERSION = "1.0.0"
 
@@ -695,11 +708,16 @@ if ($CustomAllSystemSettingsXMLPath) {
     Write-Warning "No AllSystemSettings XML file found. Deep Link shortcuts will not be created."
 }
 
+# Check if main folder already exists
+if (-not (Test-Path $mainShortcutsFolder)) {
+    $mainFolderWasCreatedThisRun = $true
+} else {
+    $mainFolderWasCreatedThisRun = $false
+}
+
 # Creates the main directory if it does not exist; `-Force` ensures it is created without errors if it already exists. It won't overwrite any files within even if the folder already exists
-$mainFolderWasCreatedThisRun = $false
 try {
     New-Item -Path $mainShortcutsFolder -ItemType Directory -Force -ErrorAction Stop | Out-Null
-    $mainFolderWasCreatedThisRun = $true
 # If creating the folder failed and it doesn't already exist, throw an error and exit the script. Give suggestions for some specific cases
 } catch [System.UnauthorizedAccessException] {
     Write-Error "Failed to create output folder: $_"
@@ -857,11 +875,14 @@ IconResource=$IconFile,$IconIndex
 # Create relevant subfolders for different types of shortcuts, and set custom icons for each folder
 # Notes for choosing an icon:
 #    - You can use the tool 'IconsExtract' from NirSoft to see icons in a DLL file and their indexes: https://www.nirsoft.net/utils/iconsext.html
-#    - Another good dll to use for icons is "C:\Windows\System32\imageres.dll" which has a lot of icons
+#    - Good DLLs to check for icons are Shell32.dll and Imageres.dll, both in "C:\Windows\System32"
+#    - The default icon for a folder is index 3 in Imageres.dll
+#    - Be aware some icons may be different at different sizes. For example ImageRes icons 185 and 186 just look like the default folder icon when small, like in details view.
+#        - Note: Nirsoft's IconsExtract shows the "small" version of the icon, even if the view option is set to "Large Icons". So many icons will appear as the default folder icon for the reason above.
 
 # Create desktop.ini for main folder if it was created this run
 if ($mainFolderWasCreatedThisRun) {
-    New-FolderWithIcon -FolderPath $mainShortcutsFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "10" -IconIndexWin10 "274" -IconFileWin10 "C:\Windows\System32\shell32.dll" -desktopIniOnly
+    New-FolderWithIcon -FolderPath $mainShortcutsFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "10" -IconIndexWin10 "190" -desktopIniOnly
 }
 if (-not $SkipCLSID) {
     New-FolderWithIcon -FolderPath $CLSIDshortcutsOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "20" -IconIndexWin10 "210" -DetailsView
@@ -886,10 +907,28 @@ if (-not $SkipURLProtocols) {
 if (-not $SkipHiddenAppLinks) {
     New-FolderWithIcon -FolderPath $URLProtocolPageLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "1025" -DetailsView
 }
-
-# If -SaveCSV or -SaveXML switches are used, create the statistics folder and set to default folder icon
 if (-not $NoStatistics) {
-    New-FolderWithIcon -FolderPath $statisticsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "3" -DetailsView
+    New-FolderWithIcon -FolderPath $statisticsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "9" -DetailsView
+}
+
+# Create any other static files
+if (-not $NoReadMe) {
+    # Create tips file in statistics folder
+    $tipsFilePath = Join-Path $mainShortcutsFolder "!Read Me - Tips And Info.txt"
+    $tipsContent = @"
+
+• To easily see where shortcuts go, in Windows Explorer enable the `"Link Target`" column. (Right click column headers > More > Link Target)
+        Note: The column will not show what it considers "arguments" (anything after a space in the target path), so this column is mostly useful for the `"$urlProtocolsFolderName`", `"$URLProtocolPageLinksFolderName`", and `"$msSettingsFolderName`" folders.
+
+• Some links might not work or show an error, this is normal because many links are undocumented or might be leftovers not still in use from older Windows versions.
+        For example, the `"$taskLinksFolderName`" folder contains links that might normally be hidden except under certain conditions where they apply like the computer is a tablet, has a pen, or uses a certain language.
+
+• The script will generate different amounts of shortcuts depending on the version of Windows, what features are enabled, and what software is installed.
+        - The script doesn't use a hardcoded list of shortcuts, it actually reads the system to find what is available.
+        - All the shortcuts use the actual icons and names associated with them in the system. Only the names and icons of the main folders are chosen by me.
+
+"@
+    Set-Content -Path $tipsFilePath -Value $tipsContent -Force
 }
 
 # ==================================================================================================================================
@@ -1651,7 +1690,7 @@ function Get-Shell32XMLContent {
     return $xmlContent
 }
 
-# Save the XML content from shell32.dll to a file for reference if the user uses the -SaveXML switch
+# Save the XML content from shell32.dll to a file for reference
 function Save-PrettyXML {
     param (
         [string]$xmlContent,
