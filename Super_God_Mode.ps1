@@ -928,6 +928,8 @@ if (-not $NoReadMe) {
         - All the shortcuts use the actual icons and names associated with them in the system. Only the names and icons of the main folders are chosen by me.
 
 
+------------------- Additional Notes -------------------
+
 • Notes about the `"$URLProtocolPageLinksFolderName`" folder:
         - You'll notice the list of URLs in the CSV statistics file is longer than the number of shortcuts actually created.
              > This is because Some of the found URLs contain "variable" placeholders (such as {1} or end in an equals sign) which require information to be filled in at runtime, so they can't be made into shortcuts.
@@ -936,6 +938,11 @@ if (-not $NoReadMe) {
              > Therefore these links might not work, or might contain oddly specific references, such as `"xbox://search/?productType=games&query=angry%20birds`"
              > That's because the URL was contained somewhere in some app file, possibly as an example, for testing, or even part of a help message. I chose to just include them all.
 
+• The `"easy launcher`" batch file isn't necessary to run the script, it just makes it easier to run the script with a double-click.
+        - Since by default Windows will not run PowerShell scripts without a special command/setting (called the `"Execution Policy`"), the batch file uses a command to to allow the script to run for that temporary session.
+        - Alternatively, you could run this command yourself in a powershell window before running the script:   		    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+            > Which also would just allow scripts for that current PowerShell session, then you can run the script with: 	.\Super_God_Mode.ps1
+            > NOTE: When doing this yourself using Set-ExecutionPolicy, DO NOT forget the `-Scope Process` part, or it could lessen your system security by allowing all scripts to run permanently.
 "@
     Set-Content -Path $tipsFilePath -Value $tipsContent -Force
 }
