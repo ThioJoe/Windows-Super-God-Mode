@@ -852,7 +852,7 @@ if (-not $SkipURLProtocols) {
     New-FolderWithIcon -FolderPath $URLProtocolLinksOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "46"
 }
 if (-not $SkipHiddenAppLinks) {
-    New-FolderWithIcon -FolderPath $URLProtocolPageLinksOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "46"
+    New-FolderWithIcon -FolderPath $URLProtocolPageLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "1025"
 }
 
 # If -SaveCSV or -SaveXML switches are used, create the statistics folder and set to default folder icon
