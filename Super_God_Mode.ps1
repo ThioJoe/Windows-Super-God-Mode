@@ -523,11 +523,12 @@ function Show-SuperGodModeDialog {
 
     function UpdateCurrentPath {
         $outputPath = $txtOutputPath.Text
-        $folderName = $txtOutputFolderName.Text
+        $folderName = $txtOutputFolderName.Text.Trim()
         if ([string]::IsNullOrWhiteSpace($folderName)) {
-            $folderName = $defaultOutputFolderName
+            $txtCurrentPath.Text = $outputPath
+        } else {
+            $txtCurrentPath.Text = [System.IO.Path]::Combine($outputPath, $folderName)
         }
-        $txtCurrentPath.Text = [System.IO.Path]::Combine($outputPath, $folderName)
     }
 
     $btnOK.Add_Click({
