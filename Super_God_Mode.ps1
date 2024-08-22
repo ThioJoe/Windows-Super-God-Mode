@@ -77,6 +77,10 @@
 #     • Switch (Takes no values)
 #     Skip creating shortcuts for URL protocols (e.g., mailto:, ms-settings:, etc.)
 #
+# -SkipHiddenAppLinks
+#   • Switch (Takes no values)
+#   Skip creating shortcuts for hidden sub-page links for app protocols (e.g., ms-clock://pausefocustimer, etc.)
+#
 # --------------------------------------------  Debugging  ---------------------------------------------
 #
 # -Verbose
@@ -141,7 +145,7 @@ param(
     [switch]$SkipMSSettings,
     [switch]$SkipDeepLinks,
     [switch]$SkipURLProtocols,
-    [switch]$SkipCrawlingURLPages,
+    [switch]$SkipHiddenAppLinks,
     # Debugging
     [switch]$Verbose,
     [switch]$Debug,
@@ -193,6 +197,7 @@ function Show-SuperGodModeDialog {
         CollectMSSettings = "Create shortcuts for ms-settings: links (system settings pages)"
         CollectDeepLinks = "Create shortcuts for deep links (direct links to various settings menus across Windows)"
         CollectURLProtocols = "Create shortcuts for URL protocols (e.g., ms-settings:, etc.)"
+        CollectAppxLinks = "Create shortcuts for hidden sub-page URL links for apps (e.g., ms-clock://pausefocustimer, etc.) &#x0a;Requires collecting URL Protocols"
     }
 
     Add-Type -AssemblyName PresentationFramework
@@ -384,6 +389,11 @@ function Show-SuperGodModeDialog {
                                         <ToolTip Content="$($tooltips.CollectURLProtocols)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
+                                <CheckBox x:Name="chkCollectAppxLinks" Content="Hidden App Links" IsChecked="True" Margin="5,5,0,5" Grid.Column="1" Grid.Row="3" Foreground="{StaticResource ForegroundBrush}">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.CollectAppxLinks)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
                             </Grid>
                         </GroupBox>
                     </Grid>
@@ -423,6 +433,7 @@ function Show-SuperGodModeDialog {
     $reader = New-Object System.Xml.XmlNodeReader $xaml
     $window = [Windows.Markup.XamlReader]::Load($reader)
 
+    # Alternate Settings Check Boxes
     $chkDontGroupTasks = $window.FindName("chkDontGroupTasks")
     $chkUseAlternativeCategoryNames = $window.FindName("chkUseAlternativeCategoryNames")
     $chkAllURLProtocols = $window.FindName("chkAllURLProtocols")
@@ -430,6 +441,7 @@ function Show-SuperGodModeDialog {
     $chkKeepPreviousOutputFolders = $window.FindName("chkKeepPreviousOutputFolders")
     $chkAllowDuplicateDeepLinks = $window.FindName("chkAllowDuplicateDeepLinks")
 
+    # Control Outputs Check Boxes
     $chkCollectStatistics = $window.FindName("chkCollectStatistics")
     $chkCollectCLSID = $window.FindName("chkCollectCLSID")
     $chkCollectNamedFolders = $window.FindName("chkCollectNamedFolders")
@@ -437,7 +449,9 @@ function Show-SuperGodModeDialog {
     $chkCollectMSSettings = $window.FindName("chkCollectMSSettings")
     $chkCollectDeepLinks = $window.FindName("chkCollectDeepLinks")
     $chkCollectURLProtocols = $window.FindName("chkCollectURLProtocols")
+    $chkCollectAppxLinks = $window.FindName("chkCollectAppxLinks")
 
+    # Output Location Controls
     $txtOutputPath = $window.FindName("txtOutputPath")
     $txtCurrentPath = $window.FindName("txtCurrentPath")
     $txtOutputFolderName = $window.FindName("txtOutputFolderName")
@@ -450,6 +464,7 @@ function Show-SuperGodModeDialog {
     $txtOutputFolderName.Text = $defaultOutputFolderName
     $txtCurrentPath.Text = [System.IO.Path]::Combine($defaultOutputPath, $defaultOutputFolderName)
 
+    # Add event handlers like browse button and text change
     $btnBrowse.Add_Click({
         $folderBrowser = New-Object System.Windows.Forms.OpenFileDialog
         $folderBrowser.ValidateNames = $false
@@ -520,6 +535,7 @@ function Show-SuperGodModeDialog {
         SkipMSSettings = !$chkCollectMSSettings.IsChecked
         SkipDeepLinks = !$chkCollectDeepLinks.IsChecked
         SkipURLProtocols = !$chkCollectURLProtocols.IsChecked
+        SkipHiddenAppLinks = !$chkCollectAppxLinks.IsChecked
         Output = $txtCurrentPath.Text
     }
 }
@@ -549,6 +565,7 @@ if (-not $NoGUI) {
     $SkipMSSettings = $params.SkipMSSettings
     $SkipDeepLinks = $params.SkipDeepLinks
     $SkipURLProtocols = $params.SkipURLProtocols
+    $SkipHiddenAppLinks = $params.SkipHiddenAppLinks
     $Output = $params.Output
 }
 
@@ -576,7 +593,7 @@ $taskLinksFolderName = "All Task Links"
 $msSettingsFolderName = "System Settings"
 $deepLinksFolderName = "Deep Links"
 $urlProtocolsFolderName = "URL Protocols"
-$URLProtocolPageLinksFolderName = "URL Protocol Direct Links"
+$URLProtocolPageLinksFolderName = "Hidden App Links"
 $statisticsFolderName = "_Script Result Statistics"
 
 # Construct paths for subfolders
@@ -597,7 +614,7 @@ $csvFiles = @{
     MSSettings = @{ Value = "MS_Settings.csv"; Skip = $SkipMSSettings }
     DeepLinks = @{ Value = "Deep_Links.csv"; Skip = $SkipDeepLinks }
     URLProtocols = @{ Value = "URL_Protocols.csv"; Skip = $SkipURLProtocols }
-    URLProtocolPages = @{ Value = "URL_Protocol_Pages.csv"; Skip = $SkipCrawlingURLPages }
+    URLProtocolPages = @{ Value = "URL_Protocol_Pages.csv"; Skip = $SkipHiddenAppLinks }
 }
 $xmlFiles = @{
     Shell32Content = @{ Value = "Shell32_Tasks.xml"; Skip = $SkipTaskLinks }
@@ -747,7 +764,7 @@ if ($CustomSystemSettingsDLLPath) {
 
 # Validate or set appropriate incompatible or dependent switches
 if ($SkipURLProtocols) {
-    $SkipCrawlingURLPages = $true
+    $SkipHiddenAppLinks = $true
 }
 
 # Function to create a folder with a custom icon and set Details view
@@ -813,7 +830,7 @@ if (-not $SkipDeepLinks) {
 if (-not $SkipURLProtocols) {
     New-FolderWithIcon -FolderPath $URLProtocolLinksOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "46"
 }
-if (-not $SkipCrawlingURLPages) {
+if (-not $SkipHiddenAppLinks) {
     New-FolderWithIcon -FolderPath $URLProtocolPageLinksOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "46"
 }
 
@@ -2771,7 +2788,7 @@ function Search-ProtocolURLsInAppXFiles {
     $searchedFiles = @()
     $ignoredExtensions = @('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', ".ico", ".p7x", ".ttf", ".onnxe", ".bundle", '.vsix')
     $encodingMap = @{
-        ".txt" = "UTF-8"; ".xml" = "UTF-8"; ".json" = "UTF-8"; ".dll" = "Unicode"; 
+        ".txt" = "UTF-8"; ".xml" = "UTF-8"; ".json" = "UTF-8"; ".dll" = "Unicode";
         ".exe" = "Unicode"; ".js" = "UTF-8"; ".map" = "UTF-8"
     }
 
@@ -2853,9 +2870,9 @@ function Get-ProtocolsInFile {
                     # [regex]::Escape($protocol) + "://[\x20-\x7E]+"
                     [regex]::Escape($protocol) + "://[ -~]+"
                 }
-                $matches = [regex]::Matches($content, $uriPattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
-                if ($matches.Count -gt 0) {
-                    $resultsArray += @($matches | ForEach-Object {
+                $URImatches = [regex]::Matches($content, $uriPattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+                if ($URImatches.Count -gt 0) {
+                    $resultsArray += @($URImatches | ForEach-Object {
                         [PSCustomObject]@{
                             FullURL = $_.Value -replace '".*$', '' # Further clean up the url. Cut off anything after a double quote, including the quote
                             EncodingUsed = $encodingName
@@ -3247,10 +3264,10 @@ if (-not $SkipURLProtocols){
         }
     }
 
-    if (-not $SkipCrawlingURLPages) {
+    if (-not $SkipHiddenAppLinks) {
         Write-Host "`n----- Searching For Hidden URL Links -----"
         # Search for URLs in AppX package files by brute force
-        $appXURLSearchResults = Search-ProtocolURLsInAppXFiles -associatedProtocolsPerApp $associatedProtocolsPerApp -URLProtocolsData $URLProtocolsData -SkipAppXURLSearch:$SkipCrawlingURLPages
+        $appXURLSearchResults = Search-ProtocolURLsInAppXFiles -associatedProtocolsPerApp $associatedProtocolsPerApp -URLProtocolsData $URLProtocolsData -SkipAppXURLSearch:$SkipHiddenAppLinks
 
         if ($appXURLSearchResults) {
             Create-AppXURLShortcuts -foundURLsItems $appXURLSearchResults -shortcutFolder $URLProtocolPageLinksOutputFolder
@@ -3282,7 +3299,7 @@ if (-not $NoStatistics) {
     if (-not $SkipURLProtocols) {
         Create-URL-Protocols-CSVFile -outputPath $URLProtocolLinksCsvPath -urlProtocolsData $URLProtocolsData
     }
-    if (-not $SkipCrawlingURLPages -and -not $SkipURLProtocols) {
+    if (-not $SkipHiddenAppLinks -and -not $SkipURLProtocols) {
         Create-AppXURLSearchResultsToCSV -urlItemsData $appXURLSearchResults -outputPath $URLProtocolPageLinksCsvPath
     }
 }
@@ -3313,45 +3330,48 @@ if ($displayCsvFiles -or $displayXmlFiles) {
 # ==================================================  SCRIPT RESULTS  ============================================================
 # ================================================================================================================================
 
+# Only count hidden app shortcuts created - those without UsesVariables property
+$appXURLSearchResultsCreated = $appXURLSearchResults | Where-Object { -not $_.UsesVariables }
+
+# Display total counts
+$totalCount = $clsidInfo.Count + $namedFolders.Count + $taskLinks.Count + $msSettingsList.Count + $deepLinksProcessedData.Count + $URLProtocolsData.Count + $appXURLSearchResultsCreated.Count
+
 # Output a message indicating that the script execution is complete and the CSV files have been created.
 Write-Host "`n------------------------------------------------"
 Write-Host   "      Windows Super God Mode Script Result      " -ForeGroundColor Yellow
 Write-Host   "------------------------------------------------`n"
 
-# Display total counts
-$totalCount = $clsidInfo.Count + $namedFolders.Count + $taskLinks.Count + $msSettingsList.Count + $deepLinksProcessedData.Count + $URLProtocolsData.Count + $appXURLSearchResults.Results.Count
-
 # Output the total counts of each, and color the numbers to stand out. Done by writing the text and then the number separately with -NoNewLine. If it was skipped, also add that but not colored.
 Write-Host "         Total Shortcuts Created: " -NoNewline
 Write-Host $totalCount -ForegroundColor Green
 
-Write-Host "           > CLSID Links:     " -NoNewline
+Write-Host "           > CLSID Links:      " -NoNewline
 Write-Host $clsidInfo.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipCLSID) { "   (Skipped)" }) # If skipped, add the skipped text, otherwise still write empty string because we used -NoNewline previously
 
-Write-Host "           > Special Folders: " -NoNewline
+Write-Host "           > Special Folders:  " -NoNewline
 Write-Host $namedFolders.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipNamedFolders) { "   (Skipped)" })
 
-Write-Host "           > Task Links:      " -NoNewline
+Write-Host "           > Task Links:       " -NoNewline
 Write-Host $taskLinks.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipTaskLinks) { "   (Skipped)" })
 
-Write-Host "           > Settings Links:  " -NoNewline
+Write-Host "           > Settings Links:   " -NoNewline
 Write-Host $msSettingsList.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipMSSettings) { "   (Skipped)" })
 
-Write-Host "           > Deep Links:      " -NoNewline
+Write-Host "           > Deep Links:       " -NoNewline
 Write-Host $deepLinksProcessedData.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipDeepLinks) { "   (Skipped)" })
 
-Write-Host "           > URL Protocols:   " -NoNewline
+Write-Host "           > URL Protocols:    " -NoNewline
 Write-Host $URLProtocolsData.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipURLProtocols) { "   (Skipped)" })
 
-Write-Host "           > URL Pages:       " -NoNewline
-Write-Host $appXURLSearchResults.Results.Count -ForegroundColor Cyan -NoNewline
-Write-Host $(if ($SkipCrawlingURLPages -or $SkipURLProtocols) { "   (Skipped)" })
+Write-Host "           > Hidden App Links: " -NoNewline
+Write-Host $appXURLSearchResultsCreated.Count -ForegroundColor Cyan -NoNewline
+Write-Host $(if ($SkipHiddenAppLinks -or $SkipURLProtocols) { "   (Skipped)" })
 
 Write-Host "`n------------------------------------------------`n"
 
@@ -3359,4 +3379,3 @@ if (-not $NoGUI) {
     Write-Host "Press any key to exit..." -NoNewline
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
-
