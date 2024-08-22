@@ -1,4 +1,4 @@
-# Windows "Super God Mode"
+# "Super God Mode" For Windows
 
 This PowerShell script <b>creates shortcuts to all special shell folders, named folders, task links, system settings, deep links, and URL protocols in Windows</b>, providing easy access to a wide range of system settings and features.
 
