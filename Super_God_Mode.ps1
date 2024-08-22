@@ -197,7 +197,7 @@ function Show-SuperGodModeDialog {
         CollectMSSettings = "Create shortcuts for ms-settings: links (system settings pages)"
         CollectDeepLinks = "Create shortcuts for deep links (direct links to various settings menus across Windows)"
         CollectURLProtocols = "Create shortcuts for URL protocols (e.g., ms-settings:, etc.)"
-        CollectAppxLinks = "Create shortcuts for hidden sub-page URL links for apps (e.g., ms-clock://pausefocustimer, etc.) &#x0a;Requires collecting URL Protocols"
+        CollectAppxLinks = "Create shortcuts for hidden sub-page URL links for apps (e.g., ms-clock://pausefocustimer, etc.) &#x0a;Note: Requires collecting URL Protocol Links"
     }
 
     Add-Type -AssemblyName PresentationFramework
@@ -273,6 +273,14 @@ function Show-SuperGodModeDialog {
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Background" Value="{StaticResource ButtonHoverBrush}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="CustomCheckBoxStyle" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Opacity" Value="0.5"/>
                     </Trigger>
                 </Style.Triggers>
             </Style>
@@ -389,7 +397,7 @@ function Show-SuperGodModeDialog {
                                         <ToolTip Content="$($tooltips.CollectURLProtocols)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkCollectAppxLinks" Content="Hidden App Links" IsChecked="True" Margin="5,5,0,5" Grid.Column="1" Grid.Row="3" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkCollectAppxLinks" Content="Hidden App Links" IsChecked="True" Margin="5,5,0,5" Grid.Column="1" Grid.Row="3" Foreground="{StaticResource ForegroundBrush}" Style="{StaticResource CustomCheckBoxStyle}" ToolTipService.ShowOnDisabled="True">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.CollectAppxLinks)" />
                                     </CheckBox.ToolTip>
@@ -479,6 +487,19 @@ function Show-SuperGodModeDialog {
             UpdateCurrentPath
         }
     })
+
+    # Add event handler for URL Protocols checkbox
+    $chkCollectURLProtocols.Add_Checked({
+        $chkCollectAppxLinks.IsEnabled = $true
+    })
+
+    $chkCollectURLProtocols.Add_Unchecked({
+        $chkCollectAppxLinks.IsChecked = $false
+        $chkCollectAppxLinks.IsEnabled = $false
+    })
+
+    # Initialize the state of chkCollectAppxLinks based on chkCollectURLProtocols
+    $chkCollectAppxLinks.IsEnabled = $chkCollectURLProtocols.IsChecked
 
     $txtOutputPath.Add_TextChanged({ UpdateCurrentPath })
     $txtOutputFolderName.Add_TextChanged({ UpdateCurrentPath })
