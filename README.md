@@ -6,9 +6,8 @@ It was inspired by the famously nicknamed "God Mode" folder and creates many mor
 
 ## Screenshots
 
-  
 <p align="center">
-<img width="700" src="https://github.com/user-attachments/assets/36051c7c-136e-490a-b46c-076accab6514">
+<img width="700" alt="WindowNew" src="https://github.com/user-attachments/assets/35f8f858-dcf5-4670-866f-2b86de4569d9">
 </p><p align="center">
 <img width="289" alt="Result" src="https://github.com/user-attachments/assets/64172eae-f945-4f65-a55e-966113f322fc">
 <img width="392" alt="Folders" src="https://github.com/user-attachments/assets/b711e44d-5387-4e93-9341-4ce92f5e2dc4">
