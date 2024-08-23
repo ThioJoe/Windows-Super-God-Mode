@@ -139,6 +139,7 @@ param(
     [switch]$AllURLProtocols,
     [switch]$CollectExtraURLProtocolInfo,
     [switch]$AllowDuplicateDeepLinks,
+    [switch]$DeepScanHiddenLinks,
     # Control Output
     [string]$Output,
     [switch]$KeepPreviousOutputFolders,
@@ -211,7 +212,7 @@ function Show-SuperGodModeDialog {
         CollectDeepLinks = "Create shortcuts for deep links (direct links to various settings menus across Windows)"
         CollectURLProtocols = "Create shortcuts for URL protocols (e.g., ms-settings:, etc.)"
         CollectAppxLinks = "Create shortcuts for hidden sub-page URL links for apps (e.g., ms-clock://pausefocustimer, etc.) &#x0a;Note: Requires collecting URL Protocol Links"
-    }
+        DeepScanHiddenLinks = "Scans all files in the installation directory of non-appx-package apps for hidden links. &#x0a;Otherwise only the primary binary file will be searched. &#x0a;&#x0a;Note: This wll be MUCH slower. &#x0a;Also Note: Not to be confused with &quot;Deep Links&quot;."    }
 
     Add-Type -AssemblyName PresentationFramework
     Add-Type -AssemblyName System.Windows.Forms
@@ -220,7 +221,7 @@ function Show-SuperGodModeDialog {
     <Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Super God Mode Options" Height="685" Width="800">
+        Title="Super God Mode Options" Height="715" Width="800">
         <Window.Resources>
             <Color x:Key="BackgroundColor">#1E1E1E</Color>
             <Color x:Key="ForegroundColor">#CCCCCC</Color>
@@ -359,6 +360,11 @@ function Show-SuperGodModeDialog {
                                         <ToolTip Content="$($tooltips.AllowDuplicateDeepLinks)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
+                                <CheckBox x:Name="chkDeepScanHiddenLinks" Content="Deeper Scan For Hidden Links (Slow)" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.DeepScanHiddenLinks)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
                             </StackPanel>
                         </GroupBox>
 
@@ -461,6 +467,7 @@ function Show-SuperGodModeDialog {
     $chkCollectExtraURLProtocolInfo = $window.FindName("chkCollectExtraURLProtocolInfo")
     $chkKeepPreviousOutputFolders = $window.FindName("chkKeepPreviousOutputFolders")
     $chkAllowDuplicateDeepLinks = $window.FindName("chkAllowDuplicateDeepLinks")
+    $chkDeepScanHiddenLinks = $window.FindName("chkDeepScanHiddenLinks")
 
     # Control Outputs Check Boxes
     $chkCollectStatistics = $window.FindName("chkCollectStatistics")
@@ -557,6 +564,7 @@ function Show-SuperGodModeDialog {
 
     # Return script parameters based on GUI selections
     return @{
+        # Alternative Options
         DontGroupTasks = $chkDontGroupTasks.IsChecked
         UseAlternativeCategoryNames = $chkUseAlternativeCategoryNames.IsChecked
         AllURLProtocols = $chkAllURLProtocols.IsChecked
@@ -564,6 +572,8 @@ function Show-SuperGodModeDialog {
         KeepPreviousOutputFolders = $chkKeepPreviousOutputFolders.IsChecked
         NoStatistics = !$chkCollectStatistics.IsChecked
         AllowDuplicateDeepLinks = $chkAllowDuplicateDeepLinks.IsChecked
+        DeepScanHiddenLinks = $chkDeepScanHiddenLinks.IsChecked
+        # Inverse of the Skip options
         SkipCLSID = !$chkCollectCLSID.IsChecked
         SkipNamedFolders = !$chkCollectNamedFolders.IsChecked
         SkipTaskLinks = !$chkCollectTaskLinks.IsChecked
@@ -571,6 +581,7 @@ function Show-SuperGodModeDialog {
         SkipDeepLinks = !$chkCollectDeepLinks.IsChecked
         SkipURLProtocols = !$chkCollectURLProtocols.IsChecked
         SkipHiddenAppLinks = !$chkCollectAppxLinks.IsChecked
+        # Output folder path
         Output = $txtCurrentPath.Text
     }
 }
@@ -594,6 +605,7 @@ if (-not $NoGUI) {
     $KeepPreviousOutputFolders = $params.KeepPreviousOutputFolders
     $NoStatistics = $params.NoStatistics
     $AllowDuplicateDeepLinks = $params.AllowDuplicateDeepLinks
+    $DeepScanHiddenLinks = $params.DeepScanHiddenLinks
     $SkipCLSID = $params.SkipCLSID
     $SkipNamedFolders = $params.SkipNamedFolders
     $SkipTaskLinks = $params.SkipTaskLinks
@@ -2906,12 +2918,13 @@ function Format-FileGrid {
 }
 
 # Function to search for protocol URLs in AppX package files
-function Search-ProtocolURLsInAppXFiles {
+function Search-HiddenLinks {
     param (
         [Parameter(Mandatory=$true)]
         $associatedProtocolsPerApp,
         $URLProtocolsData,
-        [switch]$SkipAppXURLSearch
+        [switch]$SkipAppXURLSearch,
+        [switch]$DeepScanHiddenLinks
     )
 
     if ($SkipAppXURLSearch) {
@@ -3131,11 +3144,13 @@ function Search-ProtocolURLsInAppXFiles {
 
     # Get total files to search in other program folders. There might be duplicate folders, but we need to still count them because they'll be searched separately
     $totalFiles = 0
+    Write-Host "Creating list of files to search for hidden links in non-Appx-package programs"
     foreach ($program in $programFilesSearchData) {
         $files = @()
         $folder = $program.AssumedInstallDir
         Write-Verbose "Gathering list of files to search for $($program.Protocol)"
-        if ($null -ne $folder) {
+        # Gather files from entire folder of each program if folder is accessible (not null), and deep scan is enabled
+        if ($null -ne $folder -and $DeepScanHiddenLinks) {
             Write-Verbose " > Gathering in $folder"
             try {
                 $files = Get-ChildItem -Path $folder -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions }
@@ -3154,6 +3169,7 @@ function Search-ProtocolURLsInAppXFiles {
                 $program.FilesToSearch = @($program.Target | Get-Item)
                 continue
             }
+        # Only set single target file to be searched
         } else {
             Write-Verbose " > Folder for $($program.Protocol) is null, assuming it's a single file search"
             try {
@@ -3666,7 +3682,7 @@ if (-not $SkipURLProtocols){
     if (-not $SkipHiddenAppLinks) {
         Write-Host "`n----- Searching For Hidden URL Links -----"
         # Search for URLs in AppX package files by brute force
-        $appXURLSearchResults = Search-ProtocolURLsInAppXFiles -associatedProtocolsPerApp $associatedProtocolsPerApp -URLProtocolsData $URLProtocolsData -SkipAppXURLSearch:$SkipHiddenAppLinks
+        $appXURLSearchResults = Search-HiddenLinks -associatedProtocolsPerApp $associatedProtocolsPerApp -URLProtocolsData $URLProtocolsData -SkipAppXURLSearch:$SkipHiddenAppLinks -DeepScanHiddenLinks:$DeepScanHiddenLinks
 
         if ($appXURLSearchResults) {
             Create-AppXURLShortcuts -foundURLsItems $appXURLSearchResults -shortcutFolder $URLProtocolPageLinksOutputFolder
@@ -3775,6 +3791,6 @@ Write-Host $(if ($SkipHiddenAppLinks -or $SkipURLProtocols) { "   (Skipped)" })
 Write-Host "`n------------------------------------------------`n"
 
 if (-not $NoGUI) {
-    Write-Host "Press any key to exit..." -NoNewline
+    Write-Host "Press any key to exit...`n" -NoNewline
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
