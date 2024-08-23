@@ -2950,6 +2950,7 @@ function Search-ProtocolURLsInAppXFiles {
 
         # DEBUGGING ONLY - Limit the number of packages to search to get to the next part faster
         # if ($resultsAppx.Count -gt 3) {
+        #     Write-Host "DEBUGGING ONLY - Limiting number of packages to search. IF YOU SEE THIS I FORGOT TO TAKE THIS OUT!"
         #     break
         # }
 
@@ -3131,9 +3132,11 @@ function Search-ProtocolURLsInAppXFiles {
     # Get total files to search in other program folders. There might be duplicate folders, but we need to still count them because they'll be searched separately
     $totalFiles = 0
     foreach ($program in $programFilesSearchData) {
+        $files = @()
         $folder = $program.AssumedInstallDir
-        Write-Verbose "Searching for $($program.Protocol) in $folder"
-        if ($null -ne $folder.AssumedInstallDir) {
+        Write-Verbose "Gathering list of files to search for $($program.Protocol)"
+        if ($null -ne $folder) {
+            Write-Verbose " > Gathering in $folder"
             try {
                 $files = Get-ChildItem -Path $folder -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions }
                 $program.FilesToSearch = $files
@@ -3152,9 +3155,11 @@ function Search-ProtocolURLsInAppXFiles {
                 continue
             }
         } else {
+            Write-Verbose " > Folder for $($program.Protocol) is null, assuming it's a single file search"
             try {
                 $files = @($program.Target | Get-Item)
                 $program.FilesToSearch = $files
+                Write-Verbose "Got $($files.Count) files for $($program.Protocol)"
             } catch {
                 Write-Verbose "Error getting file $($program.Target) for $($program.Protocol)`: $_"
                 $program.FilesToSearch = @()
@@ -3172,10 +3177,14 @@ function Search-ProtocolURLsInAppXFiles {
 
     # Go through other program folders
     foreach ($itemToSearch in $programFilesSearchData) {
+        # Search Display Location
+        if ($itemToSearch.AssumedInstallDir) {
+            Write-Verbose "Scanning: $($itemToSearch.AssumedInstallDir)\ | For File Protocol: $($itemToSearch.Protocol)"
+        } else {
+            Write-Verbose "Scanning: $($itemToSearch.Target) | For File Protocol: $($itemToSearch.Protocol)"
+        }
+
         $URIsList = @($itemToSearch.Protocol) # Convert to array because the function will be expecting it even if it's just one
-
-        Write-Verbose "`rSearching in $($itemToSearch.Protocol) | For URIs: $($URIsList -join ', ')"
-
         $files = $itemToSearch.FilesToSearch
 
         foreach ($file in $files) {
