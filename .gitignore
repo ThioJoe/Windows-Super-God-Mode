@@ -396,6 +396,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Custom
 /.vscode
 /Shell Folder Shortcuts
 /Output
@@ -404,3 +406,4 @@ Extra Tools/SystemSettings-MS-Settings.txt
 *.bak
 /Super God Mode
 /ProtocolMatches
+DEBUG -*

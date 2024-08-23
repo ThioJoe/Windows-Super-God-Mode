@@ -171,7 +171,7 @@ param(
 # -CustomSystemSettingsDLLPath
 # -CustomAllSystemSettingsXMLPath
 
-$VERSION = "1.0.0"
+$VERSION = "1.1.0"
 
 # If -Debug or -Verbose is used, set $DebugPreference and $VerbosePreference to Continue, otherwise set to SilentlyContinue.
 # This way it will show messages without stopping if -Debug is used and not otherwise
@@ -690,19 +690,39 @@ $permanentURIProtocols = @(
     'wss','xcon','xcon-userid','xmlrpc.beep','xmlrpc.beeps','xmpp','z39.50r','z39.50s'
 )
 
+# Tests if a file exists at a path without throwing a huge exception if it doesn't
+function Test-Path-Safe {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$Path
+    )
+
+    try {
+        $testPathResult = Test-Path -LiteralPath $Path -PathType Leaf -ErrorAction Stop
+        if ($testPathResult -ne $true) {
+            Write-Debug "Test-Path-Safe Result for $Path`: $testPathResult"
+        }
+        return $testPathResult
+    }
+    catch {
+        Write-Debug "Test-Path-Safe: Error checking path - $Path : $_"
+        return $false
+    }
+}
+
 # Check which AllSystemSettings XML file to use
 if ($CustomAllSystemSettingsXMLPath) {
-    if (-not (Test-Path $CustomAllSystemSettingsXMLPath)) {
+    if (-not (Test-Path-Safe $CustomAllSystemSettingsXMLPath)) {
         Write-Error "The specified AllSystemSettings XML path does not exist: $CustomAllSystemSettingsXMLPath"
         return
     } else {
         $allSettingsXmlPath = $CustomAllSystemSettingsXMLPath
     }
-} elseif (Test-Path $allSettingsXmlPath1) {
+} elseif (Test-Path-Safe $allSettingsXmlPath1) {
     $allSettingsXmlPath = $allSettingsXmlPath1
-} elseif (Test-Path $allSettingsXmlPath2) {
+} elseif (Test-Path-Safe $allSettingsXmlPath2) {
     $allSettingsXmlPath = $allSettingsXmlPath2
-} elseif (Test-Path $allSettingsXmlPath3) {
+} elseif (Test-Path-Safe $allSettingsXmlPath3) {
     $allSettingsXmlPath = $allSettingsXmlPath3
 } else {
     Write-Warning "No AllSystemSettings XML file found. Deep Link shortcuts will not be created."
@@ -773,7 +793,7 @@ if (-not $KeepPreviousOutputFolders) {
 
 # Validate the custom dll path if provided
 if ($CustomDLLPath) {
-    if (-not (Test-Path $CustomDLLPath)) {
+    if (-not (Test-Path-Safe $CustomDLLPath)) {
         Write-Error "The specified DLL path does not exist: $CustomDLLPath"
         return
     }
@@ -796,7 +816,7 @@ if ($CustomLanguageFolderPath) {
 
 # Validate the custom system settings DLL path if provided
 if ($CustomSystemSettingsDLLPath) {
-    if (-not (Test-Path $CustomSystemSettingsDLLPath)) {
+    if (-not (Test-Path-Safe $CustomSystemSettingsDLLPath)) {
         Write-Error "The specified SystemSettings.dll path does not exist: $CustomSystemSettingsDLLPath"
         return
     } else {
@@ -1077,7 +1097,7 @@ function Get-LocalizedString {
         # If custom language folder is specified, check if there is a corresponding MUI file for the DLL within that folder.
         $muiNameToCheck = "$dllPath.mui"
         if ($CustomLanguageFolder){
-            if (Test-Path (Join-Path $CustomLanguageFolder $muiNameToCheck)) {
+            if (Test-Path-Safe (Join-Path $CustomLanguageFolder $muiNameToCheck)) {
                 Write-Verbose "Found MUI file to use for for $dllPath in custom language folder."
                 $dllPath = Join-Path $CustomLanguageFolder $muiNameToCheck
             }
@@ -1191,7 +1211,7 @@ function Get-MsResource {
             Write-Debug "      > Package installation path: $packagePath"
             $priPath = Join-Path $packagePath "resources.pri"
             Write-Debug "      + Attempting to use resources.pri at: $priPath"
-            if (Test-Path $priPath) {
+            if (Test-Path-Safe $priPath) {
                 $newResourcePath = "@{" + $priPath + "?" + $resourceUri + "}"
                 Write-Debug "      > New resource path: $newResourcePath"
                 Write-Debug "      + Attempting to call SHLoadIndirectString with new resource path"
@@ -1229,7 +1249,7 @@ function Get-MsResource {
         }
 
         # If still failed, try removing parts of the package name in the resource path one at a time
-        if ($package -and (Test-Path $priPath)) {
+        if ($package -and (Test-Path-Safe $priPath)) {
             # Split the package name into parts
             $packageParts = $packageName.Split('.')
             for ($i = 1; $i -lt $packageParts.Count; $i++) {
@@ -2102,7 +2122,7 @@ function Get-AllSettings-Data {
         [switch]$SaveXML
     )
 
-    if (-not (Test-Path $xmlFilePath)) {
+    if (-not (Test-Path-Safe $xmlFilePath)) {
         Write-Error "All Systems XML file not found: $xmlFilePath"
         return $null
     }
@@ -2177,7 +2197,7 @@ function Get-MS-SettingsFrom-SystemSettingsDLL {
         [string]$DllPath
     )
 
-    if (-not (Test-Path $DllPath)) {
+    if (-not (Test-Path-Safe $DllPath)) {
         Write-Error "File not found: $DllPath"
         return @()
     }
@@ -2517,7 +2537,7 @@ function Get-AppDetails-From-AppxManifest {
 
         $location = $appx.InstallLocation
         $manifestPath = "$location\AppxManifest.xml"
-        if ($null -ne $location  -and (Test-Path $manifestPath -PathType Leaf)) {
+        if ($null -ne $location  -and (Test-Path-Safe $manifestPath)) {
             [xml]$xml = Get-Content $manifestPath
             $ns = New-Object Xml.XmlNamespaceManager $xml.NameTable
             $ns.AddNamespace("main", "http://schemas.microsoft.com/appx/manifest/foundation/windows10")
@@ -2766,7 +2786,7 @@ function Get-And-Process-URL-Protocols {
             if ($permanentProtocolsIgnore -notcontains $protocol.Protocol) {
                 $filteredUrlProtocolData += $protocol
             } else {
-                Write-Verbose "Ignoring protocol: $($protocol.Protocol)"
+                Write-Verbose "Ignoring common protocol: $($protocol.Protocol)"
             }
         }
     }
@@ -2899,7 +2919,7 @@ function Search-ProtocolURLsInAppXFiles {
         return $null
     }
 
-    $results = @()
+    $resultsAppx = @()
     $searchedFiles = @()
     $ignoredExtensions = @('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', ".ico", ".p7x", ".ttf", ".onnxe", ".bundle", '.vsix')
     $encodingMap = @{
@@ -2925,7 +2945,14 @@ function Search-ProtocolURLsInAppXFiles {
     $processedFiles = 0
     $searchedFiles = @()
 
+    # Go through Appx Packages
     foreach ($appPackage in $packagesToSearch) {
+
+        # DEBUGGING ONLY - Limit the number of packages to search to get to the next part faster
+        # if ($resultsAppx.Count -gt 3) {
+        #     break
+        # }
+
         $URIsList = $appPackage.Protocols
         $folderPath = $appPackage.InstallLocation
 
@@ -2935,21 +2962,257 @@ function Search-ProtocolURLsInAppXFiles {
             $searchedFiles += $file.FullName
             $fileResults = Get-ProtocolsInFile -protocolsList $URIsList -filePathToCheck $file.FullName -encodingMap $encodingMap
             if ($fileResults -and $fileResults.Matches.Count -gt 0) {
-                $results += $fileResults
+                $resultsAppx += $fileResults
             }
             $processedFiles++
             $currentPercentage = [math]::Floor(($processedFiles / $totalFiles) * 100)
             if ($currentPercentage -ne $lastPercentage) {
-                Write-Host "`rProgress: $currentPercentage%" -NoNewline
+                Write-Host "`r[1/2] Appx Package Search Progress: $currentPercentage%" -NoNewline
                 $lastPercentage = $currentPercentage
             }
         }
     }
     Write-Host "" # Write blank line because we were using carriage return
 
-    # Remove any entries where the fullpath is a duplicate of another
-    $resultsUniqueFullURL = $results | Sort-Object -Property FullURL -Unique
+    # Create hashtable to store information about what to search
+    $programFilesSearchData = @()
+    # Array with list of folders to eventually calculate total files
+    $otherProgramFoldersToSearch = @()
+    # Eventual results array
+    $resultsSecondary = @()
 
+    # For other protocols not in resultsAppx.Protocol, see if it has an associated command, and use that directory as a search location next
+    foreach ($protocol in $URLProtocolsData | Where-Object { $_.Protocol -notin $resultsAppx.Protocol }) {
+
+        foreach ($command in $protocol.Command) {
+            Write-Verbose "Processing command for $($protocol.Protocol): $command"
+            $target = ""
+            #$targetArgs = ""
+            $installDir = ""
+
+            if ($command) {
+                $foundValidTarget = $false
+                $Matches = $null
+
+                # Method 1 - Try general matching pattern
+                if (-not $foundValidTarget -and $command -match '(?i)[a-z]:\\(?:[^\\/:*?"<>|\r\n]+\\)*[^\\/:*?"<>|\r\n]+\.[^\\/:*?"<>|\r\n ]+') {
+                    $target = $Matches[0]
+                    Write-Debug "Method 1 - Extracted target: $target"
+                    if (Test-Path-Safe -Path $target) {
+                        $foundValidTarget = $true
+                        Write-Debug "Method 1 - Valid target found: $target"
+                    } else {
+                        Write-Debug "Method 1 - File not found: $target"
+                    }
+                }
+
+                # Method 2
+                if (-not $foundValidTarget -and $command -match '^"([^"]+)"?') {
+                    $target = $Matches[1].Trim()
+                    Write-Debug "Method 2 - Extracted target: $target"
+                    if (Test-Path-Safe $target) { 
+                        $foundValidTarget = $true
+                        Write-Debug "Method 2 - Valid target found: $target"
+                    }
+                }
+
+                # Method 3 - Try just trimming quotes
+                if (-not $foundValidTarget -and $command -match '^"?(.*?)"?$') {
+                    $target = $Matches[1].Trim()
+                    Write-Debug "Method 3 - Extracted target: $target"
+                    if (Test-Path-Safe $target) { 
+                        $foundValidTarget = $true
+                        Write-Debug "Method 3 - Valid target found: $target"
+                    }
+                }
+
+                # Method 4 - Try splitting on the first space and trimming any quotes
+                if (-not $foundValidTarget -and $command -match '^\s*"?([^ ]+)"?(.*)') {
+                    $target = $Matches[1].Trim()
+                    Write-Debug "Method 4 - Extracted target: $target"
+                    if (Test-Path-Safe $target) { 
+                        $foundValidTarget = $true
+                        Write-Debug "Method 4 - Valid target found: $target"
+                    }
+                }
+
+                # Method 5 - Try splitting on a space between quotes
+                if (-not $foundValidTarget -and $command -match '^\s*"?([^"]+)"\s+"([^"]+)"') {
+                    $target = $Matches[1].Trim()
+                    Write-Debug "Method 5 - Extracted target: $target"
+                    if (Test-Path-Safe $target) { 
+                        $foundValidTarget = $true
+                        Write-Debug "Method 5 - Valid target found: $target"
+                    }
+                }
+
+                # Method 6 - At this point try assuming it's a direct path
+                if (-not $foundValidTarget) {
+                    Write-Debug "Method 6 - Trying direct path: $command"
+                    if (Test-Path-Safe $command) {
+                        $target = $command
+                        $foundValidTarget = $true
+                        Write-Debug "Method 6 - Valid target found: $target"
+                    }
+                }
+
+                # Method 7 - Finally try without quotes
+                if (-not $foundValidTarget) {
+                    $unquotedCommand = $command.Trim('"')
+                    Write-Debug "Method 7 - Trying without quotes: $unquotedCommand"
+                    if (Test-Path-Safe $unquotedCommand) {
+                        $target = $unquotedCommand
+                        $foundValidTarget = $true
+                        Write-Debug "Method 7 - Valid target found: $target"
+                    }
+                }
+
+                if (-not $foundValidTarget) {
+                    Write-Verbose "Command for $($protocol.Protocol) is invalid or has unknown structure: $command"
+                    continue
+                }
+
+
+                # Determine the program's install directory based on the target.
+                # If it the path contains "\Program Files" or "\Program Files (x86)", then use the path until the next backslash, otherwise match to the last backslash
+                # Also only go to last backslash if it matches a list of exclusions
+                $exceptionPaths = @("Common Files", "WindowsApps")
+                if ($target -match '^(.*\\[Pp]rogram [Ff]iles( \(x86\))?\\[^\\]+)') {
+                    $installDir = $Matches[1]
+                    $Matches = $null
+                    $containsException = $false
+                    foreach ($exception in $exceptionPaths) {
+                        if (($installDir -like "*\$exception\*") -or ($($installDir + "\") -like "*\$exception\*")) {
+                            $containsException = $true
+                            break
+                        }
+                    }
+                    if ($containsException) {
+                        # Use the immediate parent directory of the executable
+                        $installDir = Split-Path -Path $target -Parent
+                    }
+                } else {
+                    $installDir = Split-Path -Path $target -Parent
+                }
+
+                # If the install directory is in a list of exclusions, only search that specific file, not the whole directory
+                $dontSearchFolders = @($env:WINDIR)
+                foreach ($excludedFolder in $dontSearchFolders) {
+                    if ($installDir -like "$excludedFolder*") {
+                        $installDir = $null
+                        break
+                    }
+                }
+
+                # Find if there's a matching package with the same name in $packagesToSearch
+                $matchingPackage = $packagesToSearch | Where-Object { $_.PackageName -eq $protocol.PackageName }
+                # If the matching package is found and $installdir matches or is within the package's install location, then skip it
+                if ($matchingPackage -and $installDir -like "$($matchingPackage.InstallLocation)*") {
+                    Write-Verbose "Skipping $($protocol.Protocol) because it's in the same package"
+                    continue
+                }
+                # Create search item object
+                $searchItem = [PSCustomObject]@{
+                    Protocol = $protocol.Protocol
+                    PackageName = $protocol.PackageName
+                    Command = $command
+                    Target = $target
+                    AssumedInstallDir = $installDir
+                    FilesToSearch = @()
+                }
+                if ($installDir) {
+                    $otherProgramFoldersToSearch += $installDir
+                }
+                $programFilesSearchData += $searchItem
+            }
+        }
+    }
+
+    # Get total files to search in other program folders. There might be duplicate folders, but we need to still count them because they'll be searched separately
+    $totalFiles = 0
+    foreach ($program in $programFilesSearchData) {
+        $folder = $program.AssumedInstallDir
+        Write-Verbose "Searching for $($program.Protocol) in $folder"
+        if ($null -ne $folder.AssumedInstallDir) {
+            try {
+                $files = Get-ChildItem -Path $folder -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions }
+                $program.FilesToSearch = $files
+                Write-Verbose "Got $($files.Count) files in $folder for $($program.Protocol)"
+            # If it's an unauthorizedaccessexception, make AssumeInstallDir null so it's counted as a single file search
+            } catch [System.UnauthorizedAccessException] {
+                Write-Verbose "Unauthorized access to $folder, assuming it's a single file search for $($program.Protocol)"
+                $program.AssumedInstallDir = $null
+                $program.FilesToSearch = @($program.Target | Get-Item)
+                continue
+            # Do the same for any other exceptions
+            } catch {
+                Write-Verbose "Error getting files in $folder for $($program.Protocol)`: $_"
+                $program.AssumedInstallDir = $null
+                $program.FilesToSearch = @($program.Target | Get-Item)
+                continue
+            }
+        } else {
+            try {
+                $files = @($program.Target | Get-Item)
+                $program.FilesToSearch = $files
+            } catch {
+                Write-Verbose "Error getting file $($program.Target) for $($program.Protocol)`: $_"
+                $program.FilesToSearch = @()
+                continue
+            }
+        }
+        $totalFiles += $files.Count
+    }
+    Write-Verbose "Found $totalFiles total files"
+
+    $processedFiles = 0
+    $lastPercentage = -1
+    $processedFiles = 0
+    $searchedFiles2 = @()
+
+    # Go through other program folders
+    foreach ($itemToSearch in $programFilesSearchData) {
+        $URIsList = @($itemToSearch.Protocol) # Convert to array because the function will be expecting it even if it's just one
+
+        Write-Verbose "`rSearching in $($itemToSearch.Protocol) | For URIs: $($URIsList -join ', ')"
+
+        $files = $itemToSearch.FilesToSearch
+
+        foreach ($file in $files) {
+            $searchedFiles2 += $file.FullName
+            $fileResults = Get-ProtocolsInFile -protocolsList $URIsList -filePathToCheck $file.FullName -encodingMap $encodingMap
+            if ($fileResults -and $fileResults.Matches.Count -gt 0) {
+                $resultsSecondary += $fileResults
+            }
+            $processedFiles++
+            $currentPercentage = [math]::Floor(($processedFiles / $totalFiles) * 100)
+            if ($currentPercentage -ne $lastPercentage) {
+                Write-Host "`r[2/2] Non-Appx Search Progress: $currentPercentage%" -NoNewline
+                $lastPercentage = $currentPercentage
+            }
+        }
+    }
+
+    Write-Host "" # Write blank line because we were using carriage return
+
+    # DEBUGGING - Print out the files that were searched to a file
+    if ($Debug) {
+        $searchedFiles | Out-File -FilePath "DEBUG - SearchedFilesAppx.txt"
+        $searchedFiles2 | Out-File -FilePath "DEBUG - SearchedFilesSecondaryPrograms.txt"
+        Write-Debug "  -- Wrote debug files containing searched files..."
+    }
+
+    # Remove any entries where the fullpath is a duplicate of another
+    $resultsUniqueFullURL = $resultsAppx | Sort-Object -Property FullURL -Unique
+    # If there are any secondary results, merge them with the primary results by adding any that aren't in there already
+    if ($resultsSecondary.Count -gt 0) {
+        $resultsUniqueFullURL += $resultsSecondary | Sort-Object -Property FullURL -Unique
+        foreach ($result in $resultsSecondary) {
+            if ($resultsUniqueFullURL.FullURL -notcontains $result.FullURL) {
+                $resultsUniqueFullURL += $result
+            }
+        }
+    }
     return $resultsUniqueFullURL
 }
 
@@ -2964,7 +3227,7 @@ function Get-ProtocolsInFile {
         [hashtable]$encodingMap
     )
 
-    if (-not (Test-Path $filePathToCheck)) {
+    if (-not (Test-Path-Safe $filePathToCheck)) {
         Write-Error "File not found: $filePathToCheck"
         return $null
     }
