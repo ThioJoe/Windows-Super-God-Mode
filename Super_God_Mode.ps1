@@ -2977,7 +2977,7 @@ function Search-HiddenLinks {
         foreach ($file in $files) {
             $searchedFiles += $file.FullName
             $fileResults = Get-ProtocolsInFile -protocolsList $URIsList -filePathToCheck $file.FullName -encodingMap $encodingMap
-            if ($fileResults -and $fileResults.Matches.Count -gt 0) {
+            if ($fileResults) {
                 $resultsAppx += $fileResults
             }
             $processedFiles++
@@ -3208,7 +3208,7 @@ function Search-HiddenLinks {
         foreach ($file in $files) {
             $searchedFiles2 += $file.FullName
             $fileResults = Get-ProtocolsInFile -protocolsList $URIsList -filePathToCheck $file.FullName -encodingMap $encodingMap
-            if ($fileResults -and $fileResults.Matches.Count -gt 0) {
+            if ($fileResults) {
                 $resultsSecondary += $fileResults
             }
             $processedFiles++
