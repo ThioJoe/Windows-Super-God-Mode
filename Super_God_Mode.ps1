@@ -685,10 +685,12 @@ $resolvedSettingsXmlContentFilePath = Join-Path $statisticsOutputFolder $xmlFile
 
 # Other constants / known paths.
 # Available AllSystemSettings XML files may differ depending on Windows 11 or Windows 10, so will try them in order:
-$allSettingsXmlPath1 = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings_{D6E2A6C6-627C-44F2-8A5C-4959AC0C2B2D}.xml"
-$allSettingsXmlPath2 = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings_{FDB289F3-FCFC-4702-8015-18926E996EC1}.xml"
-$allSettingsXmlPath3 = "C:\Windows\ImmersiveControlPanel\Settings\AllSystemSettings_{253E530E-387D-4BC2-959D-E6F86122E5F2}.xml"
-$systemSettingsDllPath = "C:\Windows\ImmersiveControlPanel\SystemSettings.dll"
+$allSettingsXmlPath1 = "$Env:windir\ImmersiveControlPanel\Settings\AllSystemSettings_{D6E2A6C6-627C-44F2-8A5C-4959AC0C2B2D}.xml"
+$allSettingsXmlPath2 = "$Env:windir\ImmersiveControlPanel\Settings\AllSystemSettings_{FDB289F3-FCFC-4702-8015-18926E996EC1}.xml"
+$allSettingsXmlPath3 = "$Env:windir\ImmersiveControlPanel\Settings\AllSystemSettings_{253E530E-387D-4BC2-959D-E6F86122E5F2}.xml"
+$systemSettingsDllPath = "$Env:windir\ImmersiveControlPanel\SystemSettings.dll"
+
+
 
 # URI Protocols deemed "permanent" and not to be included in the URL Protocols section because they aren't special
 # See: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
@@ -914,33 +916,33 @@ IconResource=$IconFile,$IconIndex
 
 # Create desktop.ini for main folder if it was created this run
 if ($mainFolderWasCreatedThisRun) {
-    New-FolderWithIcon -FolderPath $mainShortcutsFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "10" -IconIndexWin10 "190" -desktopIniOnly
+    New-FolderWithIcon -FolderPath $mainShortcutsFolder -IconFile "%windir%\System32\imageres.dll" -IconIndex "10" -IconIndexWin10 "190" -desktopIniOnly
 }
 if (-not $SkipCLSID) {
-    New-FolderWithIcon -FolderPath $CLSIDshortcutsOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "20" -IconIndexWin10 "210" -DetailsView
+    New-FolderWithIcon -FolderPath $CLSIDshortcutsOutputFolder -IconFile "%windir%\System32\shell32.dll" -IconIndex "20" -IconIndexWin10 "210" -DetailsView
 }
 
 if (-not $SkipNamedFolders) {
-    New-FolderWithIcon -FolderPath $namedShortcutsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "77" -DetailsView
+    New-FolderWithIcon -FolderPath $namedShortcutsOutputFolder -IconFile "%windir%\System32\imageres.dll" -IconIndex "77" -DetailsView
 }
 
 if (-not $SkipTaskLinks) {
-    New-FolderWithIcon -FolderPath $taskLinksOutputFolder -IconFile "C:\Windows\System32\shell32.dll" -IconIndex "137" -DetailsView
+    New-FolderWithIcon -FolderPath $taskLinksOutputFolder -IconFile "%windir%\System32\shell32.dll" -IconIndex "137" -DetailsView
 }
 if (-not $SkipMSSettings) {
-    New-FolderWithIcon -FolderPath $msSettingsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "114" -DetailsView
+    New-FolderWithIcon -FolderPath $msSettingsOutputFolder -IconFile "%windir%\System32\imageres.dll" -IconIndex "114" -DetailsView
 }
 if (-not $SkipDeepLinks) {
-    New-FolderWithIcon -FolderPath $deepLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "175" -DetailsView
+    New-FolderWithIcon -FolderPath $deepLinksOutputFolder -IconFile "%windir%\System32\imageres.dll" -IconIndex "175" -DetailsView
 }
 if (-not $SkipURLProtocols) {
-    New-FolderWithIcon -FolderPath $URLProtocolLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "5302" -DetailsView
+    New-FolderWithIcon -FolderPath $URLProtocolLinksOutputFolder -IconFile "%windir%\System32\imageres.dll" -IconIndex "5302" -DetailsView
 }
 if (-not $SkipHiddenAppLinks) {
-    New-FolderWithIcon -FolderPath $URLProtocolPageLinksOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "1025" -DetailsView
+    New-FolderWithIcon -FolderPath $URLProtocolPageLinksOutputFolder -IconFile "%windir%\System32\imageres.dll" -IconIndex "1025" -DetailsView
 }
 if (-not $NoStatistics) {
-    New-FolderWithIcon -FolderPath $statisticsOutputFolder -IconFile "C:\Windows\System32\imageres.dll" -IconIndex "9" -DetailsView
+    New-FolderWithIcon -FolderPath $statisticsOutputFolder -IconFile "%windir%\System32\imageres.dll" -IconIndex "9" -DetailsView
 }
 
 # Create any other static files
