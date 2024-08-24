@@ -2936,7 +2936,11 @@ function Search-HiddenLinks {
 
     $resultsAppx = @()
     $searchedFiles = @()
-    $ignoredExtensions = @('.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', ".ico", ".p7x", ".ttf", ".onnxe", ".bundle", '.vsix')
+    $ignoredExtensions = @(
+            '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', ".ico", ".p7x", ".ttf",
+            ".onnxe", ".bundle", '.vsix', '.zip', '.pak', '.nupkg', '.asar', ".resS",
+            ".bnk", ".onnx", ".ogv", ".opq"
+            )
     $encodingMap = @{
         ".txt" = "UTF-8"; ".xml" = "UTF-8"; ".json" = "UTF-8"; ".dll" = "Unicode";
         ".exe" = "Unicode"; ".js" = "UTF-8"; ".map" = "UTF-8"
@@ -2952,7 +2956,7 @@ function Search-HiddenLinks {
     $packagesToSearch = $associatedProtocolsPerApp | Where-Object { $packagesToSearchList -contains $_.PackageName }
 
     $totalFiles = ($packagesToSearch | ForEach-Object {
-        Get-ChildItem -Path $_.InstallLocation -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions }
+        Get-ChildItem -Path $_.InstallLocation -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions -and $_.Length -gt 0}
     }).Count
 
     $processedFiles = 0
@@ -2973,7 +2977,7 @@ function Search-HiddenLinks {
         $folderPath = $appPackage.InstallLocation
 
         Write-Verbose "`rSearching in $($appPackage.PackageName) | For URIs: $($URIsList -join ', ')"
-        $files = Get-ChildItem -Path $folderPath -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions }
+        $files = Get-ChildItem -Path $folderPath -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions -and $_.Length -gt 0}
         foreach ($file in $files) {
             $searchedFiles += $file.FullName
             $fileResults = Get-ProtocolsInFile -protocolsList $URIsList -filePathToCheck $file.FullName -encodingMap $encodingMap
@@ -3092,7 +3096,7 @@ function Search-HiddenLinks {
                 # Determine the program's install directory based on the target.
                 # If it the path contains "\Program Files" or "\Program Files (x86)", then use the path until the next backslash, otherwise match to the last backslash
                 # Also only go to last backslash if it matches a list of exclusions
-                $exceptionPaths = @("Common Files", "WindowsApps")
+                $exceptionPaths = @("Common Files", "WindowsApps", "Adobe", "Microsoft Office")
                 if ($target -match '^(.*\\[Pp]rogram [Ff]iles( \(x86\))?\\[^\\]+)') {
                     $installDir = $Matches[1]
                     $Matches = $null
@@ -3155,7 +3159,7 @@ function Search-HiddenLinks {
         if ($null -ne $folder -and $DeepScanHiddenLinks) {
             Write-Verbose " > Gathering in $folder"
             try {
-                $files = Get-ChildItem -Path $folder -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions }
+                $files = Get-ChildItem -Path $folder -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions -and $_.Length -gt 0 }
                 $program.FilesToSearch = $files
                 Write-Verbose "Got $($files.Count) files in $folder for $($program.Protocol)"
             # If it's an unauthorizedaccessexception, make AssumeInstallDir null so it's counted as a single file search
