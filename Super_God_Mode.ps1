@@ -3241,8 +3241,17 @@ function Get-ProtocolsInProgramFiles {
 
     $protocolsList = $program.Protocols
     $filesToSearch = $program.FilesToSearch
-    $resultsForProgram = @()
+    $resultsForProgram = [System.Collections.Generic.List[object]]::new() # Using a typed generic list for better performance instead doing addition of arrays
     $lastPercentage = -1 # This makes sure it prints progress at least once per package
+
+    # Prepare regex 
+    $regexOptions = [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
+    $utf8Regex = @{}
+    $unicodeRegex = @{}
+    foreach ($protocol in $protocolsList) {
+        $utf8Regex[$protocol] = [regex]::Escape($protocol) + "://[^`"\s<>()\\``]+"
+        $unicodeRegex[$protocol] = [regex]::Escape($protocol) + "://[ -~]+"
+    }
 
     # Skip the file if it doesn't exist
     foreach ($file in $filesToSearch) {
@@ -3254,7 +3263,7 @@ function Get-ProtocolsInProgramFiles {
             Continue
         }
 
-        $fileResults = @()
+        $fileResults = [System.Collections.Generic.List[object]]::new() # Again using a typed generic list for better performance
         $fileExtension = $file.Extension # Containskey is case-insensitive so no need to convert to lower
         $encodingsToTry = if ($encodingMap.ContainsKey($fileExtension)) { @($encodingMap[$fileExtension]) } else { @("UTF-8", "Unicode") }
 
@@ -3263,22 +3272,18 @@ function Get-ProtocolsInProgramFiles {
             try {
                 $content = [System.IO.File]::ReadAllText($file.FullName, $encoding)
                 foreach ($protocol in $protocolsList) {
-                    $uriPattern = if ($encodingName -eq "UTF-8") {
-                        [regex]::Escape($protocol) + "://[^`"\s<>()\\``]+"
-                    } else {
-                        [regex]::Escape($protocol) + "://[ -~]+"
-                    }
-                    $URImatches = [regex]::Matches($content, $uriPattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+                    $uriPattern = if ($encodingName -eq "UTF-8") { $utf8Regex[$protocol] } else { $unicodeRegex[$protocol] }
+                    $URImatches = [regex]::Matches($content, $uriPattern, $regexOptions)
                     if ($URImatches.Count -gt 0) {
-                        $fileResults += @($URImatches | ForEach-Object {
+                        $fileResults.AddRange(@($URImatches | ForEach-Object {
                             [PSCustomObject]@{
-                                FullURL = $_.Value -replace '".*$', ''
-                                EncodingUsed = $encodingName
+                                FullURL       = $_.Value -replace '".*$', ''
+                                EncodingUsed  = $encodingName
                                 UsesVariables = $_.Value -match "[<>()\[\]{}]|=$|:$"
-                                FilePath = $file.FullName
-                                Protocol = $protocol
+                                FilePath      = $file.FullName
+                                Protocol      = $protocol
                             }
-                        })
+                        }))
                     }
                 }
                 if ($fileResults.Count -gt 0) { break }
@@ -3288,8 +3293,9 @@ function Get-ProtocolsInProgramFiles {
             }
         }
 
-        if ($fileResults) {
-            $resultsForProgram += $fileResults
+        # After processing all encodings for a file
+        if ($fileResults.Count -gt 0) {
+            $resultsForProgram.AddRange($fileResults)
         }
 
         $processedFiles++
