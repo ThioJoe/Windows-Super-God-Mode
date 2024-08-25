@@ -2935,8 +2935,6 @@ function Search-HiddenLinks {
         return $null
     }
 
-    $resultsAppx = @()
-    $searchedFiles = @()
     $ignoredExtensions = @(
             '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', ".ico", ".p7x", ".ttf",
             ".onnxe", ".bundle", '.vsix', '.zip', '.pak', '.nupkg', '.asar', ".resS",
@@ -2970,31 +2968,18 @@ function Search-HiddenLinks {
     $lastPercentage = -1
     $processedFiles = 0
 
+    $resultsAppx = @()
     if ($Verbose -or $timing) { $stopwatch = [System.Diagnostics.Stopwatch]::StartNew() }
     # Go through Appx Packages. Each object in $packagesToSearch will be updated in-place with results
     foreach ($appPackage in $packagesToSearch) {
 
         # DEBUGGING ONLY - Limit the number of packages to search to get to the next part faster
-        # if ($resultsAppx.Count -gt 3) {
-        #     Write-Host "DEBUGGING ONLY - Limiting number of packages to search. IF YOU SEE THIS I FORGOT TO TAKE THIS OUT!"
-        #     break
-        # }
+        # if ($resultsAppx.Count -gt 3) { Write-Host "DEBUGGING ONLY - Limiting number of packages to search. IF YOU SEE THIS I FORGOT TO TAKE THIS OUT!"; break }
 
-        $URIsList = $appPackage.Protocols
+        $appxPackageResult = Get-ProtocolsForProgram -encodingMap $encodingMap -program $appPackage -totalFiles $totalFiles -processedFiles $processedFiles
+        $resultsAppx += $appxPackageResult
 
-        Write-Verbose "`rSearching in $($appPackage.PackageName) | For URIs: $($URIsList -join ', ')"
-        foreach ($file in $appPackage.FilesToSearch) {
-            $fileResults = Get-ProtocolsInFile -protocolsList $URIsList -filePathToCheck $file.FullName -encodingMap $encodingMap
-            if ($fileResults) {
-                $resultsAppx += $fileResults
-            }
-            $processedFiles++
-            $currentPercentage = [math]::Floor(($processedFiles / $totalFiles) * 100)
-            if ($currentPercentage -ne $lastPercentage) {
-                Write-Host "`r[1/2] Appx Package Search Progress: $currentPercentage%" -NoNewline
-                $lastPercentage = $currentPercentage
-            }
-        }
+        $processedFiles += $appPackage.FilesToSearch.Count
     }
     Write-Host "" # Write blank line because we were using carriage return
     if ($Verbose -or $timing) { $stopwatch.Stop(); Write-Host "   > STOPWATCH - Appx Files Search Time: $($stopwatch.Elapsed)" -ForegroundColor Green }
@@ -3310,6 +3295,75 @@ function Get-ProtocolsInFile {
 
     # Returning the modified results array
     return $resultsArray
+}
+
+function Get-ProtocolsForProgram {
+    param (
+        [hashtable]$encodingMap,
+        [PSCustomObject]$program,
+        [int]$totalFiles,
+        [int]$processedFiles
+    )
+
+    $protocolsList = $program.Protocols
+    $filesToSearch = $program.FilesToSearch
+
+    $resultsForProgram = @()
+    $currentPercentage = [math]::Floor(($processedFiles / $totalFiles) * 100)
+    $lastPercentage = $currentPercentage
+
+    foreach ($file in $filesToSearch) {
+        if (-not (Test-Path-Safe $file.FullName)) {
+            Write-Error "File not found: $($file.FullName)"
+            continue
+        }
+
+        $fileResults = @()
+        $fileExtension = $file.Extension # Containskey is case-insensitive so no need to convert to lower
+        $encodingsToTry = if ($encodingMap.ContainsKey($fileExtension)) { @($encodingMap[$fileExtension]) } else { @("UTF-8", "Unicode") }
+
+        foreach ($encodingName in $encodingsToTry) {
+            $encoding = [System.Text.Encoding]::GetEncoding($encodingName)
+            try {
+                $content = [System.IO.File]::ReadAllText($file.FullName, $encoding)
+                foreach ($protocol in $protocolsList) {
+                    $uriPattern = if ($encodingName -eq "UTF-8") {
+                        [regex]::Escape($protocol) + "://[^`"\s<>()\\``]+"
+                    } else {
+                        [regex]::Escape($protocol) + "://[ -~]+"
+                    }
+                    $URImatches = [regex]::Matches($content, $uriPattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+                    if ($URImatches.Count -gt 0) {
+                        $fileResults += @($URImatches | ForEach-Object {
+                            [PSCustomObject]@{
+                                FullURL = $_.Value -replace '".*$', ''
+                                EncodingUsed = $encodingName
+                                UsesVariables = $_.Value -match "[<>()\[\]{}]|=$|:$"
+                                FilePath = $file.FullName
+                                Protocol = $protocol
+                            }
+                        })
+                    }
+                }
+                if ($fileResults.Count -gt 0) { break }
+            }
+            catch {
+                Write-Warning "Error processing file $($file.FullName) with $encodingName encoding: $_"
+            }
+        }
+
+        if ($fileResults) {
+            $resultsForProgram += $fileResults
+        }
+
+        $processedFiles++
+        $currentPercentage = [math]::Floor(($processedFiles / $totalFiles) * 100)
+        if ($currentPercentage -ne $lastPercentage) {
+            Write-Host "`r[1/2] Appx Package Search Progress: $currentPercentage% " -NoNewline
+            $lastPercentage = $currentPercentage
+        }
+    }
+    return $resultsForProgram
 }
 
 # Function to create CSV for AppX URL search results
