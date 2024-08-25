@@ -156,6 +156,7 @@ param(
     # Debugging
     [switch]$Verbose,
     [switch]$Debug,
+    [switch]$timing,
     # Advanced Arguments
     [switch]$NoGUI,
     [string]$CustomDLLPath,
@@ -2954,17 +2955,23 @@ function Search-HiddenLinks {
 
     # Create new object by extracting out from $associatedProtocolsPerApp only the entries that are in $packagesToSearch
     $packagesToSearch = $associatedProtocolsPerApp | Where-Object { $packagesToSearchList -contains $_.PackageName }
+    # Add FilesToSearch property to each object so we can search them later in a loop of each package
+    $packagesToSearch | Add-Member -MemberType NoteProperty -Name FilesToSearch -Value @()
 
-    $totalFiles = ($packagesToSearch | ForEach-Object {
-        Get-ChildItem -Path $_.InstallLocation -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions -and $_.Length -gt 0}
-    }).Count
+    # Prepare a list of files to search for each package and keep count of total to show progress later
+    $totalFiles = 0
+    foreach ($appPackage in $packagesToSearch) {
+        $filesPerPackage = Get-ChildItem -Path $appPackage.InstallLocation -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions -and $_.Length -gt 0}
+        $appPackage.FilesToSearch = $filesPerPackage
+        $totalFiles += $filesPerPackage.Count
+    }
 
     $processedFiles = 0
     $lastPercentage = -1
     $processedFiles = 0
-    $searchedFiles = @()
 
-    # Go through Appx Packages
+    if ($Verbose -or $timing) { $stopwatch = [System.Diagnostics.Stopwatch]::StartNew() }
+    # Go through Appx Packages. Each object in $packagesToSearch will be updated in-place with results
     foreach ($appPackage in $packagesToSearch) {
 
         # DEBUGGING ONLY - Limit the number of packages to search to get to the next part faster
@@ -2974,12 +2981,9 @@ function Search-HiddenLinks {
         # }
 
         $URIsList = $appPackage.Protocols
-        $folderPath = $appPackage.InstallLocation
 
         Write-Verbose "`rSearching in $($appPackage.PackageName) | For URIs: $($URIsList -join ', ')"
-        $files = Get-ChildItem -Path $folderPath -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions -and $_.Length -gt 0}
-        foreach ($file in $files) {
-            $searchedFiles += $file.FullName
+        foreach ($file in $appPackage.FilesToSearch) {
             $fileResults = Get-ProtocolsInFile -protocolsList $URIsList -filePathToCheck $file.FullName -encodingMap $encodingMap
             if ($fileResults) {
                 $resultsAppx += $fileResults
@@ -2993,6 +2997,7 @@ function Search-HiddenLinks {
         }
     }
     Write-Host "" # Write blank line because we were using carriage return
+    if ($Verbose -or $timing) { $stopwatch.Stop(); Write-Host "   > STOPWATCH - Appx Files Search Time: $($stopwatch.Elapsed)" -ForegroundColor Green }
 
     # Create hashtable to store information about what to search
     $programFilesSearchData = @()
@@ -3195,7 +3200,6 @@ function Search-HiddenLinks {
     $processedFiles = 0
     $lastPercentage = -1
     $processedFiles = 0
-    $searchedFiles2 = @()
 
     # Go through other program folders
     foreach ($itemToSearch in $programFilesSearchData) {
@@ -3210,7 +3214,6 @@ function Search-HiddenLinks {
         $files = $itemToSearch.FilesToSearch
 
         foreach ($file in $files) {
-            $searchedFiles2 += $file.FullName
             $fileResults = Get-ProtocolsInFile -protocolsList $URIsList -filePathToCheck $file.FullName -encodingMap $encodingMap
             if ($fileResults) {
                 $resultsSecondary += $fileResults
@@ -3228,7 +3231,13 @@ function Search-HiddenLinks {
 
     # DEBUGGING - Print out the files that were searched to a file
     if ($Debug) {
+        # Combine lists of searched files
+        $searchedFiles = @()
+        $searchedFiles = $packagesToSearch.FilesToSearch.FullName
         $searchedFiles | Out-File -FilePath "DEBUG - SearchedFilesAppx.txt"
+
+        $searchedFiles2 = @()
+        $searchedFiles2 = $programFilesSearchData.FilesToSearch.FullName
         $searchedFiles2 | Out-File -FilePath "DEBUG - SearchedFilesSecondaryPrograms.txt"
         Write-Debug "  -- Wrote debug files containing searched files..."
     }
