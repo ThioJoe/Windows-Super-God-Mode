@@ -2965,18 +2965,17 @@ function Search-HiddenLinks {
     }
 
     $processedFiles = 0
-    $lastPercentage = -1
     $processedFiles = 0
 
     $resultsAppx = @()
     if ($Verbose -or $timing) { $stopwatch = [System.Diagnostics.Stopwatch]::StartNew() }
+    Write-Host "[1/2] Searching Appx Program Files for Hidden Links:"
     # Go through Appx Packages. Each object in $packagesToSearch will be updated in-place with results
     foreach ($appPackage in $packagesToSearch) {
-
         # DEBUGGING ONLY - Limit the number of packages to search to get to the next part faster
-        # if ($resultsAppx.Count -gt 3) { Write-Host "DEBUGGING ONLY - Limiting number of packages to search. IF YOU SEE THIS I FORGOT TO TAKE THIS OUT!"; break }
+        #if ($resultsAppx.Count -gt 3) { Write-Host "DEBUGGING ONLY - Limiting number of packages to search. IF YOU SEE THIS I FORGOT TO TAKE THIS OUT!"; break }
 
-        $appxPackageResult = Get-ProtocolsForProgram -encodingMap $encodingMap -program $appPackage -totalFiles $totalFiles -processedFiles $processedFiles
+        $appxPackageResult = Get-ProtocolsInProgramFiles -encodingMap $encodingMap -program $appPackage -totalFiles $totalFiles -processedFiles $processedFiles
         $resultsAppx += $appxPackageResult
 
         $processedFiles += $appPackage.FilesToSearch.Count
@@ -2988,8 +2987,6 @@ function Search-HiddenLinks {
     $programFilesSearchData = @()
     # Array with list of folders to eventually calculate total files
     $otherProgramFoldersToSearch = @()
-    # Eventual results array
-    $resultsSecondary = @()
 
     # For other protocols not in resultsAppx.Protocol, see if it has an associated command, and use that directory as a search location next
     foreach ($protocol in $URLProtocolsData | Where-Object { $_.Protocol -notin $resultsAppx.Protocol }) {
@@ -3123,12 +3120,17 @@ function Search-HiddenLinks {
                 }
                 # Create search item object
                 $searchItem = [PSCustomObject]@{
-                    Protocol = $protocol.Protocol
-                    PackageName = $protocol.PackageName
+                    PackageFullName = $protocol.PackageFullName
+                    PackageName     = $protocol.PackageName
+                    InstallLocation = $installDir # Assumed install directory
+                    Publisher       = "N/A"
+                    PublisherId     = "N/A"
+                    IsMicrosoft     = $protocol.IsMicrosoft
+                    Protocols       = @($protocol.Protocol)
+                    FilesToSearch   = @()
+                    # Additional properties for non-appx
                     Command = $command
                     Target = $target
-                    AssumedInstallDir = $installDir
-                    FilesToSearch = @()
                 }
                 if ($installDir) {
                     $otherProgramFoldersToSearch += $installDir
@@ -3140,40 +3142,40 @@ function Search-HiddenLinks {
 
     # Get total files to search in other program folders. There might be duplicate folders, but we need to still count them because they'll be searched separately
     $totalFiles = 0
-    Write-Host "Creating list of files to search for hidden links in non-Appx-package programs"
+    Write-Host "`nCreating list of files to search for hidden links in non-Appx-package programs..`n"
     foreach ($program in $programFilesSearchData) {
         $files = @()
-        $folder = $program.AssumedInstallDir
-        Write-Verbose "Gathering list of files to search for $($program.Protocol)"
+        $folder = $program.InstallLocation
+        Write-Verbose "Gathering list of files to search for $($program.Protocols)"
         # Gather files from entire folder of each program if folder is accessible (not null), and deep scan is enabled
         if ($null -ne $folder -and $DeepScanHiddenLinks) {
             Write-Verbose " > Gathering in $folder"
             try {
                 $files = Get-ChildItem -Path $folder -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions -and $_.Length -gt 0 }
                 $program.FilesToSearch = $files
-                Write-Verbose "Got $($files.Count) files in $folder for $($program.Protocol)"
+                Write-Verbose "Got $($files.Count) files in $folder for $($program.Protocols)"
             # If it's an unauthorizedaccessexception, make AssumeInstallDir null so it's counted as a single file search
             } catch [System.UnauthorizedAccessException] {
-                Write-Verbose "Unauthorized access to $folder, assuming it's a single file search for $($program.Protocol)"
-                $program.AssumedInstallDir = $null
+                Write-Verbose "Unauthorized access to $folder, assuming it's a single file search for $($program.Protocols)"
+                $program.InstallLocation = $null
                 $program.FilesToSearch = @($program.Target | Get-Item)
                 continue
             # Do the same for any other exceptions
             } catch {
-                Write-Verbose "Error getting files in $folder for $($program.Protocol)`: $_"
-                $program.AssumedInstallDir = $null
+                Write-Verbose "Error getting files in $folder for $($program.Protocols)`: $_"
+                $program.InstallLocation = $null
                 $program.FilesToSearch = @($program.Target | Get-Item)
                 continue
             }
         # Only set single target file to be searched
         } else {
-            Write-Verbose " > Folder for $($program.Protocol) is null, assuming it's a single file search"
+            Write-Verbose " > Folder for $($program.Protocols) is null, assuming it's a single file search"
             try {
                 $files = @($program.Target | Get-Item)
                 $program.FilesToSearch = $files
-                Write-Verbose "Got $($files.Count) files for $($program.Protocol)"
+                Write-Verbose "Got $($files.Count) files for $($program.Protocols)"
             } catch {
-                Write-Verbose "Error getting file $($program.Target) for $($program.Protocol)`: $_"
+                Write-Verbose "Error getting file $($program.Target) for $($program.Protocols)`: $_"
                 $program.FilesToSearch = @()
                 continue
             }
@@ -3183,36 +3185,23 @@ function Search-HiddenLinks {
     Write-Verbose "Found $totalFiles total files"
 
     $processedFiles = 0
-    $lastPercentage = -1
     $processedFiles = 0
+    $resultsNonAppx = @()
 
     # Go through other program folders
+    if ($Verbose -or $timing) { $stopwatch = [System.Diagnostics.Stopwatch]::StartNew() }
+    Write-Host "[2/2] Searching Non-Appx Program Files for Hidden Links:"
     foreach ($itemToSearch in $programFilesSearchData) {
         # Search Display Location
-        if ($itemToSearch.AssumedInstallDir) {
-            Write-Verbose "Scanning: $($itemToSearch.AssumedInstallDir)\ | For File Protocol: $($itemToSearch.Protocol)"
-        } else {
-            Write-Verbose "Scanning: $($itemToSearch.Target) | For File Protocol: $($itemToSearch.Protocol)"
-        }
+        $protocolsString = $itemToSearch.Protocols -join ", "
+        if ($itemToSearch.InstallLocation) { Write-Verbose "Scanning: $($itemToSearch.InstallLocation)\ | For File Protocol: $protocolsString"
+        } else { Write-Verbose "Scanning: $($itemToSearch.Target) | For File Protocol: $protocolsString" }
 
-        $URIsList = @($itemToSearch.Protocol) # Convert to array because the function will be expecting it even if it's just one
-        $files = $itemToSearch.FilesToSearch
-
-        foreach ($file in $files) {
-            $fileResults = Get-ProtocolsInFile -protocolsList $URIsList -filePathToCheck $file.FullName -encodingMap $encodingMap
-            if ($fileResults) {
-                $resultsSecondary += $fileResults
-            }
-            $processedFiles++
-            $currentPercentage = [math]::Floor(($processedFiles / $totalFiles) * 100)
-            if ($currentPercentage -ne $lastPercentage) {
-                Write-Host "`r[2/2] Non-Appx Search Progress: $currentPercentage%" -NoNewline
-                $lastPercentage = $currentPercentage
-            }
-        }
+        $programResult = Get-ProtocolsInProgramFiles -encodingMap $encodingMap -program $itemToSearch -totalFiles $totalFiles -processedFiles $processedFiles
+        $resultsNonAppx += $programResult
     }
-
     Write-Host "" # Write blank line because we were using carriage return
+    if ($Verbose -or $timing) { $stopwatch.Stop(); Write-Host "   > STOPWATCH - Non-Appx Files Search Time: $($stopwatch.Elapsed)" -ForegroundColor Green }
 
     # DEBUGGING - Print out the files that were searched to a file
     if ($Debug) {
@@ -3230,9 +3219,9 @@ function Search-HiddenLinks {
     # Remove any entries where the fullpath is a duplicate of another
     $resultsUniqueFullURL = $resultsAppx | Sort-Object -Property FullURL -Unique
     # If there are any secondary results, merge them with the primary results by adding any that aren't in there already
-    if ($resultsSecondary.Count -gt 0) {
-        $resultsUniqueFullURL += $resultsSecondary | Sort-Object -Property FullURL -Unique
-        foreach ($result in $resultsSecondary) {
+    if ($resultsNonAppx.Count -gt 0) {
+        $resultsUniqueFullURL += $resultsNonAppx | Sort-Object -Property FullURL -Unique
+        foreach ($result in $resultsNonAppx) {
             if ($resultsUniqueFullURL.FullURL -notcontains $result.FullURL) {
                 $resultsUniqueFullURL += $result
             }
@@ -3241,63 +3230,7 @@ function Search-HiddenLinks {
     return $resultsUniqueFullURL
 }
 
-# Function to get protocols in a file
-function Get-ProtocolsInFile {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string[]]$protocolsList,
-        [Parameter(Mandatory=$true)]
-        [string]$filePathToCheck,
-        [Parameter(Mandatory=$true)]
-        [hashtable]$encodingMap
-    )
-
-    if (-not (Test-Path-Safe $filePathToCheck)) {
-        Write-Error "File not found: $filePathToCheck"
-        return $null
-    }
-
-    $resultsArray = @()
-    $fileExtension = [System.IO.Path]::GetExtension($filePathToCheck).ToLower()
-    $encodingsToTry = if ($encodingMap.ContainsKey($fileExtension)) { @($encodingMap[$fileExtension]) } else { @("UTF-8", "Unicode") }
-
-    foreach ($encodingName in $encodingsToTry) {
-        $encoding = [System.Text.Encoding]::GetEncoding($encodingName)
-        try {
-            $content = [System.IO.File]::ReadAllText($filePathToCheck, $encoding)
-            foreach ($protocol in $protocolsList) {
-                $uriPattern = if ($encodingName -eq "UTF-8") {
-                    # [regex]::Escape($protocol) + "://[^""\s<>()\\``]+"
-                    [regex]::Escape($protocol) + "://[^`"\s<>()\\``]+" # Need to escape with backticks because powershell
-                } else {
-                    # [regex]::Escape($protocol) + "://[\x20-\x7E]+"
-                    [regex]::Escape($protocol) + "://[ -~]+"
-                }
-                $URImatches = [regex]::Matches($content, $uriPattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
-                if ($URImatches.Count -gt 0) {
-                    $resultsArray += @($URImatches | ForEach-Object {
-                        [PSCustomObject]@{
-                            FullURL = $_.Value -replace '".*$', '' # Further clean up the url. Cut off anything after a double quote, including the quote
-                            EncodingUsed = $encodingName
-                            UsesVariables = $_.Value -match "[<>()\[\]{}]|=$|:$" # If it contains characters that indicate it might be a variable or a command, mark it as such, or ends with characters that suggest it expects a value after
-                            FilePath = $filePathToCheck
-                            Protocol = $protocol
-                        }
-                    })
-                }
-            }
-            if ($resultsArray.Count -gt 0) { break }
-        }
-        catch {
-            Write-Warning "Error processing file $filePathToCheck with $encodingName encoding: $_"
-        }
-    }
-
-    # Returning the modified results array
-    return $resultsArray
-}
-
-function Get-ProtocolsForProgram {
+function Get-ProtocolsInProgramFiles {
     param (
         [hashtable]$encodingMap,
         [PSCustomObject]$program,
@@ -3307,10 +3240,8 @@ function Get-ProtocolsForProgram {
 
     $protocolsList = $program.Protocols
     $filesToSearch = $program.FilesToSearch
-
     $resultsForProgram = @()
-    $currentPercentage = [math]::Floor(($processedFiles / $totalFiles) * 100)
-    $lastPercentage = $currentPercentage
+    $lastPercentage = -1 # This makes sure it prints progress at least once per package
 
     foreach ($file in $filesToSearch) {
         if (-not (Test-Path-Safe $file.FullName)) {
@@ -3359,7 +3290,7 @@ function Get-ProtocolsForProgram {
         $processedFiles++
         $currentPercentage = [math]::Floor(($processedFiles / $totalFiles) * 100)
         if ($currentPercentage -ne $lastPercentage) {
-            Write-Host "`r[1/2] Appx Package Search Progress: $currentPercentage% " -NoNewline
+            Write-Host "`r   Search Progress: $currentPercentage% " -NoNewline
             $lastPercentage = $currentPercentage
         }
     }
