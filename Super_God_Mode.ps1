@@ -2964,13 +2964,13 @@ function Search-HiddenLinks {
         $totalFiles += $filesPerPackage.Count
     }
 
+    # ------------------------------------------------------ Appx Files Search --------------------------------------------------------------------------
+    # Go through Appx Packages. Each object in $packagesToSearch will be updated in-place with results
     $processedFiles = 0
-    $processedFiles = 0
-
     $resultsAppx = @()
     if ($Verbose -or $timing) { $stopwatch = [System.Diagnostics.Stopwatch]::StartNew() }
+    
     Write-Host "[1/2] Searching Appx Program Files for Hidden Links:"
-    # Go through Appx Packages. Each object in $packagesToSearch will be updated in-place with results
     foreach ($appPackage in $packagesToSearch) {
         # DEBUGGING ONLY - Limit the number of packages to search to get to the next part faster
         #if ($resultsAppx.Count -gt 3) { Write-Host "DEBUGGING ONLY - Limiting number of packages to search. IF YOU SEE THIS I FORGOT TO TAKE THIS OUT!"; break }
@@ -2982,6 +2982,7 @@ function Search-HiddenLinks {
     }
     Write-Host "" # Write blank line because we were using carriage return
     if ($Verbose -or $timing) { $stopwatch.Stop(); Write-Host "   > STOPWATCH - Appx Files Search Time: $($stopwatch.Elapsed)" -ForegroundColor Green }
+    # --------------------------------------------------------------------------------------------------------------------------------------------------
 
     # Create hashtable to store information about what to search
     $programFilesSearchData = @()
@@ -3184,12 +3185,11 @@ function Search-HiddenLinks {
     }
     Write-Verbose "Found $totalFiles total files"
 
-    $processedFiles = 0
+    # ------------------------------------------------------ Non-Appx Files Search --------------------------------------------------------------------------
     $processedFiles = 0
     $resultsNonAppx = @()
-
-    # Go through other program folders
     if ($Verbose -or $timing) { $stopwatch = [System.Diagnostics.Stopwatch]::StartNew() }
+
     Write-Host "[2/2] Searching Non-Appx Program Files for Hidden Links:"
     foreach ($itemToSearch in $programFilesSearchData) {
         # Search Display Location
@@ -3202,6 +3202,7 @@ function Search-HiddenLinks {
     }
     Write-Host "" # Write blank line because we were using carriage return
     if ($Verbose -or $timing) { $stopwatch.Stop(); Write-Host "   > STOPWATCH - Non-Appx Files Search Time: $($stopwatch.Elapsed)" -ForegroundColor Green }
+    # -----------------------------------------------------------------------------------------------------------------------------------------------------
 
     # DEBUGGING - Print out the files that were searched to a file
     if ($Debug) {
@@ -3243,10 +3244,14 @@ function Get-ProtocolsInProgramFiles {
     $resultsForProgram = @()
     $lastPercentage = -1 # This makes sure it prints progress at least once per package
 
+    # Skip the file if it doesn't exist
     foreach ($file in $filesToSearch) {
-        if (-not (Test-Path-Safe $file.FullName)) {
-            Write-Error "File not found: $($file.FullName)"
-            continue
+        try {
+            $null = Test-Path -LiteralPath $file.FullName -PathType Leaf -ErrorAction Stop
+        }
+        catch {
+            Write-Debug "Error checking path - $Path : $_"
+            Continue
         }
 
         $fileResults = @()
