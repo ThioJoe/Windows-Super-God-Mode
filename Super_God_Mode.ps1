@@ -181,7 +181,7 @@ param(
 # -CustomSystemSettingsDLLPath
 # -CustomAllSystemSettingsXMLPath
 
-$VERSION = "1.1.0"
+$VERSION = "1.1.1"
 
 # If -Debug or -Verbose is used, set $DebugPreference and $VerbosePreference to Continue, otherwise set to SilentlyContinue.
 # This way it will show messages without stopping if -Debug is used and not otherwise
