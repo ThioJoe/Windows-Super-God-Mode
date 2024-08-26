@@ -33,9 +33,17 @@
 #     • Switch (Takes no values)
 #     Include third party URL protocols from installed software in the URL Protocols section. By default, only protocols detected to be from Microsoft or system protocols are included.
 #
+# -DeepScanHiddenLinks
+#     • Switch (Takes no values)
+#     Scans all files in the installation directory of non-appx-package apps for hidden links. Otherwise, only the primary binary file will be searched. Note: This will be MUCH slower.
+#
 # -CollectExtraURLProtocolInfo
 #     • Switch (Takes no values)
 #     Collects extra information about URL protocols that goes into the CSV spreadsheet. Optional because it is not used in the shortcuts and takes slightly longer.
+#
+# -AllowDuplicateDeepLinks
+#     • Switch (Takes no values)
+#     Allow the creation of Deep Links that are the same as an existing Task Link. By default, such duplicates are not included in the Deep Links folder.
 #
 # ------------------------------------------  Control Output  ------------------------------------------
 #
@@ -184,6 +192,7 @@ if ($Verbose) {
 if ($Debug) {
     $DebugPreference = 'Continue'
     $VerbosePreference = 'Continue' # If Debug is used, also enable Verbose
+    $Verbose = $true # Set Verbose to true if Debug is used
 } else { $DebugPreference = 'SilentlyContinue' }
 
 # ==============================================================================================================================
@@ -643,6 +652,15 @@ $deepLinksFolderName = "Deep Links"
 $urlProtocolsFolderName = "URL Protocols"
 $URLProtocolPageLinksFolderName = "Hidden App Links"
 $statisticsFolderName = "__Script Result Statistics"
+
+# Create debug logs folder if -Debug is used
+$debugLogsFolderName = "__Debug Logs"
+$debugLogFolderPath = Join-Path $PSScriptRoot $debugLogsFolderName
+if ($Debug) {
+    if (-not (Test-Path $debugLogFolderPath)) {
+        New-Item -Path $debugLogFolderPath -ItemType Directory -Force | Out-Null
+    }
+}
 
 # Construct paths for subfolders
 $CLSIDshortcutsOutputFolder = Join-Path $mainShortcutsFolder $clsidFolderName
@@ -2935,14 +2953,58 @@ function Search-HiddenLinks {
         return $null
     }
 
+    $debugRunID = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+    # Set a max file size for searching to 70% of memory. Might not need this later but currently ReadAllText loads entire file into memory
+    $availableRAM = [System.Math]::Round((Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory)
+    $maxFileSize = [System.Math]::Round($availableRAM * 0.70)
+
+
     $ignoredExtensions = @(
-            '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', ".ico", ".p7x", ".ttf",
-            ".onnxe", ".bundle", '.vsix', '.zip', '.pak', '.nupkg', '.asar', ".resS",
-            ".bnk", ".onnx", ".ogv", ".opq"
-            )
+        # Media Filetypes
+        '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', '.ico', '.ogg', '.mp4',
+        '.webm', '.webp', '.flac', '.wav', '.mp3', '.m4a', '.aac', '.wma', '.flv',
+        '.avi', '.mov', '.wmv', '.mpg', '.mpeg', '.m4v', '.mkv', '.3gp', '.3g2',
+        '.mxf', '.psd', '.psb', '.heif', '.heic', '.hevc', '.tiff', '.tif', '.ogv',
+
+        # Other
+        '.p7x', '.ttf', '.onnxe', '.bundle', '.vsix', '.nupkg', '.asar', '.resS',
+        '.bnk', '.onnx', '.opq', '.safetensors', '.cat', '.sig'
+
+        # Archives
+        '.7z', '.a', '.aar', '.ace', '.afa', '.alz', '.apk', '.ar', '.arc', '.arj', 
+        '.ark', '.b1', '.b6z', '.ba', '.bh', '.cab', '.car', '.cdx', '.cfs', '.cpio', 
+        '.cpt', '.dar', '.dd', '.dgc', '.dmg', '.ear', '.ecc', '.ecsbx', '.gca', 
+        '.genozip', '.ha', '.hki', '.ice', '.iso', '.jar', '.kgb', '.LBR', '.lbr', 
+        '.lha', '.lzh', '.lzx', '.mar', '.pak', '.paq6', '.paq7', '.paq8', '.par',
+        '.par2', '.partimg', '.pea', '.phar', '.pim', '.pit', '.qda', '.rar', '.rev', 
+        '.rk', '.s7z', '.sbx', '.sda', '.sea', '.sen', '.sfx', '.shar', '.shk', '.sit',
+        '.sitx', '.sqx', '.tar', 'bz2', '.tbz2', '.gz', '.lz', '.xz', 
+        '.Z', '.zst', '.tgz', '.tlz', '.txz', '.uc', '.uc0', '.uc2', '.uca', 
+        '.ucn', '.ue2', '.uha', '.ur2', '.war', '.wim', '.xar', '.xp3', '.yz1', '.zip', 
+        '.zipx', '.zoo', '.zpaq', '.zz',
+
+        # Virtual Disks
+        '.vdi', '.vmdk', '.vhd', '.hdd', '.vhdx', '.avhdx', '.vmrs', '.ovf', '.qed', '.qcow'
+    )
+
     $encodingMap = @{
-        ".txt" = "UTF-8"; ".xml" = "UTF-8"; ".json" = "UTF-8"; ".dll" = "Unicode";
-        ".exe" = "Unicode"; ".js" = "UTF-8"; ".map" = "UTF-8"
+        ".txt" = "UTF-8";
+        ".xml" = "UTF-8";
+        ".json" = "UTF-8";
+        ".dll" = "Unicode";
+        ".exe" = "Unicode";
+        ".js" = "UTF-8";
+        ".ts" = "UTF-8";
+        ".map" = "UTF-8";
+        ".bin" = "Unicode";
+        ".css" = "UTF-8";
+        ".data" = "Unicode";
+        ".layout" = "UTF-8";
+        '.menu' = "UTF-8";
+        '.html' = "UTF-8";
+        '.htm' = "UTF-8";
+        '.inf' = "UTF-8";
+        '.sys' = "Unicode";
     }
 
     # Only want to search packages that are in $URLProtocolsData
@@ -2958,27 +3020,39 @@ function Search-HiddenLinks {
 
     # Prepare a list of files to search for each package and keep count of total to show progress later
     $totalFiles = 0
+    [Int64]$totalFilesSize = 0
     foreach ($appPackage in $packagesToSearch) {
-        $filesPerPackage = Get-ChildItem -Path $appPackage.InstallLocation -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions -and $_.Length -gt 0}
+        $filesPerPackage = Get-ChildItem -Path $appPackage.InstallLocation -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions -and $_.Length -gt 0 -and $_.Length -lt $maxFileSize }
         $appPackage.FilesToSearch = $filesPerPackage
         $totalFiles += $filesPerPackage.Count
+        $totalFilesSize += ($filesPerPackage | Measure-Object -Property Length -Sum).Sum
+    }
+
+    
+    #DEBUGGING - Print out the files that WILL be searched
+    if ($Debug) {
+        # Combine lists of searched files
+        $willSearchFiles1 = @()
+        $willSearchFiles1 = $packagesToSearch.FilesToSearch.FullName
+        $willSearchFiles1 | Out-File -FilePath "$debugLogFolderPath\DEBUG - FilesWillSearch-Appx $debugRunID.txt" -Encoding utf8
+        Write-Debug "  -- Wrote debug file containing Appx files to be searched..."
     }
 
     # ------------------------------------------------------ Appx Files Search --------------------------------------------------------------------------
     # Go through Appx Packages. Each object in $packagesToSearch will be updated in-place with results
     $processedFiles = 0
+    [Int64]$processedFilesSize = 0
+    
     $resultsAppx = @()
     if ($Verbose -or $timing) { $stopwatch = [System.Diagnostics.Stopwatch]::StartNew() }
     
     Write-Host "[1/2] Searching Appx Program Files for Hidden Links:"
     foreach ($appPackage in $packagesToSearch) {
-        # DEBUGGING ONLY - Limit the number of packages to search to get to the next part faster
+        #DEBUGGING ONLY - Limit the number of packages to search to get to the next part faster
         #if ($resultsAppx.Count -gt 3) { Write-Host "DEBUGGING ONLY - Limiting number of packages to search. IF YOU SEE THIS I FORGOT TO TAKE THIS OUT!"; break }
 
-        $appxPackageResult = Get-ProtocolsInProgramFiles -encodingMap $encodingMap -program $appPackage -totalFiles $totalFiles -processedFiles $processedFiles
+        $appxPackageResult, $processedFiles, $processedFilesSize = Get-ProtocolsInProgramFiles -encodingMap $encodingMap -program $appPackage -totalFiles $totalFiles -processedFiles $processedFiles -totalFilesSize $totalFilesSize -processedFilesSize $processedFilesSize
         $resultsAppx += $appxPackageResult
-
-        $processedFiles += $appPackage.FilesToSearch.Count
     }
     Write-Host "" # Write blank line because we were using carriage return
     if ($Verbose -or $timing) { $stopwatch.Stop(); Write-Host "   > STOPWATCH - Appx Files Search Time: $($stopwatch.Elapsed)" -ForegroundColor Green }
@@ -3081,21 +3155,29 @@ function Search-HiddenLinks {
                 }
 
 
-                # Determine the program's install directory based on the target.
+                
                 # If it the path contains "\Program Files" or "\Program Files (x86)", then use the path until the next backslash, otherwise match to the last backslash
-                # Also only go to last backslash if it matches a list of exclusions
-                $exceptionPaths = @("Common Files", "WindowsApps", "Adobe", "Microsoft Office")
+                $moreRestrictivePaths = @("Common Files", "WindowsApps", "Adobe", "Microsoft Office")
+                # These are regex path patterns that will be ignored while searching within the program files directory
+                $ignorePaths = @('\steamapps\' )
+                # If the path starts with something in this list, then it will only search the specific file, not the whole directory
+                $dontSearchFolders = @($env:WINDIR)
+
+                # Prepare variables if necessary - Regex escape ignorePaths
+                $ignorePaths = $ignorePaths | ForEach-Object { [regex]::Escape($_) }
+
+                # Determine the program's install directory based on the target.
                 if ($target -match '^(.*\\[Pp]rogram [Ff]iles( \(x86\))?\\[^\\]+)') {
                     $installDir = $Matches[1]
                     $Matches = $null
-                    $containsException = $false
-                    foreach ($exception in $exceptionPaths) {
+                    $containsRestrictivePath = $false
+                    foreach ($exception in $moreRestrictivePaths) {
                         if (($installDir -like "*\$exception\*") -or ($($installDir + "\") -like "*\$exception\*")) {
-                            $containsException = $true
+                            $containsRestrictivePath = $true
                             break
                         }
                     }
-                    if ($containsException) {
+                    if ($containsRestrictivePath) {
                         # Use the immediate parent directory of the executable
                         $installDir = Split-Path -Path $target -Parent
                     }
@@ -3104,7 +3186,6 @@ function Search-HiddenLinks {
                 }
 
                 # If the install directory is in a list of exclusions, only search that specific file, not the whole directory
-                $dontSearchFolders = @($env:WINDIR)
                 foreach ($excludedFolder in $dontSearchFolders) {
                     if ($installDir -like "$excludedFolder*") {
                         $installDir = $null
@@ -3143,6 +3224,7 @@ function Search-HiddenLinks {
 
     # Get total files to search in other program folders. There might be duplicate folders, but we need to still count them because they'll be searched separately
     $totalFiles = 0
+    [Int64]$totalFilesSize = 0
     Write-Host "`nCreating list of files to search for hidden links in non-Appx-package programs..`n"
     foreach ($program in $programFilesSearchData) {
         $files = @()
@@ -3152,7 +3234,14 @@ function Search-HiddenLinks {
         if ($null -ne $folder -and $DeepScanHiddenLinks) {
             Write-Verbose " > Gathering in $folder"
             try {
-                $files = Get-ChildItem -Path $folder -Recurse -File | Where-Object { $_.Extension -notin $ignoredExtensions -and $_.Length -gt 0 }
+                # Recursively get all files in the folder that are not in the ignored extensions list
+                $files = Get-ChildItem -Path $folder -Recurse -File | Where-Object { 
+                    $currentCheckingFile = $_
+                    $currentCheckingFile.Length -lt $maxFileSize -and
+                    $currentCheckingFile.Extension -notin $ignoredExtensions -and 
+                    $currentCheckingFile.Length -gt 0 -and 
+                    ($ignorePaths | ForEach-Object { $currentCheckingFile.FullName -notmatch [regex]::Escape($_) }) -notcontains $false
+                }
                 $program.FilesToSearch = $files
                 Write-Verbose "Got $($files.Count) files in $folder for $($program.Protocols)"
             # If it's an unauthorizedaccessexception, make AssumeInstallDir null so it's counted as a single file search
@@ -3182,11 +3271,21 @@ function Search-HiddenLinks {
             }
         }
         $totalFiles += $files.Count
+        $totalFilesSize += ($files | Measure-Object -Property Length -Sum).Sum
     }
     Write-Verbose "Found $totalFiles total files"
 
+    #DEBUGGING - Print out the other program files that WILL be searched
+    if ($Debug) {
+        $willSearchFiles2 = @()
+        $willSearchFiles2 = $programFilesSearchData.FilesToSearch.FullName
+        $willSearchFiles2 | Out-File -FilePath "$debugLogFolderPath\DEBUG - FilesWillSearch-OtherPrograms $debugRunID.txt" -Encoding utf8
+        Write-Debug "  -- Wrote debug file containing other program files to be searched..."
+    }
+
     # ------------------------------------------------------ Non-Appx Files Search --------------------------------------------------------------------------
     $processedFiles = 0
+    [Int64]$processedFilesSize = 0
     $resultsNonAppx = @()
     if ($Verbose -or $timing) { $stopwatch = [System.Diagnostics.Stopwatch]::StartNew() }
 
@@ -3194,26 +3293,28 @@ function Search-HiddenLinks {
     foreach ($itemToSearch in $programFilesSearchData) {
         # Search Display Location
         $protocolsString = $itemToSearch.Protocols -join ", "
-        if ($itemToSearch.InstallLocation) { Write-Verbose "Scanning: $($itemToSearch.InstallLocation)\ | For File Protocol: $protocolsString"
-        } else { Write-Verbose "Scanning: $($itemToSearch.Target) | For File Protocol: $protocolsString" }
+        if ($itemToSearch.InstallLocation) {
+            Write-Host "`rVERBOSE: Scanning: $($itemToSearch.InstallLocation)\ | For File Protocol: $protocolsString".PadRight(100) -Verbose -ForegroundColor Yellow
+        } else { 
+            Write-Host "`rVERBOSE: Scanning: $($itemToSearch.Target) | For File Protocol: $protocolsString".PadRight(100) -Verbose -ForegroundColor Yellow
+        }
 
-        $programResult = Get-ProtocolsInProgramFiles -encodingMap $encodingMap -program $itemToSearch -totalFiles $totalFiles -processedFiles $processedFiles
+        $programResult, $processedFiles, $processedFilesSize = Get-ProtocolsInProgramFiles -encodingMap $encodingMap -program $itemToSearch -totalFiles $totalFiles -processedFiles $processedFiles -totalFilesSize $totalFilesSize -processedFilesSize $processedFilesSize
         $resultsNonAppx += $programResult
     }
     Write-Host "" # Write blank line because we were using carriage return
     if ($Verbose -or $timing) { $stopwatch.Stop(); Write-Host "   > STOPWATCH - Non-Appx Files Search Time: $($stopwatch.Elapsed)" -ForegroundColor Green }
     # -----------------------------------------------------------------------------------------------------------------------------------------------------
 
-    # DEBUGGING - Print out the files that were searched to a file
+    #DEBUGGING - Print out the files that were searched to a file
     if ($Debug) {
-        # Combine lists of searched files
         $searchedFiles = @()
         $searchedFiles = $packagesToSearch.FilesToSearch.FullName
-        $searchedFiles | Out-File -FilePath "DEBUG - SearchedFilesAppx.txt"
+        $searchedFiles | Out-File -FilePath "$debugLogFolderPath\DEBUG - SearchedFilesAppx $debugRunID.txt" -Encoding utf8
 
         $searchedFiles2 = @()
         $searchedFiles2 = $programFilesSearchData.FilesToSearch.FullName
-        $searchedFiles2 | Out-File -FilePath "DEBUG - SearchedFilesSecondaryPrograms.txt"
+        $searchedFiles2 | Out-File -FilePath "$debugLogFolderPath\DEBUG - SearchedFilesSecondaryPrograms $debugRunID.txt" -Encoding utf8
         Write-Debug "  -- Wrote debug files containing searched files..."
     }
 
@@ -3236,20 +3337,37 @@ function Get-ProtocolsInProgramFiles {
         [hashtable]$encodingMap,
         [PSCustomObject]$program,
         [int]$totalFiles,
-        [int]$processedFiles
+        [int]$processedFiles,
+        [Int64]$totalFilesSize = 0,
+        [Int64]$processedFilesSize = 0
     )
 
     $protocolsList = $program.Protocols
     $filesToSearch = $program.FilesToSearch
     $resultsForProgram = [System.Collections.Generic.List[object]]::new() # Using a typed generic list for better performance instead doing addition of arrays
-    $lastPercentage = -1 # This makes sure it prints progress at least once per package
+
+    # This makes sure it prints progress at least once per package
+    $currentPercentageDetailed = [math]::Round(($processedFiles / $totalFiles) * 100, 2)
+    $currentPercentage = [math]::Floor($currentPercentageDetailed)
+    if ($Verbose) {
+        $totalFilesSizeMB = ("{0:N0}" -f ($totalFilesSize / 1MB))
+        $processedFileSizeMB = ("{0:N0}" -f ($processedFilesSize / 1MB)).PadLeft($totalFilesSizeMB.Length) # Pad to the length of the total size so it doesn't jump around
+        $processedFilesString = $processedFiles.ToString().PadLeft($totalFiles.ToString().Length)
+        Write-Host "`r   Search Progress: $($currentPercentageDetailed.ToString("F2"))%".PadLeft(7) -NoNewline
+        Write-Host "   ($processedFilesString / $totalFiles files   |   $processedFileSizeMB / $totalFilesSizeMB MB ) "  -NoNewline
+    }
+    else {
+        Write-Host "`r   Search Progress: $currentPercentage% " -NoNewline
+    }
+
+    $lastPercentage = $currentPercentage
 
     # Prepare regex 
     $regexOptions = [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
     $utf8Regex = @{}
     $unicodeRegex = @{}
     foreach ($protocol in $protocolsList) {
-        $utf8Regex[$protocol] = [regex]::Escape($protocol) + "://[^`"\s<>()\\``]+"
+        $utf8Regex[$protocol] = [regex]::Escape($protocol) + "://[^`"\s<>()\\``\x00-\x1F\x7F]+"
         $unicodeRegex[$protocol] = [regex]::Escape($protocol) + "://[ -~]+"
     }
 
@@ -3266,6 +3384,9 @@ function Get-ProtocolsInProgramFiles {
         $fileResults = [System.Collections.Generic.List[object]]::new() # Again using a typed generic list for better performance
         $fileExtension = $file.Extension # Containskey is case-insensitive so no need to convert to lower
         $encodingsToTry = if ($encodingMap.ContainsKey($fileExtension)) { @($encodingMap[$fileExtension]) } else { @("UTF-8", "Unicode") }
+        if ($Verbose) {
+            $processedFilesSize += $file.Length
+        }
 
         foreach ($encodingName in $encodingsToTry) {
             $encoding = [System.Text.Encoding]::GetEncoding($encodingName)
@@ -3299,13 +3420,26 @@ function Get-ProtocolsInProgramFiles {
         }
 
         $processedFiles++
-        $currentPercentage = [math]::Floor(($processedFiles / $totalFiles) * 100)
+        $currentPercentageDetailed = [math]::Round(($processedFiles / $totalFiles) * 100, 2)
+        $currentPercentage = [math]::Floor($currentPercentageDetailed)
+
         if ($currentPercentage -ne $lastPercentage) {
-            Write-Host "`r   Search Progress: $currentPercentage% " -NoNewline
+            if ($Verbose) {
+                $totalFilesSizeMB = ("{0:N0}" -f ($totalFilesSize / 1MB))
+                $processedFileSizeMB = ("{0:N0}" -f ($processedFilesSize / 1MB)).PadLeft($totalFilesSizeMB.Length) # Pad to the length of the total size so it doesn't jump around
+                $processedFilesString = $processedFiles.ToString().PadLeft($totalFiles.ToString().Length)
+                Write-Host "`r   Search Progress: $($currentPercentageDetailed.ToString("F2"))%".PadLeft(7) -NoNewline
+                Write-Host "   ($processedFilesString / $totalFiles files   |   $processedFileSizeMB / $totalFilesSizeMB MB ) "  -NoNewline
+            }
+            else {
+                Write-Host "`r   Search Progress: $currentPercentage% " -NoNewline
+            }
             $lastPercentage = $currentPercentage
         }
     }
-    return $resultsForProgram
+    $content = $null # Make sure file content is cleared from memory next time garbage collection runs to free up memory
+
+    return $resultsForProgram, $processedFiles, $processedFilesSize
 }
 
 # Function to create CSV for AppX URL search results
