@@ -803,7 +803,8 @@ if ($CustomAllSystemSettingsXMLPath) {
 } elseif (Test-Path-Safe $allSettingsXmlPath3) {
     $allSettingsXmlPath = $allSettingsXmlPath3
 } else {
-    Write-Warning "No AllSystemSettings XML file found. Deep Link shortcuts will not be created."
+    Write-Error "No AllSystemSettings XML file found. Deep Link shortcuts will not be created."
+    $allSettingsXmlPath = $null
 }
 
 # Check if main folder already exists
@@ -1167,7 +1168,7 @@ function Get-LocalizedString {
     elseif ($StringReference -match '@\{.+\?ms-resource://.+}') {
         return Get-MsResource $StringReference
     }
-    # Existing logic for DLL-based references
+    # Typical case: Load the DLL and get the string
     elseif ($StringReference -match '@(.+),-(\d+)') {
         $dllPath = [Environment]::ExpandEnvironmentVariables($Matches[1])
         $resourceId = [uint32]$Matches[2]
@@ -1186,7 +1187,7 @@ function Get-LocalizedString {
 
         $hModule = [Win32]::LoadLibrary($dllPath)
         if ($hModule -eq [IntPtr]::Zero) {
-            Write-Error "Failed to load library: $dllPath"
+            Write-Error "Failed to load library during typical string reference lookup: $dllPath"
             return $null
         }
 
@@ -1198,11 +1199,11 @@ function Get-LocalizedString {
         if ($result -ne 0) {
             return $stringBuilder.ToString()
         } else {
-            Write-Error "Failed to load string resource: $resourceId from $dllPath"
+            Write-Error "Failed to load string resource, no result returned for: $resourceId from $dllPath"
             return $null
         }
     } else {
-        Write-Error "Invalid string reference format: $StringReference"
+        Write-Error "Invalid or unknown localized string reference format: $StringReference"
         return $null
     }
 }
@@ -2238,66 +2239,108 @@ function Get-AllSettings-Data {
     }
 
     try {
+        Write-Verbose "Parsing AllSystemSettings XML: $xmlFilePath"
         [xml]$xmlContent = Get-Content $xmlFilePath
+        $searchableContentData = $xmlContent.PCSettings.SearchableContent
         $settingsData = @()
-
-        foreach ($content in $xmlContent.PCSettings.SearchableContent) {
-            $settingInfo = @{
-                Name = $content.Filename
-                PageID = $null
-                GroupID = $null
-                Description = Get-LocalizedString $content.SettingInformation.Description
-                HighKeywords = $null
-                Glyph = $content.ApplicationInformation.Glyph
-                DeepLink = $content.ApplicationInformation.DeepLink
-                IconPath = $content.ApplicationInformation.Icon
-                PolicyIds = @()
-            }
-
-            # Resolve HighKeywords if it exists
-            if ($content.SettingInformation.HighKeywords) {
-                $settingInfo.HighKeywords = Get-LocalizedString $content.SettingInformation.HighKeywords
-            }
-
-            # Extract PageID, GroupID, and PolicyIds from SettingPaths
-            $settingPaths = $content.SettingIdentity.SettingPaths.Path
-            if ($settingPaths) {
-                $firstPath = $settingPaths[0]
-                $settingInfo.PageID = $firstPath.PageID
-                $settingInfo.GroupID = $firstPath.GroupID
-
-                if ($firstPath.PolicyIds) {
-                    $settingInfo.PolicyIds = $firstPath.PolicyIds -split ';' | ForEach-Object { $_.Trim() }
-                }
-            }
-
-            # Update the XML content with resolved strings
-            $content.SettingInformation.Description = $settingInfo.Description
-            if ($settingInfo.HighKeywords) {
-                $content.SettingInformation.HighKeywords = $settingInfo.HighKeywords
-            }
-
-            # Only add to settingsData if it has a policy ID, which is what the ms-settings shortcuts use
-            # if ($settingInfo.PolicyIds) {
-            #     $settingsData += $settingInfo
-            # }
-
-            # Add all data and handle it elsewhere
-            $settingsData += $settingInfo
-        }
-
-        # Save the resolved XML to the main output folder if the SaveXML switch is used
-        if ($SaveXML) {
-            $xmlContent.Save($resolvedSettingsXmlContentFilePath)
-            Write-Verbose "Resolved XML saved to: $resolvedSettingsXmlContentFilePath"
-        }
-
-        return $settingsData
-    }
-    catch {
-        Write-Error "Error parsing MS Settings XML: $_"
+    } catch {
+        Write-Error"Error trying to retrieve and parsing AllSystemSettings XML. Collecting Deep Links must be skipped."
+        Write-Error ": $_"
         return $null
     }
+
+    $itemIndex = -1 # Start at -1 so that the first item is 0. Incrementing at start of loop in case of errors
+
+    foreach ($content in $searchableContentData) {
+        $itemIndex++
+        # Try acquiring the data before creating object. If they fail then assign default values if not necessary, or be skipped if necessary.
+        $entryName = $null
+        $deepLink = $null
+        $description = $null
+        $highKeywords = $null
+        $iconPath = $null
+
+        # "FileName" property, but it's not actually a file name. It's more like the name of the setting or page, such as "AAA_BatterySaver_LandingPage_SettingsOverview"
+        try {
+            $entryName = $content.Filename
+        }
+        catch {
+            Write-Warning "Failed to get 'FileName' property for DeepLink entry of index $itemIndex. Attempting to continue."
+            $entryName = "[Unresolved Name]"
+        }
+
+        # If fail to get deep link property (the command), then skip because that's the main thing we need. Doing this after FileName to hopefully have more data for error message
+        try { 
+            $deepLink = $content.ApplicationInformation.DeepLink
+        } catch {
+            Write-Warning "Failed to get DeepLink for $($content.Filename) (index $itemIndex). Skipping."
+            continue
+        }
+        
+        # The 'Description' is the friendly name of the setting/page/menu
+        try {
+            $description = Get-LocalizedString $content.SettingInformation.Description
+            # Update the XML content with resolved strings to be saved to XML file if set
+            $content.SettingInformation.Description = $description
+        } catch {
+            $description = "[Unresolved Description]"
+        }
+
+        # Resolve HighKeywords if it exists, then update XML content
+        try {
+            if ($content.SettingInformation.HighKeywords) {
+                $highKeywords = Get-LocalizedString $content.SettingInformation.HighKeywords
+                # Ensure it's a string if it's an array
+                if ($highKeywords -is [array]) {
+                    $highKeywords = $highKeywords -join "; "
+                }
+            }
+            if ($highKeywords) {
+                $content.SettingInformation.HighKeywords = $highKeywords
+            }
+        } catch {
+            Write-Debug "Failed to get 'HighKeywords' property for DeepLink entry '$entryName' of index $itemIndex. These aren't used so this isn't a problem, continuing anyway."
+            $highKeywords = ""
+        }
+
+        # Get IconPath if it exists
+        try {
+            if ($content.ApplicationInformation.Icon) {
+                $iconPath = $content.ApplicationInformation.Icon
+            }
+        } catch {
+            Write-Debug "Failed to get 'Icon' property for DeepLink entry '$entryName' of index $itemIndex. These aren't used so this isn't a problem, continuing anyway."
+            $iconPath = ""
+        }    
+
+        # Create object with all data to go into array of $settingsData
+        $settingInfo = @{
+            Name         = $entryName
+            Description  = $description
+            HighKeywords = $highKeywords
+            DeepLink     = $deepLink
+            IconPath     = $iconPath
+        }
+
+        # Add all data and handle it elsewhere
+        $settingsData += $settingInfo
+    }
+
+    if ($settingsData.Count -eq 0) {
+        Write-Error "No Deep Link data was collected, something must have gone wrong Refer to any other prior errors. Skipping Deep Link creation."
+        return $null
+    }
+
+    # Save the resolved XML to the main output folder if the SaveXML switch is used
+    if ($SaveXML) {
+        try {
+            $xmlContent.Save($resolvedSettingsXmlContentFilePath)
+            Write-Verbose "Resolved XML saved to: $resolvedSettingsXmlContentFilePath"
+        } catch {
+            Write-Error "Failed to save resolved XML content: $_"
+        }
+    }
+    return $settingsData
 }
 
 # Function to extract ms-settings links from the SystemSettings.dll file which has the ms-settings links embedded in it
@@ -2353,6 +2396,8 @@ function Create-Deep-Link-Shortcut {
     param (
         [object]$settingArray
     )
+    # settingsArray has string properties: Name, Description, HighKeywords, DeepLink, IconPath
+
     $rawTarget = $settingArray.DeepLink
 
     # If there's a description, use that as the name
@@ -2463,7 +2508,7 @@ function Create-Deep-Link-Shortcut {
         $settingArray.ShortcutPath = $shortcutPath
         return $settingArray
     } catch {
-        Write-Host "Error creating shortcut for $name`: $($_.Exception.Message)"
+        Write-Error "Error creating shortcut for $name`: $($_.Exception.Message)"
         return $false
     }
 }
@@ -3799,22 +3844,34 @@ if (-not $SkipTaskLinks) {
 }
 
 # Loop for Deep Links
-if (-not $SkipDeepLinks -and $allSettingsXmlPath) {
-    # Process other settings data
+if (-not $SkipDeepLinks -and $DeepLinksXMLPath) {
+    Write-Host "`n----- Processing Deep Links -----"
+
     $deepLinkData = Get-AllSettings-Data -xmlFilePath $allSettingsXmlPath -SaveXML:(!$NoStatistics)
 
     if ($null -eq $deepLinkData) {
-        Write-Host "No MS Settings data found or error occurred while parsing."
-        return
+        Write-Host "No deep links data found - refer to any errors above."
     }
 
-    Write-Host "`n----- Processing Deep Links -----"
-
+    # If deep links data was found, process it to create shortcuts. If $deepLinkData is null or empty, this will be skipped.
     foreach ($deepLink in $deepLinkData) {
-        $existingTaskLink = ""
-        # Check if it has a DeepLink
+        # Each $deepLink object contains properties
+        # -----------------------------
+            # Name          (string)
+            # Description   (string)
+            # HighKeywords  (string)
+            # DeepLink      (string)
+            # IconPath      (string)
+        # -----------------------------
+
+        # Set empty variable to use later when checking for duplicate task links
+        $existingTaskLink = "" 
+
+        # It should always have a DeepLink property, but check just in case
         if ($deepLink.DeepLink) {
-            # If set to not create duplicate deeplinks, check if a task link (check $task.Command in $tasklinks) with the same command already exists, and skip if so
+
+            # If set to not create duplicate deeplinks:
+            # This block checks if a task link ($task.Command in $tasklinks) with the same command already exists, and skips if so
             if (-not $AllowDuplicateDeepLinks -and -not $SkipTaskLinks) {
 
                 foreach ($taskLink in $taskLinks) {
@@ -3845,6 +3902,11 @@ if (-not $SkipDeepLinks -and $allSettingsXmlPath) {
             }
         }
     }
+
+} elseif ($SkipDeepLinks) {
+    Write-Host "`n Skipped Deep Links creation...`n"
+} elseif ($null -eq $allSettingsXmlPath) {
+    Write-Warning "Skipping Deep Links creation because AllSystemSettings XML file was not found."
 }
 
 # Loop for MS-settings: Links
