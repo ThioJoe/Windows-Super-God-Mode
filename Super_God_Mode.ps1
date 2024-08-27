@@ -3844,7 +3844,7 @@ if (-not $SkipTaskLinks) {
 }
 
 # Loop for Deep Links
-if (-not $SkipDeepLinks -and $DeepLinksXMLPath) {
+if (-not $SkipDeepLinks -and $allSettingsXmlPath) {
     Write-Host "`n----- Processing Deep Links -----"
 
     $deepLinkData = Get-AllSettings-Data -xmlFilePath $allSettingsXmlPath -SaveXML:(!$NoStatistics)
