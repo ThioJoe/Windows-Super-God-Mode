@@ -1651,10 +1651,40 @@ function Create-TaskLink-Shortcut {
         [string[]]$keywords
     )
 
+    $targetAndPathRegex = '(?xi)
+        ^(
+            (?:[a-z]:|%\w+%)\\
+            (?:[^\\/:*?"<>|\r\n]+?\\)*?
+            [^\\/:*?"<>|\r\n]+?
+            \.[a-z0-9]+
+        |
+            [^\\/:*?"<>|\r\n]+?\.[a-z0-9]+
+        )
+        (?=\s|$|["])
+        \s*
+        (.*)
+    '
+
+    # -------- Pattern Explanation --------
+    #  (?xi)                                  # Enable case-insensitive mode, and ignore whitespace mode so we can indent for readability
+    #  ^(
+    #    (?:[a-z]:|%\w+%)\\                   # Match drive letter with colon or environment variable, followed by a backslash
+    #    (?:[^\\\/:*?"<>|\r\n]+?\\)*?         # Match directories (lazy match)
+    #    [^\\\/:*?"<>|\r\n]+?                 # Match the file name
+    #    \.[a-z0-9]+                          # Match any file extension
+    #  |
+    #    [^\\\/:*?"<>|\r\n]+?\.[a-z0-9]+      # Or just match a filename with extension, also if with arguments
+    #  )
+    #  (?=\s|$|["])                           # Ensure that we stop at a space, end of line, or quote
+    #  \s*
+    #  (.*)                                   # Capture everything after the first match (second capture group)
+
     try {
         Write-Verbose "Creating Task Link Shortcut For: $name"
 
         $shell = New-Object -ComObject WScript.Shell
+        $targetPath = ''
+        $arguments = ''
 
         if ($shortcutType -eq "url") {
             # For URL shortcuts
@@ -1665,7 +1695,7 @@ function Create-TaskLink-Shortcut {
             $shortcut = $shell.CreateShortcut($shortcutPath)
 
             # Parse the command
-            if ($command -match '^(\S+)\s*(.*)$') {
+            if ($command -match $targetAndPathRegex) {
                 $targetPath = Fix-CommandPath $Matches[1]
                 $arguments = Fix-CommandPath $Matches[2]
 
@@ -1674,6 +1704,8 @@ function Create-TaskLink-Shortcut {
 
                 $shortcut.TargetPath = $targetPath
                 $shortcut.Arguments = $arguments
+                
+            # If no match is found, should mean it's a direct command of some other kind (no file path), with no arguments
             } else {
                 $fixedCommand = Fix-CommandPath $command
                 $shortcut.TargetPath = $fixedCommand
@@ -1706,7 +1738,7 @@ function Create-TaskLink-Shortcut {
             $shortcut.IconLocation = $iconPath
         }
         $shortcut.Save()
-        [System.Runtime.InteropServices.Marshal]::ReleaseComObject($shell) | Out-Null
+        [void] [System.Runtime.InteropServices.Marshal]::ReleaseComObject($shell)
 
         # For .url type shortcuts, open the plaintext url file and add the IconIndex= and IconFile= lines to the end
         if ($shortcutType -eq "url") {
