@@ -3911,14 +3911,8 @@ if (-not $SkipDeepLinks -and $allSettingsXmlPath) {
 
 # Loop for MS-settings: Links
 if (-not $SkipMSSettings) {
+    Write-Host "`n----- Processing MS-Settings Links -----"
     $msSettingsList = Get-MS-SettingsFrom-SystemSettingsDLL -DllPath $SystemSettingsDllPath
-
-    if ($null -eq $settingsData) {
-        Write-Host "No MS Settings data found or error occurred while parsing."
-        return
-    }
-
-    Write-Host "`n----- Processing MS Settings -----"
 
     foreach ($setting in $msSettingsList) {
         # Get the short name from the second part of the ms-settings: link
