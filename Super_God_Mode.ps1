@@ -183,17 +183,7 @@ param(
 
 $VERSION = "1.1.1"
 
-# If -Debug or -Verbose is used, set $DebugPreference and $VerbosePreference to Continue, otherwise set to SilentlyContinue.
-# This way it will show messages without stopping if -Debug is used and not otherwise
-if ($Verbose) {
-    $VerbosePreference = 'Continue'
-} else { $VerbosePreference = 'SilentlyContinue' }
 
-if ($Debug) {
-    $DebugPreference = 'Continue'
-    $VerbosePreference = 'Continue' # If Debug is used, also enable Verbose
-    $Verbose = $true # Set Verbose to true if Debug is used
-} else { $DebugPreference = 'SilentlyContinue' }
 
 # ==============================================================================================================================
 # ==================================================  GUI FUNCTION  ============================================================
@@ -203,7 +193,9 @@ if ($Debug) {
 function Show-SuperGodModeDialog {
     # Add param for output folder default name
     param(
-        [string]$defaultOutputFolderName
+        [string]$defaultOutputFolderName,
+        [switch]$initialDebug,
+        [switch]$initialVerbose
     )
     # Define tooltips here for easy editing
     $tooltips = @{
@@ -222,7 +214,9 @@ function Show-SuperGodModeDialog {
         CollectDeepLinks = "Create shortcuts for deep links (direct links to various settings menus across Windows)"
         CollectURLProtocols = "Create shortcuts for URL protocols (e.g., ms-settings:, etc.)"
         CollectAppxLinks = "Create shortcuts for hidden sub-page URL links for apps (e.g., ms-clock://pausefocustimer, etc.) &#x0a;Note: Requires collecting URL Protocol Links"
-        DeepScanHiddenLinks = "Scans all files in the installation directory of non-appx-package apps for hidden links. &#x0a;Otherwise only the primary binary file will be searched. &#x0a;&#x0a;Note: This wll be MUCH slower. &#x0a;Also Note: Not to be confused with &quot;Deep Links&quot;."    }
+        DeepScanHiddenLinks = "Scans all files in the installation directory of non-appx-package apps for hidden links. &#x0a;Otherwise only the primary binary file will be searched. &#x0a;&#x0a;Note: This wll be MUCH slower. &#x0a;Also Note: Not to be confused with &quot;Deep Links&quot;."
+        LoggingLevel = "Select the level of detail shown in the console window during runtime:&#x0a; - Standard: Normal logging&#x0a; - Verbose: More detailed logging&#x0a; - Debug: Maximum detail, also creates some log files."
+    }
 
     Add-Type -AssemblyName PresentationFramework
     Add-Type -AssemblyName System.Windows.Forms
@@ -456,8 +450,29 @@ function Show-SuperGodModeDialog {
                     </GroupBox>
 
                     <StackPanel Grid.Row="3">
-                        <TextBlock Text="ALL settings are optional - Leave them alone to use defaults" FontWeight="Bold" Foreground="{StaticResource WarningBrush}" HorizontalAlignment="Center" Margin="0,10,0,10"/>
                         <Button x:Name="btnOK" Content="Run Script" Width="Auto" Height="Auto" FontSize="14" HorizontalAlignment="Center" Margin="0,10,0,10" Padding="10,5" Background="{StaticResource AccentBrush}" Foreground="White"/>
+                        <TextBlock Text="All settings are optional - Leave them alone to use defaults" FontWeight="Bold" Foreground="{StaticResource WarningBrush}" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <TextBlock Text="Logging:" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="{StaticResource ForegroundBrush}">
+                                    <TextBlock.ToolTip>
+                                        <ToolTip Content="$($tooltips.LoggingLevel)" />
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
+                                <ComboBox x:Name="cmbLoggingLevel" Width="Auto" MinWidth="65" SelectedIndex="0">
+                                    <ComboBoxItem Content="Standard"/>
+                                    <ComboBoxItem Content="Verbose"/>
+                                    <ComboBoxItem Content="Debug"/>
+                                    <ComboBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.LoggingLevel)" />
+                                    </ComboBox.ToolTip>
+                                </ComboBox>
+                            </StackPanel>
+                        </Grid>
                     </StackPanel>
                 </Grid>
             </ScrollViewer>
@@ -495,6 +510,17 @@ function Show-SuperGodModeDialog {
     $txtOutputFolderName = $window.FindName("txtOutputFolderName")
     $btnBrowse = $window.FindName("btnBrowse")
     $btnOK = $window.FindName("btnOK")
+
+    # Other controls
+    $cmbLoggingLevel = $window.FindName("cmbLoggingLevel")
+    # Set initial logging level based on the initialDebug and initialVerbose switches
+    if ($initialDebug) {
+        $cmbLoggingLevel.SelectedIndex = 2
+    } elseif ($initialVerbose) {
+        $cmbLoggingLevel.SelectedIndex = 1
+    } else {
+        $cmbLoggingLevel.SelectedIndex = 0
+    }
 
     # Set default values
     $defaultOutputPath = $PSScriptRoot
@@ -593,6 +619,9 @@ function Show-SuperGodModeDialog {
         SkipHiddenAppLinks = !$chkCollectAppxLinks.IsChecked
         # Output folder path
         Output = $txtCurrentPath.Text
+        # Logging level
+        Verbose = $cmbLoggingLevel.SelectedIndex -eq 1
+        Debug = $cmbLoggingLevel.SelectedIndex -eq 2
     }
 }
 
@@ -602,7 +631,7 @@ $defaultOutputFolderName = "Super God Mode"
 # Start the GUI dialog unless -NoGUI is used
 if (-not $NoGUI) {
     Write-Host "`nUse the GUI window that just appeared to select any options and run the script.`n"
-    $params = Show-SuperGodModeDialog -defaultOutputFolderName $defaultOutputFolderName
+    $params = Show-SuperGodModeDialog -defaultOutputFolderName $defaultOutputFolderName -initialDebug:$Debug -initialVerbose:$Verbose
     if ($null -eq $params) {
         Write-host "Script GUI window appears to have been closed. Exiting script.`n" -ForegroundColor Yellow
         exit
@@ -624,7 +653,23 @@ if (-not $NoGUI) {
     $SkipURLProtocols = $params.SkipURLProtocols
     $SkipHiddenAppLinks = $params.SkipHiddenAppLinks
     $Output = $params.Output
+    $Verbose = $params.Verbose
+    $Debug = $params.Debug
 }
+
+# If -Debug or -Verbose is used, set $DebugPreference and $VerbosePreference to Continue, otherwise set to SilentlyContinue.
+# This way it will show messages without stopping if -Debug is used and not otherwise
+if ($Verbose) {
+    $Verbose = $true # Setting it as $true instead of letting it be a switch to avoid confusion with 'IsPresent' property
+    $VerbosePreference = 'Continue'
+} else { $VerbosePreference = 'SilentlyContinue' }
+
+if ($Debug) {
+    $Debug = $true # Setting it as $true instead of letting it be a switch to avoid confusion with 'IsPresent' property
+    $DebugPreference = 'Continue'
+    $VerbosePreference = 'Continue' # If Debug is used, also enable Verbose
+    $Verbose = $true # Set Verbose to true if Debug is used
+} else { $DebugPreference = 'SilentlyContinue' }
 
 Write-Host "Beginning script execution..." -ForegroundColor Green
 
