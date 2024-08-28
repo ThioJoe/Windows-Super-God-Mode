@@ -6,9 +6,8 @@ It was inspired by the famously nicknamed "God Mode" folder and creates many mor
 
 ## Screenshots
 
-
 <p align="center">
-<img width="700" alt="GUI Window" src="https://github.com/user-attachments/assets/2103b265-d2e5-4fa7-ac69-362784bcb0db">
+<img width="700" alt="GUI Window" src="https://github.com/user-attachments/assets/d318373c-d4d4-4521-bf57-8b4a4b4273ee">
 </p><p align="center">
 <img width="290" alt="Results" src="https://github.com/user-attachments/assets/4d01fbad-b597-4433-bd67-2638ded8a6ed">
 <img width="392" alt="Output Folders" src="https://github.com/user-attachments/assets/898efc48-ddc6-4875-b906-b89963d5778e">
@@ -19,33 +18,36 @@ It was inspired by the famously nicknamed "God Mode" folder and creates many mor
 ## Features
 
 - Creates shortcuts for various Windows components:
-  - CLSID-based shell folders
-  - Named special folders
-  - Task links (sub-pages within shell folders and control panel menus)
-  - System settings (ms-settings: links)
-  - Deep links (direct links to various settings menus across Windows)
-  - URL protocols
-  - Hidden App Links (Internal-use and undocumented URL links used by apps)
+  - **CLSID Shell Folders**
+  - **Named Special Folders**
+  - **Task Links** (sub-pages within shell folders and control panel menus)
+  - **System settings** (ms-settings: links)
+  - **"Deep Links"** (direct links to various settings menus across Windows)
+  - **URL Protocols**
+  - **Hidden App Links** (Internal-use and undocumented URL links used by apps)
 - Generates CSV files with detailed information about the shortcuts
 - Saves XML content retrieved from shell32.dll and other sources for reference
 - Graphical User Interface (GUI) for easy configuration
+- Release versions signed with EV code signing certificate
 
 ## How to Run:
 
 ### Option 1 (Easier): Using .Bat Launcher
-1. Download the latest version of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/download/v1.1.0/Super_God_Mode.ps1))
-2. Download the launcher batch file to the same location. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/download/v1.1.0/SuperGodMode-EasyLauncher.bat))
+1. Download the latest version of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/download/v1.2.0/Super_God_Mode.ps1))
+2. Download the launcher batch file to the same location. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/download/v1.2.0/SuperGodMode-EasyLauncher.bat))
 3. Run the batch file.
 
 ### Option 2: Manually running
 
-1. Download the latest version of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/download/v1.1.0/Super_God_Mode.ps1))
+1. Download the latest version of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/download/v1.2.0/Super_God_Mode.ps1))
 2. Open PowerShell to the directory with the script. (Tip: In File Explorer, just type "PowerShell.exe" into the address bar to open it to that path).
-3. Run the following command to allow script execution for the current session:
+3. Run the following command to allow script execution temporarily for the current session. 
    ```
    Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process
    ```
-4. Run the script:
+   ^ **Note:** You might see a warning about changing the execution policy, but the `-Scope Process` part ensures that the change is only temporary, and will only apply to that specific PowerShell window, so you can choose to allow. You can read more in [this article](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-5.1#-scope). 
+   
+5. Run the script:
    ```
    .\Super_God_Mode.ps1
    ```
@@ -61,7 +63,9 @@ Note: Except for `-Debug` and `-Verbose`, you must use `-NoGUI` for arguments to
 - `-DontGroupTasks`: Prevent grouping task shortcuts by application name
 - `-UseAlternativeCategoryNames`: Use alternative category names for task links
 - `-AllURLProtocols`: Include third-party URL protocols from installed software
+- `-DeepScanHiddenLinks`: Scans for hidden links in all files in the install directory of non-appx-package apps, otherwise only the main binary file is searched.
 - `-CollectExtraURLProtocolInfo`: Collect additional information about URL protocols
+- `-AllowDuplicateDeepLink`: Will not skip Deep Link shortcuts that are exactly the same as an existing task link
 
 #### Control Output
 
@@ -84,6 +88,9 @@ Note: Except for `-Debug` and `-Verbose`, you must use `-NoGUI` for arguments to
 
 - `-Verbose`: Enable verbose output. Can be used with or without `-NoGUI`.
 - `-Debug`: Enable debug output (also enables verbose output). Can be used with or without `-NoGUI`.
+- `-timing`: Enable timing output to show how long each section of the script takes to run. Or timing will be enabled automatically if in verbose or debug mode.
+- `-debugSkipAppxSearch`: Skip searching for hidden links in AppX packages, and only search for non-appx programs.
+- `-debugSearchOnlyProtocolList`: Specify a comma-separated list of URL protocols (surrounded by quotes) to search for, and no others.
 
 #### Advanced Arguments
 
@@ -167,7 +174,7 @@ Usage:
 ### Find_URLs_From_AppxPackage_Files.ps1
 
 This script fetches the URI protocols for each installed AppxPackage via their AppxManifest.xml file, then brute force searches for those URIs in all files in the app's install directory.
-It is a standalone version of the feature built into the main script.
+It is a standalone version of the feature built into the main script, but might not be up to date!
 
 Usage:
 - No arguments necessary:  `.\Find_URLs_From_AppxPackage_Files.ps1`
