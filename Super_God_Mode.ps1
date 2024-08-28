@@ -1226,7 +1226,7 @@ function Get-LocalizedString {
 
         $hModule = [Win32]::LoadLibrary($dllPath)
         if ($hModule -eq [IntPtr]::Zero) {
-            Write-Error "Failed to load library during typical string reference lookup: $dllPath"
+            Write-Warning "Failed to load library during typical string reference lookup: $dllPath"
             return Sanitize-Unresolved-Reference -ReferenceString $StringReference -returnSanitizedOnFail:$returnSanitizedOnFail
         }
 
@@ -1238,12 +1238,12 @@ function Get-LocalizedString {
         if ($result -ne 0) {
             return $stringBuilder.ToString()
         } else {
-            Write-Error "Failed to load string resource, no result returned for: $resourceId from $dllPath"
-            return return Sanitize-Unresolved-Reference -ReferenceString $StringReference -returnSanitizedOnFail:$returnSanitizedOnFail
+            Write-Warning "Failed to load string resource, no result returned for: $resourceId from $dllPath"
+            return Sanitize-Unresolved-Reference -ReferenceString $StringReference -returnSanitizedOnFail:$returnSanitizedOnFail
         }
     } else {
-        Write-Error "Invalid or unknown localized string reference format: $StringReference"
-        return return Sanitize-Unresolved-Reference -ReferenceString $StringReference -returnSanitizedOnFail:$returnSanitizedOnFail
+        Write-Warning "Invalid or unknown localized string reference format: $StringReference"
+        return Sanitize-Unresolved-Reference -ReferenceString $StringReference -returnSanitizedOnFail:$returnSanitizedOnFail
     }
 }
 
@@ -1461,7 +1461,7 @@ function Get-FolderName {
         Write-Verbose "Found default name: $defaultName"
         if ($defaultName -match '@.+,-\d+') {
             Write-Debug "   > Default name is a localized string reference"
-            $resolvedName = Get-LocalizedString -StringReference $defaultName -CustomLanguageFolder $CustomLanguageFolder
+            $resolvedName = Get-LocalizedString -StringReference $defaultName -CustomLanguageFolder $CustomLanguageFolder -returnSanitizedOnFail:$false
             if ($resolvedName) {
                 $nameSource = "Localized String"
                 Write-Verbose " > Resolved default name to: $resolvedName"
@@ -1510,7 +1510,7 @@ function Get-FolderName {
     # If a LocalizedString is found, resolve it using the Get-LocalizedString function.
     if ($localizedString) {
         Write-Debug "   > Found LocalizedString: $localizedString"
-        $resolvedString = Get-LocalizedString -StringReference $localizedString -CustomLanguageFolder $CustomLanguageFolder
+        $resolvedString = Get-LocalizedString -StringReference $localizedString -CustomLanguageFolder $CustomLanguageFolder -returnSanitizedOnFail:$false
         if ($resolvedString) {
             $nameSource = "Localized String"
             Write-Verbose " > Resolved LocalizedString to: $resolvedString"
@@ -2014,7 +2014,7 @@ function Get-TaskLinks {
         $name = $null
         if ($nameNode -and $nameNode.InnerText) {
             if ($nameNode.InnerText -match '@(.+),-(\d+)') {
-                $name = Get-LocalizedString -StringReference $nameNode.InnerText -CustomLanguageFolder $CustomLanguageFolder
+                $name = Get-LocalizedString -StringReference $nameNode.InnerText -CustomLanguageFolder $CustomLanguageFolder -returnSanitizedOnFail:$false
                 # Update resolved XML if a localized string was found
                 if ($name) {
                     try {
@@ -2067,7 +2067,7 @@ function Get-TaskLinks {
                 $keyword = Get-LocalizedString -StringReference $keywordNode.InnerText -CustomLanguageFolder $CustomLanguageFolder
                 # Update resolved XML
                 $resolvedKeywordNode = $resolvedXml.SelectSingleNode("//sh:task[@id='$taskId']/sh:keywords[text()='$($keywordNode.InnerText)']", $nsManager)
-                if ($resolvedKeywordNode) {
+                if ($resolvedKeywordNode -and $keyword) {
                     $resolvedKeywordNode.InnerText = $keyword
                 }
             } else {
@@ -2383,17 +2383,20 @@ function Get-AllSettings-Data {
         
         # The 'Description' is the friendly name of the setting/page/menu
         try {
-            $description = Get-LocalizedString $content.SettingInformation.Description
+            $description = Get-LocalizedString $content.SettingInformation.Description -returnSanitizedOnFail:$true
             # Update the XML content with resolved strings to be saved to XML file if set
             $content.SettingInformation.Description = $description
         } catch {
+            $description = "[Unresolved Description]"
+        }
+        if (-not $description) {
             $description = "[Unresolved Description]"
         }
 
         # Resolve HighKeywords if it exists, then update XML content
         try {
             if ($content.SettingInformation.HighKeywords) {
-                $highKeywords = Get-LocalizedString $content.SettingInformation.HighKeywords
+                $highKeywords = Get-LocalizedString $content.SettingInformation.HighKeywords -returnSanitizedOnFail:$false
                 # Ensure it's a string if it's an array
                 if ($highKeywords -is [array]) {
                     $highKeywords = $highKeywords -join "; "
@@ -2404,6 +2407,9 @@ function Get-AllSettings-Data {
             }
         } catch {
             Write-Debug "Failed to get 'HighKeywords' property for DeepLink entry '$entryName' of index $itemIndex. These aren't used so this isn't a problem, continuing anyway."
+            $highKeywords = ""
+        }
+        if (-not $highKeywords) {
             $highKeywords = ""
         }
 
@@ -2852,13 +2858,13 @@ function Get-AppDetails-From-AppxManifest {
 
                 # See if it is necessary to get localized string for the various values if it starts with "ms-resource:"
                 if ($displayName -match '^ms-resource:' -and $GetExtraData) {
-                    $displayName = Get-LocalizedString -StringReference $displayName -AppxManifestPath $manifestPath -CustomLanguageFolder $CustomLanguageFolder
+                    $displayName = Get-LocalizedString -StringReference $displayName -AppxManifestPath $manifestPath -CustomLanguageFolder $CustomLanguageFolder -returnSanitizedOnFail
                 }
                 if ($description -match '^ms-resource:' -and $GetExtraData) {
-                    $description = Get-LocalizedString -StringReference $description -AppxManifestPath $manifestPath -CustomLanguageFolder $CustomLanguageFolder
+                    $description = Get-LocalizedString -StringReference $description -AppxManifestPath $manifestPath -CustomLanguageFolder $CustomLanguageFolder -returnSanitizedOnFail
                 }
                 if ($PackageName -match '^ms-resource:' -and $GetExtraData) {
-                    $PackageName = Get-LocalizedString -StringReference $PackageName -AppxManifestPath $manifestPath -CustomLanguageFolder $CustomLanguageFolder
+                    $PackageName = Get-LocalizedString -StringReference $PackageName -AppxManifestPath $manifestPath -CustomLanguageFolder $CustomLanguageFolder -returnSanitizedOnFail
                 }
 
                 # Add protocol data to the appInfo object
@@ -3492,9 +3498,10 @@ function Search-HiddenLinks {
         # Gather files from entire folder of each program if folder is accessible (not null), and deep scan is enabled
         if ($null -ne $folder -and $DeepScanHiddenLinks) {
             Write-Verbose " > Gathering in $folder"
+            $searchErrorVariable = $null
             try {
                 # Recursively get all files in the folder that are not in the ignored extensions list
-                $files = Get-ChildItem -Path $folder -Recurse -File | Where-Object { 
+                $files = Get-ChildItem -Path $folder -Recurse -File -Force -ErrorAction SilentlyContinue -ErrorVariable searchErrorVariable | Where-Object { 
                     $currentCheckingFile = $_
                     $currentCheckingFile.Length -lt $maxFileSize -and
                     $currentCheckingFile.Extension -notin $ignoredExtensions -and 
@@ -3516,6 +3523,19 @@ function Search-HiddenLinks {
                 $program.FilesToSearch = @($program.Target | Get-Item)
                 continue
             }
+            # If errors occurred, print them out
+            if ($searchErrorVariable) {
+                Write-Warning "*** Some errors occurred in the directory search:"
+                foreach ($errorEntry in $searchErrorVariable) {
+                    if ($errorEntry.CategoryInfo.Reason -eq "UnauthorizedAccessException") {
+                        Write-Warning " *** Permission denied to access $($errorEntry.TargetObject) -- Will assume it's a single file to search for $($program.Protocols)"
+                    } else {
+                        Write-Warning " *** Error getting files in $($errorEntry.TargetObject): $($errorEntry.Exception.Message)  -- Will assume it's a single file to search for $($program.Protocols)"
+                    }
+                    $program.FilesToSearch = @($program.Target | Get-Item)
+                }
+            }
+
         # Only set single target file to be searched
         } else {
             Write-Verbose " > Folder for $($program.Protocols) is null, assuming it's a single file search"
@@ -3548,7 +3568,7 @@ function Search-HiddenLinks {
     $resultsNonAppx = @()
     if ($Verbose -or $timing) { $stopwatch = [System.Diagnostics.Stopwatch]::StartNew() }
 
-    Write-Host "[2/2] Searching Non-Appx Program Files for Hidden Links:"
+    Write-Host "`n[2/2] Searching Non-Appx Program Files for Hidden Links:"
     foreach ($itemToSearch in $programFilesSearchData) {
         # Search Display Location
         $protocolsString = $itemToSearch.Protocols -join ", "
