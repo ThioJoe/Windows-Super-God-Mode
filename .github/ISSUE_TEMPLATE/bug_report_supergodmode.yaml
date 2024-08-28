@@ -28,6 +28,7 @@ body:
       label: Script Stops Early or Doesn't Run  (If applicable)
       description: Select one of these if the script crashes or stops early
       options:
+        - ''
         - Not applicable
         - Crashes/stops immediately BEFORE the GUI
         - Crashes almost immediately AFTER the GUI
@@ -38,6 +39,7 @@ body:
       label: Script Finishes But With a Problem (If applicable)
       description: Select one of these if the script finishes but doesn't do what it's supposed to.
       options:
+        - ''
         - Not applicable
         - Script finishes, but fails to create any shortcuts of a certain type
         - Script finishes, but a problem occurs while searching for links
@@ -79,6 +81,7 @@ body:
       description: What version of Windows are you using?
       multiple: false
       options:
+        - ''
         - Windows 11
         - Windows 10
         - Windows 8.1
@@ -92,9 +95,11 @@ body:
       label: How did you run the script?
       multiple: false
       options:
+        - ''
         - GUI via launcher batch file
-        - GUI via PowerShell command
+        - GUI via PowerShell terminal
         - Command Line Only (Using -NoGUI)
+        - Using a debugger like VSCode
     validations:
       required: true
   - type: textarea
