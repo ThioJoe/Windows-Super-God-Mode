@@ -203,7 +203,7 @@ param(
 # -debugSearchOnlyProtocolList
 # -uniqueOutputFolder
 
-$VERSION = "1.2.0"
+$VERSION = "1.2.1"
 
 
 
@@ -2560,63 +2560,87 @@ function Create-Deep-Link-Shortcut {
         $name = $rawTarget
     }
 
+    $targetAndPathRegex = '(?xi)
+        ^(
+            (?:[a-z]:|%%?\w+%)\\
+            (?:[^\\/:*?"<>|\r\n]+?\\)*?
+            [^\\/:*?"<>|\r\n]+?
+            \.[a-z0-9]+
+        |
+            [^\\/:*?"<>|\r\n]+?\.[a-z0-9]+
+        )
+        (?=\s|$|["])
+        \s*
+        (.*)
+    '
+
     $target = ""
     $targetArgs = ""
 
-    # Determine type of link/command. First check if it matches application ID format like "Microsoft.Recovery"
+    Write-Debug "Creating Deep Link shortcut for $name, with deep link rawTarget $rawTarget"
+    
+    # Method 1 - Determine type of link/command. First check if it matches application ID format like "Microsoft.Recovery"
     if ($rawTarget -match '^Microsoft\.[a-zA-Z]+$') {
+        Write-Debug "  > Found format with Method 1 - Application ID"
         $shortcutType = "app"
         $target = "control.exe"
         $targetArgs = "/name $rawTarget"
         $fullCommand = "control.exe /name $rawTarget"
-    # Check if it's an application name but with a backslash and therefore has a page like Microsoft.Mouse\2 or Microsoft.PowerOptions\pagePlanSettings
-    } elseif ($rawTarget -match '^Microsoft\.[a-zA-Z]+\\[a-zA-Z0-9]+$') {
+        Write-Debug "    >  Target: $target   |    Args: $targetArgs"
+    # Method 2 - Check if it's an application name but with a backslash and therefore has a page like Microsoft.Mouse\2 or Microsoft.PowerOptions\pagePlanSettings
+    } elseif ($rawTarget -match '^Microsoft\.[a-zA-Z]+\\.+$') {
+        Write-Debug "  > Found format with Method 2 - Application ID with Page"
         $shortcutType = "appPage"
         $target = "control.exe"
         $targetArgs = "/name $($rawTarget.Split('\')[0]) /page $($rawTarget.Split('\')[1])"
         $fullCommand = "$target $targetArgs"
-    # Check if it's a shell:::{CLSID} link. It may have stuff after it as part of the link
+        Write-Debug "    >  Target: $target   |    Args: $targetArgs"
+    # Method 3 - Check if it's a shell:::{CLSID} link. It may have stuff after it as part of the link
     } elseif ($rawTarget -match '^shell:::{[a-zA-Z0-9-]+}') {
+        Write-Debug "  > Found format with Method 3 - CLSID"
         $shortcutType = "clsid"
         $fullCommand = "explorer $rawTarget"
-    # If it starts with %windir% or %%windir% assume it's a full path to an executable or URL with or without arguments like %windir%\something
-    } elseif ($rawTarget -match '^%') {
+        Write-Debug "    >  Full Command: $fullCommand"
+    # Method 4 - If it starts with %windir% or %%windir% assume it's a full path to an executable or URL with or without arguments like %windir%\something
+    } elseif ($rawTarget -match $targetAndPathRegex) {
+        Write-Debug "  > Found format with Method 4 - Path Command"
         $shortcutType = "pathcommand"
-        $fullCommand = $rawTarget
-
-        #Split on the first space, set args to the 2nd match, otherwise assume no args
-        if ($fullCommand -match '^(\S+)\s*(.*)$') {
-            $target = $Matches[1]
-            $targetArgs = $Matches[2]
-        } else {
-            $target = $fullCommand
-            $targetArgs = ""
-        }
-    # If it's just letters and numbers and the <Filename> property starts with "Defender_" then it is a Windows Defender setting whcih is apparently a special case in this file
+        $fullCommand = Fix-CommandPath $rawTarget
+        $target = Fix-CommandPath $Matches[1]
+        $targetArgs = Fix-CommandPath $Matches[2]
+        Write-Debug "    >  Full Fixed Command: $fullCommand   |    Target: $target   |    Args: $targetArgs"
+    # Method 5 - If it's just letters and numbers and the <Filename> property starts with "Defender_" then it is a Windows Defender setting whcih is apparently a special case in this file
     } elseif ($rawTarget -match '^[a-zA-Z0-9]+$' -and $settingArray.Name -match '^Defender_') {
+        Write-Debug "  > Found format with Method 5 - Windows Defender"
         $shortcutType = "windowsdefender"
         $fullCommand = "windowsdefender://$rawTarget"
         $target = "windowsdefender://$rawTarget"
         # Prepend "Windows Defender" to the name
         $name = "Windows Defender - $name"
-    # If it's just letters deal with it later, do nothing
+        Write-Debug "    >  Full Command: $fullCommand"
+    # Method 6 - If it's just letters deal with it later, do nothing
     } elseif ($rawTarget -match '^[a-zA-Z]+$') {
+        Write-Debug "  > Found format with Method 6 - Letters only"
         $shortcutType = "unknown"
     # Assume it's a full path to an executable or URL with or without arguments like %windir%\something
     } else {
+        Write-Debug "  >  No other format found, assuming it's a path to an exe or URL. Will try to split on space."
         $shortcutType = "assumedPath"
         # Try to split on the first space, set args to the 2nd match, otherwise assume no args
         if ($rawTarget -match '^(\S+)\s*(.*)$') {
             $target = $Matches[1]
             $targetArgs = $Matches[2]
+            Write-Debug "    >  Split on space: Target: $target   |    Args: $targetArgs"
         } else {
             $target = $rawTarget
+            Write-Debug "    >  No space found, assuming no args: Target: $target"
         }
     }
 
     # Expand variables in the arguments such as %windir%, because shortcuts don't seem to work with them in the arguments
+    # Strangely the same commands do work when put in the run box, so more investigation might be needed
     if ($targetArgs) {
-        $arguments = [Environment]::ExpandEnvironmentVariables($arguments)
+        $targetArgs = [Environment]::ExpandEnvironmentVariables($targetArgs)
     }
 
     # Sanitize the name to make it a valid filename
@@ -4103,6 +4127,9 @@ if (-not $SkipDeepLinks -and $allSettingsXmlPath) {
                 $deepLinksProcessedData += $result
             } else {
                 Write-Host "Failed to create Deep Link shortcut: $($deepLink.Description)"
+                $deepLink.FullCommand = "[Failed to create shortcut]"
+                $deepLink.ShortcutPath = "[Failed to create shortcut]"
+                $deepLinksProcessedData += $deepLink
             }
         }
     }
