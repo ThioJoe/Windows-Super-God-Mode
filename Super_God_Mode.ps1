@@ -3572,9 +3572,9 @@ function Search-HiddenLinks {
     foreach ($itemToSearch in $programFilesSearchData) {
         # Search Display Location
         $protocolsString = $itemToSearch.Protocols -join ", "
-        if ($itemToSearch.InstallLocation) {
+        if ($Verbose -and $itemToSearch.InstallLocation) {
             Write-Host "`rVERBOSE: Scanning: $($itemToSearch.InstallLocation)\ | For File Protocol: $protocolsString".PadRight(100) -Verbose -ForegroundColor Yellow
-        } else { 
+        } elseif ($Verbose) { 
             Write-Host "`rVERBOSE: Scanning: $($itemToSearch.Target) | For File Protocol: $protocolsString".PadRight(100) -Verbose -ForegroundColor Yellow
         }
 
