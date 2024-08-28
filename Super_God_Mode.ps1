@@ -195,7 +195,7 @@ param(
 # -CustomSystemSettingsDLLPath
 # -CustomAllSystemSettingsXMLPath
 
-$VERSION = "1.1.1"
+$VERSION = "1.2.0"
 
 
 
@@ -249,6 +249,7 @@ function Show-SuperGodModeDialog {
             <Color x:Key="WarningColor">#FF6B68</Color>
             <Color x:Key="VersionColor">#888888</Color>
             <Color x:Key="ButtonHoverColor">#1b99fa</Color>
+            <Color x:Key="HighlightedTextColor">#69d2ff</Color>
 
             <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
             <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource ForegroundColor}"/>
@@ -258,7 +259,8 @@ function Show-SuperGodModeDialog {
             <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
             <SolidColorBrush x:Key="VersionBrush" Color="{StaticResource VersionColor}"/>
             <SolidColorBrush x:Key="ButtonHoverBrush" Color="{StaticResource ButtonHoverColor}"/>
-
+            <SolidColorBrush x:Key="HighlightedTextBrush" Color="{StaticResource HighlightedTextColor}"/>
+            
             <Thickness x:Key="BorderThickness">1</Thickness>
             <Thickness x:Key="GroupBoxPadding">5</Thickness>
 
@@ -316,6 +318,12 @@ function Show-SuperGodModeDialog {
                     </Trigger>
                 </Style.Triggers>
             </Style>
+
+            <Style x:Key="HighlightedCheckBoxStyle" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                <Setter Property="Foreground" Value="{StaticResource HighlightedTextBrush}"/>
+                <Setter Property="FontWeight" Value="Semibold"/>
+            </Style>
+
         </Window.Resources>
         <Grid Background="{StaticResource BackgroundBrush}">
             <Grid.RowDefinitions>
@@ -353,32 +361,32 @@ function Show-SuperGodModeDialog {
 
                         <GroupBox Header="Alternative Options" Grid.Column="0" Style="{StaticResource DarkModeGroupBoxStyle}">
                             <StackPanel Margin="5">
-                                <CheckBox x:Name="chkDontGroupTasks" Content="Don't Group Tasks" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkDontGroupTasks" Content="Task Links:    Don't Group Task Links" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.DontGroupTasks)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkUseAlternativeCategoryNames" Content="Use Alternative Category Names" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkUseAlternativeCategoryNames" Content="Task Links:    Use Alternative Category Names" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.UseAlternativeCategoryNames)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkAllURLProtocols" Content="Include third-party app URL Protocols" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
-                                    <CheckBox.ToolTip>
-                                        <ToolTip Content="$($tooltips.AllURLProtocols)" />
-                                    </CheckBox.ToolTip>
-                                </CheckBox>
-                                <CheckBox x:Name="chkCollectExtraURLProtocolInfo" Content="Collect Extra URL Protocol Info" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
-                                    <CheckBox.ToolTip>
-                                        <ToolTip Content="$($tooltips.CollectExtraURLProtocolInfo)" />
-                                    </CheckBox.ToolTip>
-                                </CheckBox>
-                                <CheckBox x:Name="chkAllowDuplicateDeepLinks" Content="Allow Duplicate Deep Links" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
+                               <CheckBox x:Name="chkAllowDuplicateDeepLinks" Content="Deep Links:  Allow Duplicate Deep Links" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.AllowDuplicateDeepLinks)" />
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <CheckBox x:Name="chkDeepScanHiddenLinks" Content="Deeper Scan For Hidden Links (Slow)" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkAllURLProtocols" Content="Protocols:     Include third-party app URL Protocols" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.AllURLProtocols)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
+                                <CheckBox x:Name="chkCollectExtraURLProtocolInfo" Content="Protocols:     Collect Extra URL Protocol Info" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
+                                    <CheckBox.ToolTip>
+                                        <ToolTip Content="$($tooltips.CollectExtraURLProtocolInfo)" />
+                                    </CheckBox.ToolTip>
+                                </CheckBox>
+                                <CheckBox x:Name="chkDeepScanHiddenLinks" Content="Protocols:     Deeper Scan For Hidden Links (Slow)" Margin="0,5,0,0" Foreground="{StaticResource ForegroundBrush}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.DeepScanHiddenLinks)" />
                                     </CheckBox.ToolTip>
@@ -399,7 +407,7 @@ function Show-SuperGodModeDialog {
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <CheckBox x:Name="chkCollectStatistics" Content="Collect Statistics" IsChecked="True" Margin="0,5,5,5" Grid.Column="0" Grid.Row="0" Foreground="{StaticResource ForegroundBrush}">
+                                <CheckBox x:Name="chkCollectStatistics" Content="Collect Statistics  &#128202;" IsChecked="True" Margin="0,5,5,5" Grid.Column="0" Grid.Row="0" Style="{StaticResource HighlightedCheckBoxStyle}">
                                     <CheckBox.ToolTip>
                                         <ToolTip Content="$($tooltips.CollectStatistics)" />
                                     </CheckBox.ToolTip>
