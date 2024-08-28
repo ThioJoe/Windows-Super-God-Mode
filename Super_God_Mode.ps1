@@ -3807,7 +3807,7 @@ $URLProtocolsData = @()
 
 # Loop for CLSID Links
 if (-not $SkipCLSID) {
-    Write-Host "`n----- Processing $($shellFolders.Count) Shell Folders -----"
+    Write-Host "`n----- Processing Shell Folders -----"
     # Retrieve all CLSIDs with a "ShellFolder" subkey from the registry.
     # These CLSIDs represent shell folders that are embedded within Windows.
     try {
@@ -3872,7 +3872,7 @@ if (-not $SkipCLSID) {
 
 # Loop for special named folders
 if (-not $SkipNamedFolders) {
-    Write-Host "`n----- Processing $($namedFolders.Count) Special Named Folders -----"
+    Write-Host "`n----- Processing Special Named Folders -----"
 
     try {
         # Retrieve all named special folders from the registry.
