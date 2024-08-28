@@ -803,7 +803,7 @@ if ($CustomAllSystemSettingsXMLPath) {
 } elseif (Test-Path-Safe $allSettingsXmlPath3) {
     $allSettingsXmlPath = $allSettingsXmlPath3
 } else {
-    Write-Error "No AllSystemSettings XML file found. Deep Link shortcuts will not be created."
+    Write-Error "No AllSystemSettings XML file found in expected directory `"$Env:windir\ImmersiveControlPanel\Settings`"  - Deep Link shortcuts will not be created."
     $allSettingsXmlPath = $null
 }
 
@@ -822,14 +822,14 @@ try {
     Write-Error "Failed to create output folder: $_"
     # If the default path is used
     if (-not $Output) {
-        Write-Error "This may be due to a permissions issue. Ensure you have permissions to create a folder in the script's directory."
+        Write-Host "This may be due to a permissions issue. Ensure you have permissions to create a folder in the script's directory." -ForegroundColor Yellow
     } else {
-        Write-Error "This may be due to a permissions issue. Ensure you have permissions to create a folder at the specified path."
+        Write-Host "This may be due to a permissions issue. Ensure you have permissions to create a folder at the specified path." -ForegroundColor Yellow
     }
     return
 } catch {
     if (-not (Test-Path $mainShortcutsFolder)) {
-        Write-Error "Failed to create output folder: $_"
+        Write-Host "Failed to create output folder: $_" -ForegroundColor Yellow
         return
     }
 }
@@ -884,12 +884,12 @@ if ($CustomLanguageFolderPath) {
         Write-Error "The specified custom language folder path is not a valid folder: $CustomLanguageFolderPath"
         # Check if they insetad provided a file path, and if so, suggest they provide the folder containing the file
         if (Test-Path $CustomLanguageFolderPath -PathType Leaf) {
-            Write-Error "If you are trying to specify a file, please provide the folder containing the file instead, and name it to correspond with whatever DLL file it is for."
+            Write-Host "If you are trying to specify a file, please provide the folder containing the file instead, and name it to correspond with whatever DLL file it is for." -ForegroundColor Yellow
         }
         return
     }
     else {
-        Write-Verbose "Using custom language folder path: $CustomLanguageFolderPath"
+        Write-Host "Using custom language folder path: $CustomLanguageFolderPath"
     }
 }
 
@@ -1138,14 +1138,15 @@ function Get-LocalizedString {
     param (
         [string]$StringReference,
         [string]$CustomLanguageFolder,
-        [string]$AppxManifestPath
+        [string]$AppxManifestPath,
+        [switch]$returnSanitizedOnFail = $false
     )
     if ($AppxManifestPath) {
         $manifestParentFolder = Split-Path $AppxManifestPath | Split-Path -Leaf
         Write-Debug "--------------------------------------------------------------------------------------"
-        Write-Verbose "Retrieving Resource: $StringReference  | Package: $manifestParentFolder"
+        Write-Debug "Retrieving Resource: $StringReference  | Package: $manifestParentFolder"
     } else {
-        Write-Verbose "Retrieving Resource: $StringReference"
+        Write-Debug "Retrieving Resource: $StringReference"
     }
 
     # Check if it's the special case with multiple concatenated references
@@ -1153,7 +1154,7 @@ function Get-LocalizedString {
         $references = $StringReference -split '@' | Where-Object { $_ -ne '' }
         $resolvedStrings = @()
         foreach ($ref in $references) {
-            $resolved = Get-LocalizedString -StringReference "@$ref" -CustomLanguageFolder $CustomLanguageFolder -AppxManifestPath $AppxManifestPath
+            $resolved = Get-LocalizedString -StringReference "@$ref" -CustomLanguageFolder $CustomLanguageFolder -AppxManifestPath $AppxManifestPath -returnSanitizedOnFail:$false
             if ($resolved) {
                 $resolvedStrings += $resolved -split ';' | ForEach-Object { $_.Trim() }
             }
@@ -1162,11 +1163,11 @@ function Get-LocalizedString {
     }
     # Check if the string is a short ms-resource reference
     elseif ($StringReference -match '^ms-resource:') {
-        return Get-FullMsResource -ShortReference $StringReference -AppxManifestPath $AppxManifestPath
+        return Get-FullMsResource -ShortReference $StringReference -AppxManifestPath $AppxManifestPath -returnSanitizedOnFail:$returnSanitizedOnFail
     }
     # Check if the string is a full ms-resource reference
     elseif ($StringReference -match '@\{.+\?ms-resource://.+}') {
-        return Get-MsResource $StringReference
+        return Get-MsResource $StringReference -returnSanitizedOnFail:$returnSanitizedOnFail
     }
     # Typical case: Load the DLL and get the string
     elseif ($StringReference -match '@(.+),-(\d+)') {
@@ -1188,7 +1189,7 @@ function Get-LocalizedString {
         $hModule = [Win32]::LoadLibrary($dllPath)
         if ($hModule -eq [IntPtr]::Zero) {
             Write-Error "Failed to load library during typical string reference lookup: $dllPath"
-            return $null
+            return Sanitize-Unresolved-Reference -ReferenceString $StringReference -returnSanitizedOnFail:$returnSanitizedOnFail
         }
 
         $stringBuilder = New-Object System.Text.StringBuilder 1024
@@ -1200,18 +1201,59 @@ function Get-LocalizedString {
             return $stringBuilder.ToString()
         } else {
             Write-Error "Failed to load string resource, no result returned for: $resourceId from $dllPath"
-            return $null
+            return return Sanitize-Unresolved-Reference -ReferenceString $StringReference -returnSanitizedOnFail:$returnSanitizedOnFail
         }
     } else {
         Write-Error "Invalid or unknown localized string reference format: $StringReference"
+        return return Sanitize-Unresolved-Reference -ReferenceString $StringReference -returnSanitizedOnFail:$returnSanitizedOnFail
+    }
+}
+
+function Sanitize-Unresolved-Reference {
+    param (
+        [string]$ReferenceString,
+        [switch]$returnSanitizedOnFail = $false
+    )
+    $sanitizedReferenceDefault = "UnresolvedReference"
+
+    if (-not $ReferenceString) {
+        Write-Debug "No reference string provided to sanitize"
+        if ($returnSanitizedOnFail -eq $true) {
+            Write-Verbose "No reference string provided to sanitize. Using default: $sanitizedReferenceDefault"
+            return $sanitizedReferenceDefault
+        }
+        Write-Error "No reference string provided to sanitize and returnSanitizedOnFail is set to false."
         return $null
     }
+
+    if ($returnSanitizedOnFail -eq $false) {
+        return $null
+    }
+
+    try {
+        # Remove any leading or trailing whitespace
+        $sanitizedReference = $ReferenceString.Trim()
+        # Remove any characters that are not allowed in a file name
+        $sanitizedReference = $sanitizedReference -replace '[<>:"/\\|?*]', '_'
+        $sanitizedReference = "UnresolvedReference - $sanitizedReference"
+    } catch {
+        Write-Error "Failed to sanitize reference string: $ReferenceString"
+        if ($returnSanitizedOnFail -eq $true) {
+            Write-Verbose "Failed to sanitize reference string. Using default: $sanitizedReferenceDefault"
+            return $sanitizedReferenceDefault
+        }
+        return $null
+    }
+    
+    Write-Verbose "Sanitizing string to use for unresolved reference: $sanitizedReference"
+    return $sanitizedReference
 }
 
 function Get-FullMsResource {
     param (
         [string]$ShortReference,
-        [string]$AppxManifestPath
+        [string]$AppxManifestPath,
+        [switch]$returnSanitizedOnFail = $false
     )
 
     Write-Debug "Constructing Full Reference for Short Reference: $ShortReference"
@@ -1244,12 +1286,13 @@ function Get-FullMsResource {
     Write-Debug "   > Constructed Full Reference: $fullReference"
 
     # Use the existing Get-MsResource function to resolve the full reference
-    return Get-MsResource $fullReference
+    return Get-MsResource $fullReference -returnSanitizedOnFail:$returnSanitizedOnFail
 }
 
 function Get-MsResource {
     param (
-        [string]$ResourcePath
+        [string]$ResourcePath,
+        [switch]$returnSanitizedOnFail = $false
     )
     Write-Debug "Processing ResourcePath: $ResourcePath"
 
@@ -1350,8 +1393,8 @@ function Get-MsResource {
             Write-Debug "         > Not trying truncated package because reference is not a package, or resources .pri is not found."
         }
 
-        Write-Error "   > All attempts to retrieve resource failed for ms-resource: $ResourcePath. Error code: $result"
-        return $null
+        Write-Warning " All attempts to retrieve resource failed for ms-resource: $ResourcePath. Error code: $result"
+        return Sanitize-Unresolved-Reference -ReferenceString $ResourcePath -returnSanitizedOnFail:$returnSanitizedOnFail
     }
 }
 
@@ -1363,6 +1406,7 @@ function Get-FolderName {
         [string]$clsid,  # The CLSID of the shell folder.
         [string]$CustomLanguageFolder  # Optional: Path to a folder containing language-specific MUI files for localized string references.
     )
+    $fetchNameErrorVariable = $null
 
     # Initialize $nameSource to track where the folder name was found (for reporting purposes in CSV later)
     $nameSource = "Unknown"
@@ -1371,22 +1415,22 @@ function Get-FolderName {
 
     # Step 1: Check the default value in the registry at HKEY_CLASSES_ROOT\CLSID\<clsid>.
     $defaultPath = "Registry::HKEY_CLASSES_ROOT\CLSID\$clsid"
-    Write-Verbose "Checking default value at: $defaultPath"
-    $defaultName = (Get-ItemProperty -Path $defaultPath -ErrorAction SilentlyContinue).'(default)'
+    Write-Debug "  Checking default value at: $defaultPath"
+    $defaultName = (Get-ItemProperty -Path $defaultPath -ErrorAction SilentlyContinue -ErrorVariable $fetchNameErrorVariable).'(Default)'
 
     # If a default name is found, check if it's a reference to a localized string.
     if ($defaultName) {
         Write-Verbose "Found default name: $defaultName"
         if ($defaultName -match '@.+,-\d+') {
-            Write-Verbose "Default name is a localized string reference"
+            Write-Debug "   > Default name is a localized string reference"
             $resolvedName = Get-LocalizedString -StringReference $defaultName -CustomLanguageFolder $CustomLanguageFolder
             if ($resolvedName) {
                 $nameSource = "Localized String"
-                Write-Verbose "Resolved default name to: $resolvedName"
+                Write-Verbose " > Resolved default name to: $resolvedName"
                 return @($resolvedName, $nameSource)
             }
             else {
-                Write-Verbose "Failed to resolve default name, using original value"
+                Write-Verbose " > Failed to resolve default name from reference, using original value"
             }
         }
         $nameSource = "Default Value"
@@ -1398,26 +1442,26 @@ function Get-FolderName {
 
     # Step 2: Check for a `TargetKnownFolder` in the registry, which points to a known folder.
     $initPropertyBagPath = "Registry::HKEY_CLASSES_ROOT\CLSID\$clsid\Instance\InitPropertyBag"
-    Write-Verbose "Checking for TargetKnownFolder at: $initPropertyBagPath"
+    Write-Debug "  Checking for TargetKnownFolder at: $initPropertyBagPath"
     $targetKnownFolder = (Get-ItemProperty -Path $initPropertyBagPath -ErrorAction SilentlyContinue).TargetKnownFolder
 
     # If a TargetKnownFolder is found, check its description in the registry.
     if ($targetKnownFolder) {
-        Write-Verbose "Found TargetKnownFolder: $targetKnownFolder"
+        Write-Debug "  Found TargetKnownFolder: $targetKnownFolder"
         $folderDescriptionsPath = "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\$targetKnownFolder"
-        Write-Verbose "Checking for folder name at: $folderDescriptionsPath"
+        Write-Debug "   > Checking for folder name at: $folderDescriptionsPath"
         $folderName = (Get-ItemProperty -Path $folderDescriptionsPath -ErrorAction SilentlyContinue).Name
         if ($folderName) {
             $nameSource = "Known Folder ID"
-            Write-Verbose "Found folder name: $folderName"
+            Write-Verbose " > Found folder name: $folderName"
             return @($folderName, $nameSource)
         }
         else {
-            Write-Verbose "No folder name found in FolderDescriptions"
+            Write-Verbose " > No folder name found in FolderDescriptions"
         }
     }
     else {
-        Write-Verbose "No TargetKnownFolder found"
+        Write-Verbose " > No TargetKnownFolder found"
     }
 
     # Step 3: Check for a `LocalizedString` value in the CLSID registry key.
@@ -1427,19 +1471,19 @@ function Get-FolderName {
 
     # If a LocalizedString is found, resolve it using the Get-LocalizedString function.
     if ($localizedString) {
-        Write-Verbose "Found LocalizedString: $localizedString"
+        Write-Debug "   > Found LocalizedString: $localizedString"
         $resolvedString = Get-LocalizedString -StringReference $localizedString -CustomLanguageFolder $CustomLanguageFolder
         if ($resolvedString) {
             $nameSource = "Localized String"
-            Write-Verbose "Resolved LocalizedString to: $resolvedString"
+            Write-Verbose " > Resolved LocalizedString to: $resolvedString"
             return @($resolvedString, $nameSource)
         }
         else {
-            Write-Verbose "Failed to resolve LocalizedString"
+            Write-Verbose " > Failed to resolve LocalizedString"
         }
     }
     else {
-        Write-Verbose "No LocalizedString found"
+        Write-Verbose " > No LocalizedString found"
     }
 
     # Step 4: Check the Desktop\NameSpace registry key for the folder name.
@@ -1450,11 +1494,11 @@ function Get-FolderName {
     # If a name is found here, return it.
     if ($namespaceName) {
         $nameSource = "Desktop Namespace"
-        Write-Verbose "Found name in Desktop\NameSpace: $namespaceName"
+        Write-Verbose " > Found name in Desktop\NameSpace: $namespaceName"
         return @($namespaceName, $nameSource)
     }
     else {
-        Write-Verbose "No name found in Desktop\NameSpace"
+        Write-Verbose " > No name found in Desktop\NameSpace"
     }
 
     # Step 5: New check - Recursively search in HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer
@@ -1489,15 +1533,15 @@ function Get-FolderName {
     $explorerName = Search-RegistryKey -Path $explorerPath -Clsid $clsid
     if ($explorerName) {
         $nameSource = "Explorer Registry"
-        Write-Verbose "Found name in Explorer registry: $explorerName"
+        Write-Verbose " > Found name in Explorer registry: $explorerName"
         return @($explorerName, $nameSource)
     }
     else {
-        Write-Verbose "No name found in Explorer registry"
+        Write-Verbose " > No name found in Explorer registry"
     }
 
     # Step 6: If no name is found, return the CLSID itself as a last resort to be used for the shortcut
-    Write-Verbose "Returning CLSID as folder name"
+    Write-Verbose " > Returning CLSID as folder name because no other name was found"
     $nameSource = "Unknown"
     return @($clsid, $nameSource)
 }
@@ -1548,7 +1592,7 @@ function Create-CLSID-Shortcut {
         return $true
     }
     catch {
-        Write-Host "Error creating shortcut for $name`: $($_.Exception.Message)"
+        Write-Error "Error creating shortcut for $name`: $($_.Exception.Message)"
         return $false
     }
 }
@@ -1588,13 +1632,14 @@ function Get-TaskIcon {
     }
 
     if (-not $iconPath -and $applicationId) {
-        Write-Verbose "No icon found for control panel name, trying registry via application ID: $applicationId"
         # Try to get icon from application ID
+        Write-Debug "    > No icon found for control panel name, trying registry via application ID: $applicationId"
         $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel\NameSpace\$applicationId"
         $iconPath = (Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue).Icon
 
         if (-not $iconPath) {
             # If not found, try CLSID path
+            Write-Debug "    > No icon found for application ID, trying registry via CLSID"
             $regPath = "Registry::HKEY_CLASSES_ROOT\CLSID\$applicationId\DefaultIcon"
             $iconPath = (Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue).'(default)'
         }
@@ -1602,7 +1647,7 @@ function Get-TaskIcon {
 
     # If icon path still not found but there is a command, see if the command calls an exe and use that exe's icon if so. Except if it's control.exe
     if (-not $iconPath -and $commandTarget) {
-        Write-Verbose "No icon found in registry. Checking if icon can be extracted from command target: $commandTarget"
+        Write-Debug "    > No icon found in registry. Checking if icon can be extracted from command target: $commandTarget"
         # Extract the file name from the path if it's not just the filename
         $commandFileName = Split-Path -Path $commandTarget -Leaf
         # Check if it's an exe. Also don't use icons from a few specific executables like control.exe
@@ -1611,16 +1656,17 @@ function Get-TaskIcon {
             $iconPath = Check-File-For-Icon -filePath $commandTarget
         }
         else {
-            Write-Verbose "Command target is not an exe or is part of ignored exe list - Ignoring."
+            Write-Debug "    > Command target is not an exe or is part of ignored exe list - Ignoring."
         }
     }
 
     if ($iconPath) {
+        Write-Verbose "    > Using Icon: $iconPath"
         return Fix-CommandPath $iconPath
     }
 
     # Default icon if none found
-    Write-Verbose "Using Default Icon - No available icon found for $controlPanelName or $applicationId"
+    Write-Verbose "    > Using Default Icon - No available icon found for $controlPanelName or $applicationId"
     return "%SystemRoot%\System32\shell32.dll,0"
 }
 
@@ -1654,7 +1700,7 @@ function Create-TaskLink-Shortcut {
 
     $targetAndPathRegex = '(?xi)
         ^(
-            (?:[a-z]:|%\w+%)\\
+            (?:[a-z]:|%%?\w+%)\\
             (?:[^\\/:*?"<>|\r\n]+?\\)*?
             [^\\/:*?"<>|\r\n]+?
             \.[a-z0-9]+
@@ -1669,7 +1715,7 @@ function Create-TaskLink-Shortcut {
     # -------- Pattern Explanation --------
     #  (?xi)                                  # Enable case-insensitive mode, and ignore whitespace mode so we can indent for readability
     #  ^(
-    #    (?:[a-z]:|%\w+%)\\                   # Match drive letter with colon or environment variable, followed by a backslash
+    #    (?:[a-z]:|%\w+%)\\                   # Match drive letter with colon or environment variable, followed by a backslash. Also handles weird commands where there are 2 percent signs at the beginning
     #    (?:[^\\\/:*?"<>|\r\n]+?\\)*?         # Match directories (lazy match)
     #    [^\\\/:*?"<>|\r\n]+?                 # Match the file name
     #    \.[a-z0-9]+                          # Match any file extension
@@ -1688,10 +1734,13 @@ function Create-TaskLink-Shortcut {
         $arguments = ''
 
         if ($shortcutType -eq "url") {
+            Write-Debug "  | Setting URL target path: $command"
             # For URL shortcuts
             $shortcut = $shell.CreateShortcut($shortcutPath)
             $shortcut.TargetPath = $command
+            
         } else {
+            Write-Debug "  | Determining LNK target path: $command"
             # For regular shortcuts
             $shortcut = $shell.CreateShortcut($shortcutPath)
 
@@ -1699,9 +1748,11 @@ function Create-TaskLink-Shortcut {
             if ($command -match $targetAndPathRegex) {
                 $targetPath = Fix-CommandPath $Matches[1]
                 $arguments = Fix-CommandPath $Matches[2]
+                Write-Debug "    >  Matched Regex with Target: $targetPath  and Arguments: $arguments"
 
                 # Expand variables in the arguments such as %windir%, because shortcuts don't seem to work with them in the arguments
                 $arguments = [Environment]::ExpandEnvironmentVariables($arguments)
+                Write-Debug "    >  Expanded Arguments: $arguments"
 
                 $shortcut.TargetPath = $targetPath
                 $shortcut.Arguments = $arguments
@@ -1709,12 +1760,14 @@ function Create-TaskLink-Shortcut {
             # If no match is found, should mean it's a direct command of some other kind (no file path), with no arguments
             } else {
                 $fixedCommand = Fix-CommandPath $command
+                Write-Debug "    >  No match for arguments, setting direct command: $fixedCommand"
                 $shortcut.TargetPath = $fixedCommand
             }
 
             # Add keywords only if it's a .lnk type shortcut
             # Combine keywords into a single string and set as Description
             if ($keywords -and $keywords.Count -gt 0) {
+                Write-Debug "  | Adding Keywords to Description. Keyword Count: $($keywords.Count)"
                 $descriptionLimit = 259 # Limit for Description field in shortcuts or else it causes some kind of buffer overflow
                 $keywordString = ""
                 $separator = " "
@@ -1731,7 +1784,8 @@ function Create-TaskLink-Shortcut {
                 $shortcut.Description = $keywordString
             }
         }
-
+        
+        Write-Verbose "  | Retrieving Icon for Shortcut"
         $iconPath = Get-TaskIcon -controlPanelName $controlPanelName -applicationId $applicationId -commandTarget $shortcut.TargetPath
 
         # Only add icon at this point if it's a .lnk type shortcut, not for .url which needs to be done after
@@ -1790,7 +1844,7 @@ function Get-Shell32XMLContent {
     # Load shell32.dll as a data file, preventing the DLL from being fully resolved as it is not necessary
     $shell32Handle = [Windows]::LoadLibraryEx($dllPath, [IntPtr]::Zero, $LOAD_LIBRARY_AS_DATAFILE -bor $DONT_RESOLVE_DLL_REFERENCES)
     if ($shell32Handle -eq [IntPtr]::Zero) {
-        Write-Error "Failed to load $dllPath"
+        Write-Error "Failed to load shell32 XML content from: $dllPath"
         return $null
     }
 
@@ -1799,8 +1853,8 @@ function Get-Shell32XMLContent {
         $hResInfo = [Windows]::FindResource($shell32Handle, 21, "XML")
         if ($hResInfo -eq [IntPtr]::Zero) {
             Write-Error "Failed to find XML resource"
-            Write-Error "Did you move the DLL from the original location? If so you may need to directly specify the corresponding .mun file instead of the DLL."
-            Write-Error "See the comments for the DLLPath argument at the top of the script for more info."
+            Write-Host  "Did you move the DLL from the original location? If so you may need to directly specify the corresponding .mun file instead of the DLL." -ForegroundColor Yellow
+            Write-Host  "See the comments for the DLLPath argument at the top of the script for more info." -ForegroundColor Yellow
             return $null
         }
 
@@ -1885,12 +1939,18 @@ function Get-TaskLinks {
     )
     $xmlContent = Get-Shell32XMLContent -SaveXML:$SaveXML -CustomDLL:$DLLPath
 
+    if (-not $xmlContent) {
+        Write-Host "Failed to retrieve XML content from shell32.dll - Skipping Collecting Task Links." -ForegroundColor Yellow 
+        return $null
+    }
+
     try {
         $xml = [xml]$xmlContent
         Write-Verbose "XML parsed successfully."
     } catch {
-        Write-Error "Failed to parse XML content: $_"
-        return
+        Write-Error "XML data was returned but failed to parse XML content: $_"
+        Write-Host "Skipping Collecting Task Links because failed to parse XML data." -ForegroundColor Yellow
+        return $null
     }
 
     # Create a copy of the XML for resolved content
@@ -1917,10 +1977,16 @@ function Get-TaskLinks {
         if ($nameNode -and $nameNode.InnerText) {
             if ($nameNode.InnerText -match '@(.+),-(\d+)') {
                 $name = Get-LocalizedString -StringReference $nameNode.InnerText -CustomLanguageFolder $CustomLanguageFolder
-                # Update resolved XML
-                $resolvedNameNode = $resolvedXml.SelectSingleNode("//sh:task[@id='$taskId']/sh:name", $nsManager)
-                if ($resolvedNameNode) {
-                    $resolvedNameNode.InnerText = $name
+                # Update resolved XML if a localized string was found
+                if ($name) {
+                    try {
+                        $resolvedNameNode = $resolvedXml.SelectSingleNode("//sh:task[@id='$taskId']/sh:name", $nsManager)
+                        if ($resolvedNameNode) {
+                            $resolvedNameNode.InnerText = $name
+                        }
+                    } catch {
+                        Write-Verbose "Failed to update resolved XML for task $taskId`: $_"
+                    }
                 }
             } else {
                 $name = $nameNode.InnerText
@@ -2351,19 +2417,28 @@ function Get-MS-SettingsFrom-SystemSettingsDLL {
     )
 
     if (-not (Test-Path-Safe $DllPath)) {
-        Write-Error "File not found: $DllPath"
-        return @()
+        Write-Error "Could not find file path to search for for ms-settings: $DllPath"
+        return $null
     }
 
-    $content = [System.IO.File]::ReadAllText($DllPath, [System.Text.Encoding]::Unicode)
-    $results = New-Object System.Collections.Generic.HashSet[string]
+    try {
+        $content = [System.IO.File]::ReadAllText($DllPath, [System.Text.Encoding]::Unicode)
+        $results = New-Object System.Collections.Generic.HashSet[string]
 
-    $matchesList = [regex]::Matches($content, 'ms-settings:[a-z-]+')
-    foreach ($match in $matchesList) {
-        [void]$results.Add($match.Value)
+        $matchesList = [regex]::Matches($content, 'ms-settings:[a-z-]+')
+        foreach ($match in $matchesList) {
+            [void]$results.Add($match.Value)
+        }
+    } catch {
+        Write-Error "Failed to extract ms-settings links from SystemSettings.dll: $_"
+        return $null
     }
-
-    Write-Verbose "Unique MS-Settings Matches Found: $($results.Count)"
+    
+    if ($results.Count -eq 0) {
+        Write-Error "Unknown Problem: No ms-settings links were found in the SystemSettings.dll file. Something must have gone wrong."
+        return $null
+    }
+    Write-Host "Unique MS-Settings Matches Found: $($results.Count)"
     return $results | Sort-Object
 }
 
@@ -2837,6 +2912,7 @@ function Get-And-Process-URL-Protocols {
         return $data
     }
 
+    # Get all subkeys of HKEY_CLASSES_ROOT and filter out the URL protocols, and put them in a hashtable called $urlProtocols
     Get-ChildItem -Path 'Registry::HKEY_CLASSES_ROOT' -ErrorAction SilentlyContinue |
         Where-Object {
             $_.GetValue('(Default)') -match '^URL:' -or $null -ne $_.GetValue('URL Protocol')
@@ -2844,54 +2920,54 @@ function Get-And-Process-URL-Protocols {
             $urlProtocols[$_.PSChildName] = Get-RegistryKeyData -Key $_.OpenSubKey('')
         }
 
-        foreach ($protocol in $urlProtocols.Keys) {
-            Write-Verbose "Processing URL Protocol: $protocol"
+    foreach ($protocol in $urlProtocols.Keys) {
+        Write-Verbose "Processing URL Protocol: $protocol"
 
-            $protocolData = $urlProtocols[$protocol]
-            $protocolName = $protocolData['(Default)']
+        $protocolData = $urlProtocols[$protocol]
+        $protocolName = $protocolData['(Default)']
 
-            # If the protocol name is in the format "URL:WhateverName", extract the "WhateverName" part
-            if ($protocolName -match '^URL:(.+)$') {
-                $protocolName = $Matches[1]
-            }
-
-            # Get the URL protocol command from the shell\open\command subkey
-            $command = $null
-            if ($protocolData.SubKeys.ContainsKey('shell') -and
-                $protocolData.SubKeys['shell'].SubKeys.ContainsKey('open') -and
-                $protocolData.SubKeys['shell'].SubKeys['open'].SubKeys.ContainsKey('command')) {
-                $command = $protocolData.SubKeys['shell'].SubKeys['open'].SubKeys['command']['(Default)']
-            }
-
-            # Get the URL protocol icon from the DefaultIcon subkey
-            $iconPath = $null
-            if ($protocolData.SubKeys.ContainsKey('DefaultIcon')) {
-                $iconPath = $protocolData.SubKeys['DefaultIcon']['(Default)']
-            }
-
-            # Determine if the protocol is built or from Microsoft.
-            $isMicrosoft = $protocol -match '^ms-|^microsoft'
-
-            # Create a new object to store the URL protocol data
-            $urlProtocol = [PSCustomObject]@{
-                Protocol = $protocol
-                Name = $protocolName
-                Command = $command
-                IconPath = $iconPath
-                DerivedIcon = ""
-                # Create empty properties for package data later
-                PackageName = ""
-                PackageFullName = ""
-                PackageAppKeyName = ""
-                PackageAppName = ""
-                PackageAppDescription = ""
-                #ClassID = ""
-                IsMicrosoft = $isMicrosoft
-            }
-
-            # Add the URL protocol data object to the array
-            $urlProtocolDataOriginal += $urlProtocol
+        # If the protocol name is in the format "URL:WhateverName", extract the "WhateverName" part
+        if ($protocolName -match '^URL:(.+)$') {
+            $protocolName = $Matches[1]
         }
+
+        # Get the URL protocol command from the shell\open\command subkey
+        $command = $null
+        if ($protocolData.SubKeys.ContainsKey('shell') -and
+            $protocolData.SubKeys['shell'].SubKeys.ContainsKey('open') -and
+            $protocolData.SubKeys['shell'].SubKeys['open'].SubKeys.ContainsKey('command')) {
+            $command = $protocolData.SubKeys['shell'].SubKeys['open'].SubKeys['command']['(Default)']
+        }
+
+        # Get the URL protocol icon from the DefaultIcon subkey
+        $iconPath = $null
+        if ($protocolData.SubKeys.ContainsKey('DefaultIcon')) {
+            $iconPath = $protocolData.SubKeys['DefaultIcon']['(Default)']
+        }
+
+        # Determine if the protocol is built or from Microsoft.
+        $isMicrosoft = $protocol -match '^ms-|^microsoft'
+
+        # Create a new object to store the URL protocol data
+        $urlProtocol = [PSCustomObject]@{
+            Protocol = $protocol
+            Name = $protocolName
+            Command = $command
+            IconPath = $iconPath
+            DerivedIcon = ""
+            # Create empty properties for package data later
+            PackageName = ""
+            PackageFullName = ""
+            PackageAppKeyName = ""
+            PackageAppName = ""
+            PackageAppDescription = ""
+            #ClassID = ""
+            IsMicrosoft = $isMicrosoft
+        }
+
+        # Add the URL protocol data object to the array
+        $urlProtocolDataOriginal += $urlProtocol
+    }
 
     #Sort the array by protocol name
     $urlProtocolDataOriginal = $urlProtocolDataOriginal | Sort-Object -Property Protocol
@@ -3670,13 +3746,17 @@ $URLProtocolsData = @()
 
 # Loop for CLSID Links
 if (-not $SkipCLSID) {
+    Write-Host "`n----- Processing $($shellFolders.Count) Shell Folders -----"
     # Retrieve all CLSIDs with a "ShellFolder" subkey from the registry.
     # These CLSIDs represent shell folders that are embedded within Windows.
-    $shellFolders = Get-ChildItem -Path 'Registry::HKEY_CLASSES_ROOT\CLSID' |
-    Where-Object {$_.GetSubKeyNames() -contains "ShellFolder"} |
-    Select-Object PSChildName
-
-    Write-Host "`n----- Processing $($shellFolders.Count) Shell Folders -----"
+    try {
+        $shellFolders = Get-ChildItem -Path 'Registry::HKEY_CLASSES_ROOT\CLSID' |
+        Where-Object { $_.GetSubKeyNames() -contains "ShellFolder" } |
+        Select-Object PSChildName
+    } catch {
+        Write-Error "Error retrieving CLSIDs from the registry`: $_"
+        $shellFolders = $null
+    }
 
     $usedNames = @()  # Track used names to avoid duplicates
 
@@ -3731,9 +3811,15 @@ if (-not $SkipCLSID) {
 
 # Loop for special named folders
 if (-not $SkipNamedFolders) {
-    # Retrieve all named special folders from the registry.
-    $namedFolders = Get-ChildItem -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions"
     Write-Host "`n----- Processing $($namedFolders.Count) Special Named Folders -----"
+
+    try {
+        # Retrieve all named special folders from the registry.
+        $namedFolders = Get-ChildItem -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions"
+    } catch {
+        Write-Error "Error retrieving named folders from the registry`: $_"
+        $namedFolders = $null
+    }
 
     # Loop through each named folder and create a shortcut for it.
     foreach ($folder in $namedFolders) {
@@ -3772,6 +3858,11 @@ if (-not $SkipTaskLinks) {
     $taskLinks = Get-TaskLinks -SaveXML:(!$NoStatistics) -DLLPath:$CustomDLLPath -CustomLanguageFolder:$CustomLanguageFolderPath
     $createdShortcutNames = @{} # Track created shortcuts to be able to tasks with the same name but different commands by appending a number
 
+    if ($taskLinks) {
+        # Sort by name
+        $taskLinks = $taskLinks | Sort-Object -Property Name
+    }
+    
     foreach ($task in $taskLinks) {
         $originalName = $task.Name
         $sanitizedName = ""
