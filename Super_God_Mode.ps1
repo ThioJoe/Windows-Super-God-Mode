@@ -116,6 +116,10 @@
 #    • String Type
 #    Specify a comma-separated list of URL protocols (surrounded by quotes) to search for in the debug mode. This is useful for testing the URL protocol search without having to wait for the full search to complete.
 #
+# -uniqueOutputFolder
+#    • Switch (Takes no values)
+#    Append a unique identifier to the output folder name to prevent overwriting existing folders, even if using manual output folder name.  Useful to compare different runs without having to manually set a new output folder each time. 
+#
 # ----------------------------------------  Advanced Arguments  ----------------------------------------
 #
 # -NoGUI
@@ -179,6 +183,7 @@ param(
     [switch]$timing,
     [switch]$debugSkipAppxSearch,
     [string]$debugSearchOnlyProtocolList,
+    [switch]$uniqueOutputFolder,
     # Advanced Arguments
     [switch]$NoGUI,
     [string]$CustomDLLPath,
@@ -188,12 +193,15 @@ param(
 )
 
 # Note: Arguments that are command line only and not used in the GUI:
-# -NoReadMe
 # -NoGUI
+# -NoReadMe
 # -CustomDLLPath
 # -CustomLanguageFolderPath
 # -CustomSystemSettingsDLLPath
 # -CustomAllSystemSettingsXMLPath
+# -debugSkipAppxSearch
+# -debugSearchOnlyProtocolList
+# -uniqueOutputFolder
 
 $VERSION = "1.2.0"
 
@@ -648,7 +656,9 @@ function Show-SuperGodModeDialog {
 }
 
 # Setting the default folder name up here so it can be used in the GUI dialog
+$timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $defaultOutputFolderName = "Super God Mode"
+if ($uniqueOutputFolder) { $defaultOutputFolderName += "-$timestamp" }
 
 # Start the GUI dialog unless -NoGUI is used
 if (-not $NoGUI) {
@@ -699,8 +709,14 @@ Write-Host "Beginning script execution..." -ForegroundColor Green
 # ==================================================  SCRIPT PREPARATION  ============================================================
 # ====================================================================================================================================
 
+
 # Set the output folder path for the generated shortcuts based on the provided argument or default location. Convert to full path if necessary
 if ($Output) {
+    # Remove any trailing backslashes from the output path
+    $Output = $Output.TrimEnd("\")
+    # Append timestamp if unique output folder is requested
+    if ($uniqueOutputFolder) { $Output += "-$timestamp" }
+
     # Convert to full path only if necessary, otherwise use as is
     if (-not [System.IO.Path]::IsPathRooted($Output)) {
         $mainShortcutsFolder = Join-Path $PSScriptRoot $Output
@@ -708,6 +724,32 @@ if ($Output) {
 } else {
     # Default output folder path is a subfolder named "Super God Mode" in the script's directory
     $mainShortcutsFolder = Join-Path $PSScriptRoot $defaultOutputFolderName
+}
+
+# If Debug mode enabled, create debug logs folder and start transcript
+$debugLogsFolderName = "__Debug Logs"
+$debugLogFolderPath = Join-Path $mainShortcutsFolder $debugLogsFolderName
+if ($Debug) {
+    if (-not (Test-Path $debugLogFolderPath)) { New-Item -Path $debugLogFolderPath -ItemType Directory -Force | Out-Null }
+    $debugTranscriptFileName = "DebugTranscript-$timestamp.log"
+    $debugTranscriptFilePath = Join-Path $debugLogFolderPath $debugTranscriptFileName
+    Start-Transcript -Path $debugTranscriptFilePath
+}
+
+# Print the script parameters to the console
+if ($Debug) {
+    Write-Debug "************** Initial Script Parameters **************"
+    Write-Debug ("DontGroupTasks: $DontGroupTasks`nUseAlternativeCategoryNames: $UseAlternativeCategoryNames`n" +
+        "AllURLProtocols: $AllURLProtocols`nCollectExtraURLProtocolInfo: $CollectExtraURLProtocolInfo`n" +
+        "AllowDuplicateDeepLinks: $AllowDuplicateDeepLinks`nDeepScanHiddenLinks: $DeepScanHiddenLinks`n" +
+        "Output: $Output`nKeepPreviousOutputFolders: $KeepPreviousOutputFolders`nNoStatistics: $NoStatistics`n" +
+        "NoReadMe: $NoReadMe`nSkipCLSID: $SkipCLSID`nSkipNamedFolders: $SkipNamedFolders`n" +
+        "SkipTaskLinks: $SkipTaskLinks`nSkipMSSettings: $SkipMSSettings`nSkipDeepLinks: $SkipDeepLinks`n" +
+        "SkipURLProtocols: $SkipURLProtocols`nSkipHiddenAppLinks: $SkipHiddenAppLinks`nVerbose: $Verbose`n" +
+        "Debug: $Debug`ntiming: $timing`ndebugSkipAppxSearch: $debugSkipAppxSearch`n" +
+        "debugSearchOnlyProtocolList: $debugSearchOnlyProtocolList`nuniqueOutputFolder: $uniqueOutputFolder`n" +
+        "NoGUI: $NoGUI`nCustomDLLPath: $CustomDLLPath`nCustomLanguageFolderPath: $CustomLanguageFolderPath`n" +
+        "CustomSystemSettingsDLLPath: $CustomSystemSettingsDLLPath`nCustomAllSystemSettingsXMLPath: $CustomAllSystemSettingsXMLPath")
 }
 
 # Define folder names
@@ -719,15 +761,6 @@ $deepLinksFolderName = "Deep Links"
 $urlProtocolsFolderName = "URL Protocols"
 $URLProtocolPageLinksFolderName = "Hidden App Links"
 $statisticsFolderName = "__Script Result Statistics"
-
-# Create debug logs folder if -Debug is used
-$debugLogsFolderName = "__Debug Logs"
-$debugLogFolderPath = Join-Path $PSScriptRoot $debugLogsFolderName
-if ($Debug) {
-    if (-not (Test-Path $debugLogFolderPath)) {
-        New-Item -Path $debugLogFolderPath -ItemType Directory -Force | Out-Null
-    }
-}
 
 # Construct paths for subfolders
 $CLSIDshortcutsOutputFolder = Join-Path $mainShortcutsFolder $clsidFolderName
@@ -3195,7 +3228,6 @@ function Search-HiddenLinks {
         return $null
     }
 
-    $debugRunID = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
     # Set a max file size for searching to 70% of memory. Might not need this later but currently ReadAllText loads entire file into memory
     $availableRAM = [System.Math]::Round((Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory)
     $maxFileSize = [System.Math]::Round($availableRAM * 0.70)
@@ -3287,7 +3319,7 @@ function Search-HiddenLinks {
         # Combine lists of searched files
         $willSearchFiles1 = @()
         $willSearchFiles1 = $packagesToSearch.FilesToSearch.FullName
-        $willSearchFiles1 | Out-File -FilePath "$debugLogFolderPath\DEBUG - FilesWillSearch-Appx $debugRunID.txt" -Encoding utf8
+        $willSearchFiles1 | Out-File -FilePath "$debugLogFolderPath\DEBUG - FilesWillSearch-Appx $timestamp.txt" -Encoding utf8
         Write-Debug "  -- Wrote debug file containing Appx files to be searched..."
     }
 
@@ -3558,7 +3590,7 @@ function Search-HiddenLinks {
     if ($Debug) {
         $willSearchFiles2 = @()
         $willSearchFiles2 = $programFilesSearchData.FilesToSearch.FullName
-        $willSearchFiles2 | Out-File -FilePath "$debugLogFolderPath\DEBUG - FilesWillSearch-OtherPrograms $debugRunID.txt" -Encoding utf8
+        $willSearchFiles2 | Out-File -FilePath "$debugLogFolderPath\DEBUG - FilesWillSearch-OtherPrograms $timestamp.txt" -Encoding utf8
         Write-Debug "  -- Wrote debug file containing other program files to be searched..."
     }
 
@@ -3589,11 +3621,11 @@ function Search-HiddenLinks {
     if ($Debug) {
         $searchedFiles = @()
         $searchedFiles = $packagesToSearch.FilesToSearch.FullName
-        $searchedFiles | Out-File -FilePath "$debugLogFolderPath\DEBUG - SearchedFilesAppx $debugRunID.txt" -Encoding utf8
+        $searchedFiles | Out-File -FilePath "$debugLogFolderPath\DEBUG - SearchedFilesAppx $timestamp.txt" -Encoding utf8
 
         $searchedFiles2 = @()
         $searchedFiles2 = $programFilesSearchData.FilesToSearch.FullName
-        $searchedFiles2 | Out-File -FilePath "$debugLogFolderPath\DEBUG - SearchedFilesSecondaryPrograms $debugRunID.txt" -Encoding utf8
+        $searchedFiles2 | Out-File -FilePath "$debugLogFolderPath\DEBUG - SearchedFilesSecondaryPrograms $timestamp.txt" -Encoding utf8
         Write-Debug "  -- Wrote debug files containing searched files..."
     }
 
@@ -4123,9 +4155,9 @@ if (-not $SkipURLProtocols){
     foreach ($protocol in $URLProtocolsData) {
         $success = Create-Protocol-Shortcut -protocol $protocol.Protocol -name $protocol.Name -command $protocol.Command -shortcutPath (Join-Path $URLProtocolLinksOutputFolder "$($protocol.Protocol).url")
         if ($success) {
-            Write-Host "Created URL Protocol Shortcut: $($protocol.Name)"
+            Write-Host "Created URL Protocol Shortcut: $($protocol.Protocol)"
         } else {
-            Write-Host "Failed to create URL Protocol shortcut: $($protocol.Name)"
+            Write-Host "Failed to create URL Protocol shortcut: $($protocol.Protocol)"
         }
     }
 
@@ -4239,6 +4271,10 @@ Write-Host $appXURLSearchResultsCreated.Count -ForegroundColor Cyan -NoNewline
 Write-Host $(if ($SkipHiddenAppLinks -or $SkipURLProtocols) { "   (Skipped)" })
 
 Write-Host "`n------------------------------------------------`n"
+
+if ($Debug) {
+    Stop-Transcript
+}
 
 if (-not $NoGUI) {
     Write-Host "Press any key to exit...`n" -NoNewline
