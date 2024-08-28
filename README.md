@@ -33,13 +33,13 @@ It was inspired by the famously nicknamed "God Mode" folder and creates many mor
 ## How to Run:
 
 ### Option 1 (Easier): Using .Bat Launcher
-1. Download the latest version of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/download/v1.2.0/Super_God_Mode.ps1))
-2. Download the launcher batch file to the same location. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/download/v1.2.0/SuperGodMode-EasyLauncher.bat))
+1. Download the latest version of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/latest/download/Super_God_Mode.ps1))
+2. Download the launcher batch file to the same location. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/latest/download/SuperGodMode-EasyLauncher.bat))
 3. Run the batch file.
 
 ### Option 2: Manually running
 
-1. Download the latest version of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/download/v1.2.0/Super_God_Mode.ps1))
+1. Download the latest version of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/latest/download/Super_God_Mode.ps1))
 2. Open PowerShell to the directory with the script. (Tip: In File Explorer, just type "PowerShell.exe" into the address bar to open it to that path).
 3. Run the following command to allow script execution temporarily for the current session. 
    ```
