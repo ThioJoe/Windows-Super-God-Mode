@@ -104,6 +104,18 @@
 #     • Switch (Takes no values)
 #     Enable debug output for maximum information during script execution. This will also enable verbose output.
 #
+# -timing
+#     • Switch (Takes no values)
+#     Enable timing output to show how long each section of the script takes to run. Or timing will be enabled automatically if in verbose or debug mode
+#
+# -debugSkipAppxSearch
+#    • Switch (Takes no values)
+#    Skip searching for hidden links in AppX packages. This is useful for debugging and testing searching of third party apps without having to wait for the AppX search to complete.
+#
+# -debugSearchOnlyProtocolList
+#    • String Type
+#    Specify a comma-separated list of URL protocols (surrounded by quotes) to search for in the debug mode. This is useful for testing the URL protocol search without having to wait for the full search to complete.
+#
 # ----------------------------------------  Advanced Arguments  ----------------------------------------
 #
 # -NoGUI
@@ -165,6 +177,8 @@ param(
     [switch]$Verbose,
     [switch]$Debug,
     [switch]$timing,
+    [switch]$debugSkipAppxSearch,
+    [string]$debugSearchOnlyProtocolList,
     # Advanced Arguments
     [switch]$NoGUI,
     [string]$CustomDLLPath,
@@ -1130,6 +1144,22 @@ if (-not ([System.Management.Automation.PSTypeName]'Win32').Type) {
 # ======================================================================================================================================
 # ==================================================  FUNCTION DEFINITIONS  ============================================================
 # ======================================================================================================================================
+
+# Prints a warning message with a yellow background and red border
+function Print-SuperWarning {
+    param(
+        [string]$message
+    )
+    $paddingSize = 4  # Adjust this value to change the amount of padding
+    $lineLength = $message.Length + ($paddingSize * 2)
+    $yellowLine = (" " * $lineLength)
+    $padding = " " * $paddingSize
+    $centeredMessage = $padding + $message + $padding
+
+    Write-Host $yellowLine -BackgroundColor Red
+    Write-Host $centeredMessage -BackgroundColor Yellow -ForegroundColor Black
+    Write-Host $yellowLine -BackgroundColor Red
+}
 
 # Function: Get-LocalizedString
 # This function retrieves a localized (meaning in the user's language) string from a DLL based on a reference string given in the registry
@@ -3156,6 +3186,17 @@ function Search-HiddenLinks {
     $availableRAM = [System.Math]::Round((Get-CimInstance -ClassName Win32_ComputerSystem).TotalPhysicalMemory)
     $maxFileSize = [System.Math]::Round($availableRAM * 0.70)
 
+    # DEBUGGING - Can use variables $debugSkipAppxSearch and $debugSearchOnlyProtocolList to only search certain protocols or skip AppX search. Must be passed in as arguments
+    # $debugSkipAppxSearch - Set by argument
+
+    # $debugSearchOnlyProtocolList - Will parse the string into an array of protocols to search
+    if ($debugSearchOnlyProtocolList) {
+        $debugSearchOnlyProtocolList = $debugSearchOnlyProtocolList -split ','
+        $debugSearchOnlyProtocolList = $debugSearchOnlyProtocolList | ForEach-Object { $_.Trim() }
+    } else { $debugSearchOnlyProtocolList = $null }
+    
+    if ($debugSkipAppxSearch) { Print-SuperWarning "!!! DEBUGGING VARIABLE ENABLED TO SKIP APPX SEARCH !!!" }
+    if ($debugSearchOnlyProtocolList) { Print-SuperWarning "!!! DEBUGGING VARIABLE SET ONLY SEARCH CERTAIN PROTOCOLS !!!" }
 
     $ignoredExtensions = @(
         # Media Filetypes
@@ -3234,6 +3275,13 @@ function Search-HiddenLinks {
         $willSearchFiles1 = $packagesToSearch.FilesToSearch.FullName
         $willSearchFiles1 | Out-File -FilePath "$debugLogFolderPath\DEBUG - FilesWillSearch-Appx $debugRunID.txt" -Encoding utf8
         Write-Debug "  -- Wrote debug file containing Appx files to be searched..."
+    }
+
+    #DEBUG - Remove all items from packagesToSearch if set to skip AppX search. Or if set to only search certain protocols, remove all others
+    if ($debugSkipAppxSearch) {
+        $packagesToSearch = @()
+    } elseif ($debugSearchOnlyProtocolList) {
+        $packagesToSearch = $packagesToSearch | Where-Object { $_.Protocols -in $debugSearchOnlyProtocolList }
     }
 
     # ------------------------------------------------------ Appx Files Search --------------------------------------------------------------------------
@@ -3418,6 +3466,11 @@ function Search-HiddenLinks {
                 $programFilesSearchData += $searchItem
             }
         }
+    }
+
+    #DEBUG - If set to only search certain protocols, remove all others
+    if ($debugSearchOnlyProtocolList) {
+        $programFilesSearchData = $programFilesSearchData | Where-Object { $_.Protocols -in $debugSearchOnlyProtocolList }
     }
 
     # Get total files to search in other program folders. There might be duplicate folders, but we need to still count them because they'll be searched separately
