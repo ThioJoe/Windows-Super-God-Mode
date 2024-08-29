@@ -203,7 +203,7 @@ param(
 # -debugSearchOnlyProtocolList
 # -uniqueOutputFolder
 
-$VERSION = "1.2.1"
+$VERSION = "1.2.2"
 
 
 
@@ -3472,23 +3472,31 @@ function Search-HiddenLinks {
 
 
                 
-                # If it the path contains "\Program Files" or "\Program Files (x86)", then use the path until the next backslash, otherwise match to the last backslash
-                $moreRestrictivePaths = @("Common Files", "WindowsApps", "Adobe", "Microsoft Office")
-                # These are regex path patterns that will be ignored while searching within the program files directory
-                $ignorePaths = @('\steamapps\' )
-                # If the path starts with something in this list, then it will only search the specific file, not the whole directory
-                $dontSearchFolders = @($env:WINDIR)
+                # Wildcard Patterns & Applies within Program Files or Program Files x86 only: Will ensure the direct parent directory of the exe is searched, not the whole Publisher name directory for example
+                $moreRestrictiveProgramFilesPaths = @("*\Common Files\*", "*\WindowsApps\*", "*\Adobe\*", "*\Microsoft Office\*", "*\Epic Games\*")
+
+                # Wildcard Patterns: If the path starts with something in this list, then it will only search the specific file, not the whole directory. Not regex but uses wildcards, and a * will be added to the end
+                $foldersToOnlySearchBinary = @("$env:WINDIR\*", "*\SteamLibrary\*")
+                # Regex Patterns: These are literal regex path patterns that will be ignored while searching within the program files directory. Will be escaped later, and not case sensitive.
+                $ignorePaths = @("\steamapps\")
+                # Regex Pattern: Same as $ignorePaths but you must escape it yourself, but allows for more complex patterns
+                $ignorePathsRegex = @()
 
                 # Prepare variables if necessary - Regex escape ignorePaths
                 $ignorePaths = $ignorePaths | ForEach-Object { [regex]::Escape($_) }
+                # Combine with $ignorePathsRegex which must be already escaped
+                $ignorePaths = $($ignorePaths ; $ignorePathsRegex)
 
                 # Determine the program's install directory based on the target.
+                # If it the path contains "\Program Files" or "\Program Files (x86)", then use the path until the next backslash, otherwise match to the last backslash
                 if ($target -match '^(.*\\[Pp]rogram [Ff]iles( \(x86\))?\\[^\\]+)') {
                     $installDir = $Matches[1]
                     $Matches = $null
                     $containsRestrictivePath = $false
-                    foreach ($exception in $moreRestrictivePaths) {
-                        if (($installDir -like "*\$exception\*") -or ($($installDir + "\") -like "*\$exception\*")) {
+                    # Exceptions for more restrictive paths for 'Program Files' paths. If the install directory is in one of these paths, then use the immediate parent directory of the executable
+                    foreach ($exception in $moreRestrictiveProgramFilesPaths) {
+                        # Matches using wildcards already in each variable item. Explicitly case insensitive even though it already would be by default
+                        if (($installDir -ilike "$exception") -or ($($installDir + "\") -ilike "$exception")) {
                             $containsRestrictivePath = $true
                             break
                         }
@@ -3502,8 +3510,8 @@ function Search-HiddenLinks {
                 }
 
                 # If the install directory is in a list of exclusions, only search that specific file, not the whole directory
-                foreach ($excludedFolder in $dontSearchFolders) {
-                    if ($installDir -like "$excludedFolder*") {
+                foreach ($excludedFolder in $foldersToOnlySearchBinary) {
+                    if (($installDir -ilike "$excludedFolder") -or (($installDir + "\") -ilike "$excludedFolder")) {
                         $installDir = $null
                         break
                     }
@@ -3561,8 +3569,9 @@ function Search-HiddenLinks {
                     $currentCheckingFile = $_
                     $currentCheckingFile.Length -lt $maxFileSize -and
                     $currentCheckingFile.Extension -notin $ignoredExtensions -and 
-                    $currentCheckingFile.Length -gt 0 -and 
-                    ($ignorePaths | ForEach-Object { $currentCheckingFile.FullName -notmatch [regex]::Escape($_) }) -notcontains $false
+                    $currentCheckingFile.Length -gt 0 -and
+                    # Check if the file is in an ignored path. The $_ variable is each regex pattern within $ignorePaths, and is already escaped earlier. Case insensitive
+                    ($ignorePaths | ForEach-Object { $currentCheckingFile.FullName -inotmatch $_ }) -notcontains $false
                 }
                 $program.FilesToSearch = $files
                 Write-Verbose "Got $($files.Count) files in $folder for $($program.Protocols)"
