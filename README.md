@@ -88,9 +88,10 @@ Note: Except for `-Debug` and `-Verbose`, you must use `-NoGUI` for arguments to
 
 - `-Verbose`: Enable verbose output. Can be used with or without `-NoGUI`.
 - `-Debug`: Enable debug output (also enables verbose output). Can be used with or without `-NoGUI`.
-- `-timing`: Enable timing output to show how long each section of the script takes to run. Or timing will be enabled automatically if in verbose or debug mode.
+- `-timing`: Enable timing output to show how long each section of the script takes to run. Also enabled by verbose/debug switches.
 - `-debugSkipAppxSearch`: Skip searching for hidden links in AppX packages, and only search for non-appx programs.
 - `-debugSearchOnlyProtocolList`: Specify a comma-separated list of URL protocols (surrounded by quotes) to search for, and no others.
+- `uniqueOutputFolder`: Append a unique identifier to the output folder name to prevent overwriting existing folders.
 
 #### Advanced Arguments
 
