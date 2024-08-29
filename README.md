@@ -107,26 +107,14 @@ Note: Except for `-Debug` and `-Verbose`, you must use `-NoGUI` for arguments to
 .\Super_God_Mode.ps1 -Output "C:\SuperGodMode" -AllURLProtocols -Verbose
 ```
 
-## Output
-
-The script creates a folder (default name: "Super God Mode") containing:
-
-- Shortcuts to CLSID-based shell folders
-- Shortcuts to named special folders
-- Shortcuts to task links
-- Shortcuts to system settings (ms-settings: links)
-- Shortcuts to deep links
-- Shortcuts to URL protocols
-- Shortcuts to Hidden App Links
-- A Statistics folder (With CSV and XML data files)
-- A text file with some tips and other info
-
 ## Notes
 
 - Some shortcuts may not work on all Windows versions due to differences in available features.
 - The script does not modify any system settings; it only creates shortcuts to existing Windows features.
 - All parameters and GUI settings are optional. The script will run with default settings if the user doesn't change anything.
 
+## Frequently Asked Questions
+- See Wiki Page for FAQs: https://github.com/ThioJoe/Windows-Super-God-Mode/wiki/Frequently-Asked-Questions
 ___
 
 # Extra Tools
