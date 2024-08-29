@@ -203,7 +203,7 @@ param(
 # -debugSearchOnlyProtocolList
 # -uniqueOutputFolder
 
-$VERSION = "1.2.2"
+$VERSION = "1.2.3"
 
 
 
@@ -3701,7 +3701,11 @@ function Get-ProtocolsInProgramFiles {
         Write-Host "   ($processedFilesString / $totalFiles files   |   $processedFileSizeMB / $totalFilesSizeMB MB ) "  -NoNewline
     }
     else {
-        Write-Host "`r   Search Progress: $currentPercentage% " -NoNewline
+        if (-not $psISE){
+            Write-Host "`r   Search Progress: $currentPercentage% " -NoNewline
+        } else {
+            Write-Progress -Activity "Searching Files" -Status "Progress: $currentPercentage%" -PercentComplete $currentPercentage
+        }
     }
 
     $lastPercentage = $currentPercentage
@@ -3776,7 +3780,12 @@ function Get-ProtocolsInProgramFiles {
                 Write-Host "   ($processedFilesString / $totalFiles files   |   $processedFileSizeMB / $totalFilesSizeMB MB ) "  -NoNewline
             }
             else {
-                Write-Host "`r   Search Progress: $currentPercentage% " -NoNewline
+                if (-not $psISE) {
+                    Write-Host "`r   Search Progress: $currentPercentage% " -NoNewline
+                }
+                else {
+                    Write-Progress -Activity "Searching Files" -Status "Progress: $currentPercentage%" -PercentComplete $currentPercentage
+                }
             }
             $lastPercentage = $currentPercentage
         }
@@ -4313,6 +4322,10 @@ if ($Debug) {
 }
 
 if (-not $NoGUI) {
-    Write-Host "Press any key to exit...`n" -NoNewline
-    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    if (-not $psISE) {
+        Write-Host "Press any key to exit...`n" -NoNewline
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    } else {
+        Read-Host "Press Enter to exit..."
+    }
 }
