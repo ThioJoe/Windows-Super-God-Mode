@@ -13,9 +13,16 @@ body:
       required: true
     attributes:
       label: Not a Duplicate Issue
-      description: Check to make sure there are no existing open issues about your problem.
       options:
         - label: I have searched the existing issues and confirmed this is not a duplicate.
+  - type: checkboxes
+    id: checked-faq
+    validations:
+      required: true
+    attributes:
+      label: Checked the Frequently Asked Questions Page
+      options:
+        - label: "I checked the [FAQ page](https://github.com/ThioJoe/Windows-Super-God-Mode/wiki/Frequently-Asked-Questions) on the wiki with solutions to common issues."
   - type: markdown
     attributes:
       value: |
