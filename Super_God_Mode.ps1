@@ -662,7 +662,7 @@ if ($uniqueOutputFolder) { $defaultOutputFolderName += "-$timestamp" }
 
 # Start the GUI dialog unless -NoGUI is used
 if (-not $NoGUI) {
-    Write-Host "`nUse the GUI window that just appeared to select any options and run the script.`n"
+    Write-Host "`nUse the GUI window that just appeared to select any options and run the script.`n(Do not close this window)"
     $params = Show-SuperGodModeDialog -defaultOutputFolderName $defaultOutputFolderName -initialDebug:$Debug -initialVerbose:$Verbose
     if ($null -eq $params) {
         Write-host "Script GUI window appears to have been closed. Exiting script.`n" -ForegroundColor Yellow
