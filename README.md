@@ -54,6 +54,15 @@ It was inspired by the famously nicknamed "God Mode" folder and creates many mor
    - If no parameters are provided, a GUI will appear for easy configuration.
    - You can also run the script with optional parameters (see below).
 
+## Video: Demonstration
+
+<p align="center">Demonstration Video: https://www.youtube.com/watch?v=CnATL9kJPn8</p>
+
+<p align="center"><a href="https://www.youtube.com/watch?v=CnATL9kJPn8"> <img width="750" src="https://github.com/user-attachments/assets/1d5d5c88-aa50-4909-845a-8598e759a6b7"></a></p>
+
+<p align="center">(Takes you to YouTube, not embedded. See timestamps in video description.)</p>
+
+
 ## CLI Parameters
 
 Note: Except for `-Debug` and `-Verbose`, you must use `-NoGUI` for arguments to take effect.
