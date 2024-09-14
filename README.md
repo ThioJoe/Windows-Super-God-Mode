@@ -2,7 +2,9 @@
 
 This PowerShell script <b>creates shortcuts to all special shell folders, named folders, task links, system settings, deep links, and URL protocols in Windows</b>, providing easy access to a wide range of system settings and features.
 
-It was inspired by the famously nicknamed "God Mode" folder and creates many more shortcuts than even that.
+It was inspired by the famously nicknamed "God Mode" folder and creates many more shortcuts than even that. 
+
+➤ Note: It's not really a "mode", that's just a catchy name. Running this doesn't change any system settings, it just creates a folder containing a ton of shortcuts.
 
 ## Screenshots
 
