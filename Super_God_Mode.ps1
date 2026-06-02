@@ -2502,7 +2502,7 @@ function Get-MS-SettingsFrom-SystemSettingsDLL {
         $content = [System.IO.File]::ReadAllText($DllPath, [System.Text.Encoding]::Unicode)
         $results = New-Object System.Collections.Generic.HashSet[string]
 
-        $matchesList = [regex]::Matches($content, 'ms-settings:[a-z-]+')
+        $matchesList = [regex]::Matches($content, 'ms-settings:[a-zA-Z0-9-]+')
         foreach ($match in $matchesList) {
             [void]$results.Add($match.Value)
         }
