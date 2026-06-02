@@ -203,7 +203,7 @@ param(
 # -debugSearchOnlyProtocolList
 # -uniqueOutputFolder
 
-$VERSION = "1.2.4"
+$VERSION = "1.2.3"
 
 
 
