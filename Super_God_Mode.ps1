@@ -1,10 +1,10 @@
-# Get All Shell Folder Shortcuts Script (Aka "Super God Mode")
+# "Super God Mode" Script for Windows
 #
 # Author: ThioJoe
 # GitHub Repo: https://github.com/ThioJoe/Windows-Super-God-Mode
 #
-# This PowerShell script is designed to find and create shortcuts for all special shell folders in Windows.
-# These folders can be identified through their unique Class Identifiers (CLSIDs) or by their names.
+# This PowerShell script creates shortcuts to all special shell folders, named folders, task links, system settings, 
+# deep links, and URL protocols in Windows, providing easy access to a wide range of system settings and features.
 # The script also generates CSV files listing these folders and associated tasks/links.
 
 # How to Use:
