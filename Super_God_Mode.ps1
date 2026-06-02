@@ -203,7 +203,7 @@ param(
 # -debugSearchOnlyProtocolList
 # -uniqueOutputFolder
 
-$VERSION = "1.2.3"
+$VERSION = "1.2.4"
 
 
 
@@ -2228,7 +2228,7 @@ function Create-CLSIDCsvFile {
     foreach ($item in $clsidData) {
         $explorerCommand = "explorer shell:::$($item.CLSID)"  # The command to open the shell folder.
         $iconPath = if ($item.IconPath) {
-            "`"$($item.IconPath -replace '"', '""')`""  # Escape double quotes in the icon path.
+            "`"$($item.IconPath -replace '`"', '`"`"')`""  # Escape double quotes in the icon path.
         } else {
             "None"
         }
@@ -2702,7 +2702,7 @@ function Create-Deep-Link-CSVFile {
         $deepLink = $item.DeepLink -replace '"', '""'
         $fullCommand = $item.FullCommand -replace '"', '""'
         $iconPath = if ($item.IconPath) {
-            "`"$($item.IconPath -replace '"', '""')`""  # Escape double quotes in the icon path.
+            "`"$($item.IconPath -replace '`"', '`"`"')`""  # Escape double quotes in the icon path.
         } else {
             "None"
         }
