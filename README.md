@@ -34,12 +34,17 @@ It was inspired by the famously nicknamed "God Mode" folder and creates many mor
 
 ## How to Run:
 
-### Option 1 (Easier): Using .Bat Launcher
+### Option 1 (Easiest):
+1. Download the latest release of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/latest/download/Super_God_Mode.ps1))
+2. Right click it and select "Run with PowerShell".
+3. _Optional:_ If it gives an error about "Execution Policy", use Option #2.
+
+### Option 2 (Easier): Using .Bat Launcher
 1. Download the latest version of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/latest/download/Super_God_Mode.ps1))
 2. Download the launcher batch file to the same location. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/latest/download/SuperGodMode-EasyLauncher.bat))
 3. Run the batch file.
 
-### Option 2: Manually running
+### Option 3: Manually running
 
 1. Download the latest version of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/latest/download/Super_God_Mode.ps1))
 2. Open PowerShell to the directory with the script. (Tip: In File Explorer, just type "PowerShell.exe" into the address bar to open it to that path).
