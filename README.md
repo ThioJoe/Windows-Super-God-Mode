@@ -43,7 +43,7 @@ It was inspired by the famously nicknamed "God Mode" folder and creates many mor
 
 1. Download the latest version of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/latest/download/Super_God_Mode.ps1))
    
-2. Where you downloaded the script, Hold `Shift` + `Right Click` the folder background, then select either<br/>
+2. Where you downloaded the script, Hold <kbd>Shift</kbd> + <kbd>Right Click</kbd> the folder background, then select either<br/>
    "_Open PowerShell window here_" or "_Open in Terminal_"
        
 4. Run the script by pasting this command: 
