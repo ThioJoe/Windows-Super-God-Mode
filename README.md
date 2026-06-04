@@ -34,24 +34,21 @@ It was inspired by the famously nicknamed "God Mode" folder and creates many mor
 
 ## How to Run:
 
-### Option 1 (Easier): Using .Bat Launcher
+### Option 1: Using .Bat Launcher
 1. Download the latest version of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/latest/download/Super_God_Mode.ps1))
 2. Download the launcher batch file to the same location. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/latest/download/SuperGodMode-EasyLauncher.bat))
 3. Run the batch file.
 
-### Option 2: Manually running
+### Option 2: Run directly with command
 
 1. Download the latest version of the script. (Direct link [here](https://github.com/ThioJoe/Windows-Super-God-Mode/releases/latest/download/Super_God_Mode.ps1))
-2. Open PowerShell to the directory with the script. (Tip: In File Explorer, just type "PowerShell.exe" into the address bar to open it to that path).
-3. Run the following command to allow script execution temporarily for the current session. 
-   ```
-   Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process
-   ```
-   ^ **Note:** You might see a warning about changing the execution policy, but the `-Scope Process` part ensures that the change is only temporary, and will only apply to that specific PowerShell window, so you can choose to allow. You can read more in [this article](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-5.1#-scope). 
    
-5. Run the script:
+2. Where you downloaded the script, Hold `Shift` + `Right Click` the folder background, then select either<br/>
+   "_Open PowerShell window here_" or "_Open in Terminal_"
+       
+4. Run the script by pasting this command: 
    ```
-   .\Super_God_Mode.ps1
+   powershell.exe -ExecutionPolicy Bypass -File ".\Super_God_Mode.ps1"
    ```
    - If no parameters are provided, a GUI will appear for easy configuration.
    - You can also run the script with optional parameters (see below).
