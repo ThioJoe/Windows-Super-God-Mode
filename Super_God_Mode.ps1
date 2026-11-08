@@ -731,10 +731,10 @@ if ($Output) {
 $debugLogsFolderName = "__Debug Logs"
 $debugLogFolderPath = Join-Path $mainShortcutsFolder $debugLogsFolderName
 if ($Debug) {
-    if (-not (Test-Path $debugLogFolderPath)) { New-Item -Path $debugLogFolderPath -ItemType Directory -Force | Out-Null }
+    if (-not (Test-Path -LiteralPath $debugLogFolderPath)) { New-Item -Path $debugLogFolderPath -ItemType Directory -Force | Out-Null }
     $debugTranscriptFileName = "DebugTranscript-$timestamp.log"
     $debugTranscriptFilePath = Join-Path $debugLogFolderPath $debugTranscriptFileName
-    Start-Transcript -Path $debugTranscriptFilePath
+    Start-Transcript -LiteralPath $debugTranscriptFilePath
 }
 
 # Print the script parameters to the console
@@ -888,7 +888,7 @@ if ($CustomAllSystemSettingsXMLPath) {
 }
 
 # Check if main folder already exists
-if (-not (Test-Path $mainShortcutsFolder)) {
+if (-not (Test-Path -LiteralPath $mainShortcutsFolder)) {
     $mainFolderWasCreatedThisRun = $true
 } else {
     $mainFolderWasCreatedThisRun = $false
@@ -908,7 +908,7 @@ try {
     }
     return
 } catch {
-    if (-not (Test-Path $mainShortcutsFolder)) {
+    if (-not (Test-Path -LiteralPath $mainShortcutsFolder)) {
         Write-Host "Failed to create output folder: $_" -ForegroundColor Yellow
         return
     }
@@ -1140,7 +1140,7 @@ Author:         ThioJoe
 Project Link:   https://github.com/ThioJoe/Windows-Super-God-Mode
 
 "@
-    Set-Content -Path $tipsFilePath -Value $tipsContent -Force
+    Set-Content -LiteralPath $tipsFilePath -Value $tipsContent -Force
 }
 
 # ==================================================================================================================================
@@ -1905,9 +1905,9 @@ function Create-TaskLink-Shortcut {
             if ($iconPath) {
                 $iconFile, $iconIndex = $iconPath -split ','
                 # Append the icon information to the file
-                Add-Content -Path $shortcutPath -Value "IconFile=$iconFile"
+                Add-Content -LiteralPath $shortcutPath -Value "IconFile=$iconFile"
                 if ($iconIndex) {
-                    Add-Content -Path $shortcutPath -Value "IconIndex=$iconIndex"
+                    Add-Content -LiteralPath $shortcutPath -Value "IconIndex=$iconIndex"
                 }
             }
         }
@@ -2278,7 +2278,7 @@ function Create-CLSIDCsvFile {
     }
 
     # Write the CSV content to the specified output file.
-    $csvContent | Out-File -FilePath $outputPath -Encoding utf8
+    $csvContent | Out-File -LiteralPath $outputPath -Encoding utf8
 }
 
 # Function: Create-NamedFoldersCsvFile
@@ -2315,7 +2315,7 @@ function Create-NamedFoldersCsvFile {
     }
 
     # Write the CSV content to the specified output file.
-    $csvContent | Out-File -FilePath $outputPath -Encoding utf8
+    $csvContent | Out-File -LiteralPath $outputPath -Encoding utf8
 }
 
 # Function: Create-TaskLinksCsvFile
@@ -2340,7 +2340,7 @@ function Create-TaskLinksCsvFile {
         $csvContent += "`"$taskId`",`"$applicationId`",`"$applicationName`",`"$name`",`"$page`",`"$command`",`"$keywords`"`n"
     }
 
-    $csvContent | Out-File -FilePath $outputPath -Encoding utf8
+    $csvContent | Out-File -LiteralPath $outputPath -Encoding utf8
 }
 
 function Create-MSSettingsCsvFile {
@@ -2359,7 +2359,7 @@ function Create-MSSettingsCsvFile {
         $csvContent += "`"$name`",`"$fullLink`"`n"
     }
 
-    $csvContent | Out-File -FilePath $outputPath -Encoding utf8
+    $csvContent | Out-File -LiteralPath $outputPath -Encoding utf8
 }
 
 # Take the app name like Microsoft.NetworkAndSharingCenter and prepare it to be displayed in the shortcut name like "Network and Sharing Center - Whatever Task name"
@@ -2744,7 +2744,7 @@ function Create-Deep-Link-CSVFile {
         $csvContent += "`"$description`",`"$deepLink`",`"$fullCommand`",$iconPath`n"
     }
 
-    $csvContent | Out-File -FilePath $outputPath -Encoding utf8
+    $csvContent | Out-File -LiteralPath $outputPath -Encoding utf8
 }
 
 # Currently unused in favor of Get-AppDetails-From-AppxManifest
@@ -3188,7 +3188,7 @@ function Create-URL-Protocols-CSVFile {
         $csvContent += "`"$protocol`",`"$name`",`"$command`",`"$packageName`",`"$packageAppName`",`"$packageAppDescription`",$isMicrosoft`n"
     }
 
-    $csvContent | Out-File -FilePath $outputPath -Encoding utf8
+    $csvContent | Out-File -LiteralPath $outputPath -Encoding utf8
 }
 
 # Alternate version of Create-Protocol-Shortcut that creates a .url file instead of a .lnk file
@@ -3204,7 +3204,7 @@ function Create-Protocol-Shortcut {
     try {
         #Windows will automatically display the icon for the protocol, so we don't need to specify it in the URL file
         $urlFileContent = "[InternetShortcut]`nURL=$protocol`:///`n"
-        $urlFileContent | Out-File -FilePath $shortcutPath -Encoding ascii
+        $urlFileContent | Out-File -LiteralPath $shortcutPath -Encoding ascii
         return $true
     }
     catch {
@@ -3378,7 +3378,7 @@ function Search-HiddenLinks {
         # Combine lists of searched files
         $willSearchFiles1 = @()
         $willSearchFiles1 = $packagesToSearch.FilesToSearch.FullName
-        $willSearchFiles1 | Out-File -FilePath "$debugLogFolderPath\DEBUG - FilesWillSearch-Appx $timestamp.txt" -Encoding utf8
+        $willSearchFiles1 | Out-File -LiteralPath "$debugLogFolderPath\DEBUG - FilesWillSearch-Appx $timestamp.txt" -Encoding utf8
         Write-Debug "  -- Wrote debug file containing Appx files to be searched..."
     }
 
@@ -3658,7 +3658,7 @@ function Search-HiddenLinks {
     if ($Debug) {
         $willSearchFiles2 = @()
         $willSearchFiles2 = $programFilesSearchData.FilesToSearch.FullName
-        $willSearchFiles2 | Out-File -FilePath "$debugLogFolderPath\DEBUG - FilesWillSearch-OtherPrograms $timestamp.txt" -Encoding utf8
+        $willSearchFiles2 | Out-File -LiteralPath "$debugLogFolderPath\DEBUG - FilesWillSearch-OtherPrograms $timestamp.txt" -Encoding utf8
         Write-Debug "  -- Wrote debug file containing other program files to be searched..."
     }
 
@@ -3689,11 +3689,11 @@ function Search-HiddenLinks {
     if ($Debug) {
         $searchedFiles = @()
         $searchedFiles = $packagesToSearch.FilesToSearch.FullName
-        $searchedFiles | Out-File -FilePath "$debugLogFolderPath\DEBUG - SearchedFilesAppx $timestamp.txt" -Encoding utf8
+        $searchedFiles | Out-File -LiteralPath "$debugLogFolderPath\DEBUG - SearchedFilesAppx $timestamp.txt" -Encoding utf8
 
         $searchedFiles2 = @()
         $searchedFiles2 = $programFilesSearchData.FilesToSearch.FullName
-        $searchedFiles2 | Out-File -FilePath "$debugLogFolderPath\DEBUG - SearchedFilesSecondaryPrograms $timestamp.txt" -Encoding utf8
+        $searchedFiles2 | Out-File -LiteralPath "$debugLogFolderPath\DEBUG - SearchedFilesSecondaryPrograms $timestamp.txt" -Encoding utf8
         Write-Debug "  -- Wrote debug files containing searched files..."
     }
 
@@ -3863,7 +3863,7 @@ function Create-AppXURLSearchResultsToCSV {
     }
 
     # Write to csv file
-    $csvContent | Out-File -FilePath $outputPath -Encoding utf8
+    $csvContent | Out-File -LiteralPath $outputPath -Encoding utf8
 
 }
 
@@ -3911,7 +3911,7 @@ function Create-AppXURLShortcuts {
         try {
             #Windows will automatically display the icon for the protocol, so we don't need to specify it in the URL file
             $urlFileContent = "[InternetShortcut]`nURL=$fullURL`n"
-            $urlFileContent | Out-File -FilePath $shortcutPath -Encoding ascii
+            $urlFileContent | Out-File -LiteralPath $shortcutPath -Encoding ascii
             $createdShortcuts += $sanitizedURLForName
         }
         catch {
