@@ -156,6 +156,7 @@
 #       .\Super_God_Mode.ps1 -NoStatistics -CollectExtraURLProtocolInfo -Output "C:\Users\Username\Desktop\My Shortcuts"
 #
 # ------------------------------------------------------------------------------------------------------
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
 param(
     # Alternative Options Arguments
     [switch]$DontGroupTasks,
@@ -203,7 +204,7 @@ param(
 # -debugSearchOnlyProtocolList
 # -uniqueOutputFolder
 
-$VERSION = "1.2.3"
+$VERSION = "1.2.4"
 
 
 
@@ -808,7 +809,7 @@ $allSettingsXmlPath1 = "$Env:windir\ImmersiveControlPanel\Settings\AllSystemSett
 $allSettingsXmlPath2 = "$Env:windir\ImmersiveControlPanel\Settings\AllSystemSettings_{FDB289F3-FCFC-4702-8015-18926E996EC1}.xml"
 $allSettingsXmlPath3 = "$Env:windir\ImmersiveControlPanel\Settings\AllSystemSettings_{253E530E-387D-4BC2-959D-E6F86122E5F2}.xml"
 $systemSettingsDllPath = "$Env:windir\ImmersiveControlPanel\SystemSettings.dll"
-
+$desktopIniComment = "; Super God Mode"
 
 
 # URI Protocols deemed "permanent" and not to be included in the URL Protocols section because they aren't special
@@ -839,6 +840,30 @@ function Test-Path-Safe {
     }
     catch {
         Write-Debug "Test-Path-Safe: Error checking path - $Path : $_"
+        return $false
+    }
+}
+
+# Checks if the specified folder was created by this script by looking for the Super God Mode comment in its desktop.ini file
+function Test-Contains-DesktopIni {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$FolderPath
+    )
+
+    $expectedDesktopIniPath = Join-Path -Path $FolderPath -ChildPath "desktop.ini"
+    
+    if (Test-Path-Safe $expectedDesktopIniPath) {
+        $desktopIniContent = Get-Content -LiteralPath $expectedDesktopIniPath -ErrorAction SilentlyContinue
+
+        # Make sure it contains the Super God Mode comment to know this folder was created by this script
+        if ($desktopIniContent -contains $desktopIniComment) {
+            return $true
+        } else {
+            return $false
+        }
+    # Desktop.ini was not found
+    } else {
         return $false
     }
 }
@@ -893,31 +918,31 @@ try {
 # Doing this instead of just deleting the entire main folder in case the user wants to put the output into a directory in use for other things
 if (-not $KeepPreviousOutputFolders) {
     try {
-        if (Test-Path $mainShortcutsFolder) {
+        if (Test-Path -LiteralPath $mainShortcutsFolder) {
             # Remove folders
-            if (Test-Path $CLSIDshortcutsOutputFolder){
-                Remove-Item -Path $mainShortcutsFolder -Recurse -Force
+            if ((Test-Path -LiteralPath $CLSIDshortcutsOutputFolder) -and (Test-Contains-DesktopIni -FolderPath $CLSIDshortcutsOutputFolder)) {
+                Remove-Item -LiteralPath $CLSIDshortcutsOutputFolder -Recurse -Force
             }
-            if (Test-Path $namedShortcutsOutputFolder){
-                Remove-Item -Path $namedShortcutsOutputFolder -Recurse -Force
+            if ((Test-Path -LiteralPath $namedShortcutsOutputFolder) -and (Test-Contains-DesktopIni -FolderPath $namedShortcutsOutputFolder)) {
+                Remove-Item -LiteralPath $namedShortcutsOutputFolder -Recurse -Force
             }
-            if (Test-Path $taskLinksOutputFolder){
-                Remove-Item -Path $taskLinksOutputFolder -Recurse -Force
+            if ((Test-Path -LiteralPath $taskLinksOutputFolder) -and (Test-Contains-DesktopIni -FolderPath $taskLinksOutputFolder)) {
+                Remove-Item -LiteralPath $taskLinksOutputFolder -Recurse -Force
             }
-            if (Test-Path $statisticsOutputFolder) {
-                Remove-Item -Path $statisticsOutputFolder -Recurse -Force
+            if ((Test-Path -LiteralPath $statisticsOutputFolder) -and (Test-Contains-DesktopIni -FolderPath $statisticsOutputFolder)) {
+                Remove-Item -LiteralPath $statisticsOutputFolder -Recurse -Force
             }
-            if (Test-Path $msSettingsOutputFolder){
-                Remove-Item -Path $msSettingsOutputFolder -Recurse -Force
+            if ((Test-Path -LiteralPath $msSettingsOutputFolder) -and (Test-Contains-DesktopIni -FolderPath $msSettingsOutputFolder)) {
+                Remove-Item -LiteralPath $msSettingsOutputFolder -Recurse -Force
             }
-            if (Test-Path $deepLinksOutputFolder){
-                Remove-Item -Path $deepLinksOutputFolder -Recurse -Force
+            if ((Test-Path -LiteralPath $deepLinksOutputFolder) -and (Test-Contains-DesktopIni -FolderPath $deepLinksOutputFolder)) {
+                Remove-Item -LiteralPath $deepLinksOutputFolder -Recurse -Force
             }
-            if (Test-Path $URLProtocolLinksOutputFolder){
-                Remove-Item -Path $URLProtocolLinksOutputFolder -Recurse -Force
+            if ((Test-Path -LiteralPath $URLProtocolLinksOutputFolder) -and (Test-Contains-DesktopIni -FolderPath $URLProtocolLinksOutputFolder)) {
+                Remove-Item -LiteralPath $URLProtocolLinksOutputFolder -Recurse -Force
             }
-            if (Test-Path $URLProtocolPageLinksOutputFolder){
-                Remove-Item -Path $URLProtocolPageLinksOutputFolder -Recurse -Force
+            if ((Test-Path -LiteralPath $URLProtocolPageLinksOutputFolder) -and (Test-Contains-DesktopIni -FolderPath $URLProtocolPageLinksOutputFolder)) {
+                Remove-Item -LiteralPath $URLProtocolPageLinksOutputFolder -Recurse -Force
             }
         }
     } catch {
@@ -974,6 +999,14 @@ function New-FolderWithIcon {
         [switch]$DetailsView,
         [switch]$desktopIniOnly
     )
+
+    # Only mark the folder as created by this script if it is new or already marked, so an unrelated folder with the same name cannot become deletable on the next run
+    if ((-not (Test-Path -LiteralPath $FolderPath)) -or (Test-Contains-DesktopIni -FolderPath $FolderPath)) {
+        $folderMarker = $desktopIniComment
+    } else {
+        $folderMarker = ""
+    }
+
     # Create the folder
     if (-not $desktopIniOnly) {
         New-Item -Path $FolderPath -ItemType Directory -Force | Out-Null
@@ -999,6 +1032,7 @@ function New-FolderWithIcon {
     # Create desktop.ini content
     if ($DetailsView) {
         $desktopIniContent = @"
+$folderMarker
 [.ShellClassInfo]
 IconResource=$IconFile,$IconIndex
 [ViewState]
@@ -1014,14 +1048,14 @@ IconResource=$IconFile,$IconIndex
 
     # Create desktop.ini file
     $desktopIniPath = Join-Path $FolderPath "desktop.ini"
-    Set-Content -Path $desktopIniPath -Value $desktopIniContent -Encoding ASCII -Force
+    Set-Content -LiteralPath $desktopIniPath -Value $desktopIniContent -Encoding ASCII -Force
 
     # Set desktop.ini attributes
-    $desktopIniItem = Get-Item $desktopIniPath -Force
+    $desktopIniItem = Get-Item -LiteralPath $desktopIniPath -Force
     $desktopIniItem.Attributes = 'Hidden,System'
 
     # Set folder attributes
-    $folderItem = Get-Item $FolderPath -Force
+    $folderItem = Get-Item -LiteralPath $FolderPath -Force
     $folderItem.Attributes = 'ReadOnly,Directory'
 }
 
@@ -3239,6 +3273,7 @@ function Format-FileGrid {
 
 # Function to search for protocol URLs in AppX package files
 function Search-HiddenLinks {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidAssignmentToAutomaticVariable', 'Matches', Justification = 'Intentionally clearing automatic variable $Matches')]
     param (
         [Parameter(Mandatory=$true)]
         $associatedProtocolsPerApp,
